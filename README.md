@@ -21,3 +21,8 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
   released under [The Unlicense](https://github.com/yuhonas/free-exercise-db/blob/main/LICENSE) (public domain).
 - Some exercises use generated illustrations created for this app.
 - "Watch demo" buttons link to third-party YouTube videos; those videos are not included or cached here.
+
+### New
+- Full rest after every set (Settings › Rest between sets, default 60 s; core 30 s; per-exercise override in Library), spoken + beeped with next-exercise preview.
+- Per-set logging of weight and reps on the rest screen, "Last: 25 lb × 12" on the exercise screen, history keeps every set.
+- iPhone sound fix (audio unlocked on Start, audio-file fallback) and Settings › Test sound. If silent, turn off silent mode.

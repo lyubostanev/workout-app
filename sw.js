@@ -1,6 +1,7 @@
-const CACHE = 'gymcoach-v8';
+const CACHE = 'gymcoach-v9';
 const ASSETS = ['./', './index.html', './app.js', './exercises.json', './manifest.webmanifest',
-  './icons/icon-192.png', './icons/icon-512.png', './icons/icon-192-maskable.png', './icons/icon-512-maskable.png'];
+  './icons/icon-192.png', './icons/icon-512.png', './icons/icon-192-maskable.png', './icons/icon-512-maskable.png',
+  './audio/silence.wav', ...[420, 500, 700, 880, 1000, 1200, 1320].map(f => `./audio/beep${f}.wav`)];
 // Precache the app shell plus every exercise image listed in exercises.json (~2.7 MB) for offline gym use.
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(async c => {
