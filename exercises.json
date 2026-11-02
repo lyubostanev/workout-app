@@ -1,0 +1,4033 @@
+[
+ {
+  "id": "smith-bench",
+  "name": "Smith Machine Bench Press",
+  "equipment": [
+   "smith",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "chest",
+   "triceps",
+   "front delts"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "Bar over mid-chest, elbows ~45\u00b0",
+  "unilateral": false,
+  "image": [
+   "img/smith-bench-0.webp",
+   "img/smith-bench-1.webp"
+  ],
+  "formCues": [
+   "Pinch shoulder blades back and down before unracking",
+   "Lower to mid-chest, not your neck",
+   "Elbows about 45 degrees, not flared to 90",
+   "Feet planted, drive through the floor",
+   "Wrists stacked over elbows, knuckles to ceiling",
+   "Touch lightly, no bouncing off the chest"
+  ],
+  "imageSource": "free-exercise-db:Smith_Machine_Bench_Press",
+  "alternates": [
+   "db-bench",
+   "cable-fly",
+   "smith-incline-bench",
+   "pushup"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "smith-incline-bench",
+  "name": "Smith Incline Press",
+  "equipment": [
+   "smith",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "upper chest",
+   "front delts",
+   "triceps"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "Bench at 30\u00b0",
+  "unilateral": false,
+  "image": [
+   "img/smith-incline-bench-0.webp",
+   "img/smith-incline-bench-1.webp"
+  ],
+  "formCues": [
+   "Bench at 30 degrees, bar path to upper chest",
+   "Keep shoulder blades pinned to the bench",
+   "Elbows slightly tucked, forearms vertical",
+   "Control two seconds down",
+   "Glutes stay on the bench, no arching off"
+  ],
+  "imageSource": "free-exercise-db:Smith_Machine_Incline_Bench_Press",
+  "alternates": [
+   "db-incline-press",
+   "cable-low-high-fly",
+   "smith-bench"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "smith-ohp",
+  "name": "Smith Seated Overhead Press",
+  "equipment": [
+   "smith",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "shoulders",
+   "triceps"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "Bench upright, press to lockout",
+  "unilateral": false,
+  "image": [
+   "img/smith-ohp-0.webp",
+   "img/smith-ohp-1.webp"
+  ],
+  "formCues": [
+   "Brace abs and squeeze glutes, ribs down",
+   "Bar starts at chin level, press straight up",
+   "Head through at the top, biceps by ears",
+   "Don't let lower back arch off the pad",
+   "Forearms vertical under the bar"
+  ],
+  "imageSource": "free-exercise-db:Smith_Machine_Overhead_Shoulder_Press",
+  "alternates": [
+   "half-kneel-db-press",
+   "db-shoulder-press",
+   "db-arnold-press"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Shoulders"
+ },
+ {
+  "id": "db-bench",
+  "name": "Dumbbell Bench Press",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "chest",
+   "triceps",
+   "front delts"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "SelectTech 552",
+  "unilateral": false,
+  "image": [
+   "img/db-bench-0.webp",
+   "img/db-bench-1.webp"
+  ],
+  "formCues": [
+   "Retract shoulder blades, chest up",
+   "Lower dumbbells to chest level, elbows 45 degrees",
+   "Press up and slightly in, don't clank the bells",
+   "Wrists straight, stacked over elbows",
+   "Feet flat, slight arch, glutes down",
+   "Control the lowering, two seconds"
+  ],
+  "imageSource": "free-exercise-db:Dumbbell_Bench_Press",
+  "alternates": [
+   "cable-fly",
+   "pushup",
+   "smith-bench"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "db-incline-press",
+  "name": "Incline Dumbbell Press",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "upper chest",
+   "front delts"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-incline-press-0.webp",
+   "img/db-incline-press-1.webp"
+  ],
+  "formCues": [
+   "Bench at 30 degrees, not steeper",
+   "Dumbbells lower beside upper chest",
+   "Keep shoulder blades back against the bench",
+   "Forearms vertical at the bottom",
+   "Press up in a slight arc, stop short of touching"
+  ],
+  "imageSource": "free-exercise-db:Incline_Dumbbell_Press",
+  "alternates": [
+   "cable-low-high-fly",
+   "db-incline-fly",
+   "smith-incline-bench"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "db-shoulder-press",
+  "name": "Seated Dumbbell Shoulder Press",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "shoulders",
+   "triceps"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-shoulder-press-0.webp",
+   "img/db-shoulder-press-1.webp"
+  ],
+  "formCues": [
+   "Back flat on an upright bench, ribs down",
+   "Start with dumbbells at ear level, palms forward",
+   "Press straight up, finish over your shoulders",
+   "Don't shrug, keep neck long",
+   "Lower under control to ear height"
+  ],
+  "imageSource": "free-exercise-db:Dumbbell_Shoulder_Press",
+  "alternates": [
+   "half-kneel-db-press",
+   "cable-front-raise",
+   "smith-ohp"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Shoulders"
+ },
+ {
+  "id": "db-arnold-press",
+  "name": "Arnold Press",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "shoulders"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-arnold-press-0.webp",
+   "img/db-arnold-press-1.webp"
+  ],
+  "formCues": [
+   "Start palms facing you at chin height",
+   "Rotate palms out as you press up",
+   "Reverse the rotation smoothly on the way down",
+   "Keep core braced, no leaning back",
+   "Elbows out wide as you rotate"
+  ],
+  "imageSource": "free-exercise-db:Arnold_Dumbbell_Press",
+  "alternates": [
+   "db-shoulder-press",
+   "half-kneel-db-press",
+   "smith-ohp"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Shoulders"
+ },
+ {
+  "id": "db-lateral-raise",
+  "name": "Dumbbell Lateral Raise",
+  "equipment": [
+   "light dumbbells"
+  ],
+  "category": "push",
+  "muscles": [
+   "side delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Light hex or vinyl DBs",
+  "unilateral": false,
+  "image": [
+   "img/db-lateral-raise-0.webp",
+   "img/db-lateral-raise-1.webp"
+  ],
+  "formCues": [
+   "Lead with elbows, not hands",
+   "Slight bend in elbows, locked angle",
+   "Raise to shoulder height, no higher",
+   "Thumbs level or slightly down, pinkies don't flip up",
+   "No swinging, three seconds down",
+   "Shoulders down away from ears"
+  ],
+  "imageSource": "free-exercise-db:Side_Lateral_Raise",
+  "alternates": [
+   "cable-lateral-raise",
+   "db-front-raise",
+   "db-upright-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Shoulders"
+ },
+ {
+  "id": "cable-fly",
+  "name": "Cable Chest Fly",
+  "equipment": [
+   "cables",
+   "D-handles"
+  ],
+  "category": "push",
+  "muscles": [
+   "chest"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Pulleys high, sweep hands down and together",
+  "unilateral": false,
+  "image": [
+   "img/cable-fly-0.webp",
+   "img/cable-fly-1.webp"
+  ],
+  "formCues": [
+   "Soft elbows, keep the bend fixed",
+   "Sweep hands down and together like hugging a tree",
+   "Stagger stance, slight forward lean",
+   "Squeeze chest for a second at the bottom",
+   "Let arms open only to a chest stretch, not past the shoulder"
+  ],
+  "imageSource": "free-exercise-db:Cable_Crossover",
+  "alternates": [
+   "db-bench",
+   "cable-low-high-fly",
+   "db-fly"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "cable-low-high-fly",
+  "name": "Low-to-High Cable Fly",
+  "equipment": [
+   "cables",
+   "D-handles"
+  ],
+  "category": "push",
+  "muscles": [
+   "upper chest"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/cable-low-high-fly-0.webp",
+   "img/cable-low-high-fly-1.webp"
+  ],
+  "formCues": [
+   "Pulleys low, sweep up to eye level",
+   "Keep elbows softly bent the whole time",
+   "Palms up, squeeze upper chest at the top",
+   "Ribs down, don't lean back",
+   "Slow return, feel the stretch"
+  ],
+  "imageSource": "free-exercise-db:Low_Cable_Crossover",
+  "alternates": [
+   "db-incline-fly",
+   "cable-fly",
+   "db-incline-press"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "cable-tricep-pushdown",
+  "name": "Rope Tricep Pushdown",
+  "equipment": [
+   "cables",
+   "tricep rope"
+  ],
+  "category": "push",
+  "muscles": [
+   "triceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/cable-tricep-pushdown-0.webp",
+   "img/cable-tricep-pushdown-1.webp"
+  ],
+  "formCues": [
+   "Pin elbows to your sides",
+   "Spread the rope apart at the bottom",
+   "Lock out fully and squeeze triceps",
+   "Only forearms move, shoulders stay still",
+   "Slight forward lean, chest up"
+  ],
+  "imageSource": "free-exercise-db:Triceps_Pushdown_-_Rope_Attachment",
+  "alternates": [
+   "cable-overhead-tricep",
+   "dips"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Triceps"
+ },
+ {
+  "id": "cable-overhead-tricep",
+  "name": "Overhead Rope Tricep Extension",
+  "equipment": [
+   "cables",
+   "tricep rope"
+  ],
+  "category": "push",
+  "muscles": [
+   "triceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/cable-overhead-tricep-0.webp",
+   "img/cable-overhead-tricep-1.webp"
+  ],
+  "formCues": [
+   "Face away, rope behind head, elbows by ears",
+   "Elbows point forward, don't flare",
+   "Extend fully overhead, then slow stretch back",
+   "Brace core, stagger your stance",
+   "Keep upper arms still, only the elbow bends"
+  ],
+  "imageSource": "free-exercise-db:Cable_Rope_Overhead_Triceps_Extension",
+  "alternates": [
+   "cable-tricep-pushdown",
+   "dips"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Triceps"
+ },
+ {
+  "id": "dips",
+  "name": "Dips",
+  "equipment": [
+   "dip handles"
+  ],
+  "category": "push",
+  "muscles": [
+   "chest",
+   "triceps"
+  ],
+  "work": 35,
+  "rest": 60,
+  "cue": "Band/assist with feet if needed",
+  "unilateral": false,
+  "image": [
+   "img/dips-0.webp",
+   "img/dips-1.webp"
+  ],
+  "formCues": [
+   "Shoulders down, away from ears",
+   "Lean slightly forward for chest, upright for triceps",
+   "Lower until upper arms are parallel, no deeper",
+   "Lock out without shrugging",
+   "Keep elbows tracking back, not flaring out",
+   "Control the descent, no dropping"
+  ],
+  "imageSource": "free-exercise-db:Dips_-_Chest_Version",
+  "alternates": [
+   "cable-tricep-pushdown",
+   "db-bench",
+   "cable-overhead-tricep"
+  ],
+  "reps": [
+   5,
+   8
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Triceps"
+ },
+ {
+  "id": "pushup",
+  "name": "Push-up",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "push",
+  "muscles": [
+   "chest",
+   "triceps",
+   "core"
+  ],
+  "work": 40,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/pushup-0.webp",
+   "img/pushup-1.webp"
+  ],
+  "formCues": [
+   "Hands under shoulders, fingers spread",
+   "Body in one straight line, glutes tight",
+   "Elbows about 45 degrees from your body",
+   "Chest to a fist's height off the floor",
+   "Push the floor away at the top, upper back rounds slightly"
+  ],
+  "imageSource": "free-exercise-db:Pushups",
+  "alternates": [
+   "bosu-pushup",
+   "db-bench",
+   "cable-fly"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "bosu-pushup",
+  "name": "BOSU Push-up",
+  "equipment": [
+   "BOSU"
+  ],
+  "category": "push",
+  "muscles": [
+   "chest",
+   "core"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Flat side up",
+  "unilateral": false,
+  "image": [
+   "img/bosu-pushup-0.webp",
+   "img/bosu-pushup-1.webp"
+  ],
+  "formCues": [
+   "Grip the edges of the flat side firmly",
+   "Keep the platform level, no tipping",
+   "Body straight from head to heels",
+   "Lower chest toward the platform with control",
+   "Brace core to stop the wobble"
+  ],
+  "imageSource": "generated",
+  "alternates": [
+   "pushup",
+   "db-bench",
+   "cable-fly"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "cable-lateral-raise",
+  "name": "Single-Arm Cable Lateral Raise",
+  "equipment": [
+   "cables",
+   "D-handles"
+  ],
+  "category": "push",
+  "muscles": [
+   "side delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Each side alternating",
+  "unilateral": true,
+  "image": [
+   "img/cable-lateral-raise-0.webp",
+   "img/cable-lateral-raise-1.webp"
+  ],
+  "formCues": [
+   "Cable crosses in front of your body",
+   "Lead with the elbow, slight bend",
+   "Raise to shoulder height, pause",
+   "Don't lean or shrug",
+   "Slow three-second lowering"
+  ],
+  "imageSource": "generated",
+  "alternates": [
+   "db-lateral-raise",
+   "cable-front-raise",
+   "db-upright-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Shoulders"
+ },
+ {
+  "id": "db-fly",
+  "name": "Flat Dumbbell Fly",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "chest"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Soft elbows, stop at chest level",
+  "unilateral": false,
+  "image": [
+   "img/db-fly-0.webp",
+   "img/db-fly-1.webp"
+  ],
+  "formCues": [
+   "Slight bend in the elbows, locked in place",
+   "Lower in a wide arc only to chest level",
+   "Neutral grip (palms facing) to spare the shoulders",
+   "Squeeze the chest to bring the bells together",
+   "Shoulder blades pinned to the bench",
+   "Slow on the way down, no bouncing at the bottom"
+  ],
+  "imageSource": "free-exercise-db:Dumbbell_Flyes",
+  "alternates": [
+   "cable-fly",
+   "db-incline-fly",
+   "db-bench"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "db-incline-fly",
+  "name": "Incline Dumbbell Fly",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "upper chest"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Bench at 30\u00b0",
+  "unilateral": false,
+  "image": [
+   "img/db-incline-fly-0.webp",
+   "img/db-incline-fly-1.webp"
+  ],
+  "formCues": [
+   "Bench at about 30 degrees",
+   "Soft elbows, hug a big tree",
+   "Stop when upper arms are level with the bench",
+   "Keep shoulder blades back and down",
+   "Lead with the elbows, not the hands",
+   "Light weight, feel the stretch, no pain"
+  ],
+  "imageSource": "free-exercise-db:Incline_Dumbbell_Flyes",
+  "alternates": [
+   "cable-low-high-fly",
+   "cable-fly",
+   "db-incline-press"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Chest"
+ },
+ {
+  "id": "db-front-raise",
+  "name": "Dumbbell Front Raise",
+  "equipment": [
+   "light dumbbells"
+  ],
+  "category": "push",
+  "muscles": [
+   "front delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Thumbs up (neutral grip)",
+  "unilateral": false,
+  "image": [
+   "img/db-front-raise-0.webp",
+   "img/db-front-raise-1.webp"
+  ],
+  "formCues": [
+   "Thumbs up, neutral grip",
+   "Raise to shoulder height, no higher",
+   "Ribs down, no leaning back",
+   "Slight bend in the elbows",
+   "Lower for a slow count of three",
+   "Shoulders away from your ears"
+  ],
+  "imageSource": "free-exercise-db:Front_Dumbbell_Raise",
+  "alternates": [
+   "cable-front-raise",
+   "kb-front-raise",
+   "db-lateral-raise"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Shoulders"
+ },
+ {
+  "id": "cable-front-raise",
+  "name": "Cable Front Raise",
+  "equipment": [
+   "cables",
+   "D-handles"
+  ],
+  "category": "push",
+  "muscles": [
+   "front delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Low pulley, face away",
+  "unilateral": false,
+  "image": [
+   "img/cable-front-raise-0.webp",
+   "img/cable-front-raise-1.webp"
+  ],
+  "formCues": [
+   "Stand tall facing away from the low pulley",
+   "Lift to eye level, arm nearly straight",
+   "No swinging, glutes squeezed",
+   "Control the cable back down",
+   "Keep the shoulder blade set",
+   "Breathe out on the lift"
+  ],
+  "imageSource": "free-exercise-db:Front_Cable_Raise",
+  "alternates": [
+   "db-front-raise",
+   "kb-front-raise",
+   "cable-lateral-raise"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Shoulders"
+ },
+ {
+  "id": "kb-front-raise",
+  "name": "Kettlebell (or Plate) Front Raise",
+  "equipment": [
+   "kettlebell"
+  ],
+  "category": "push",
+  "muscles": [
+   "front delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Hold the horns; 25 lb KB or a plate",
+  "unilateral": false,
+  "image": [
+   "img/kb-front-raise-0.webp",
+   "img/kb-front-raise-1.webp"
+  ],
+  "formCues": [
+   "Hold the bell by the horns, bottom down",
+   "Raise to chest or shoulder height",
+   "Brace abs, don't lean back",
+   "Soft knees, stable stance",
+   "Lower slowly, no momentum",
+   "Shoulders stay down"
+  ],
+  "imageSource": "free-exercise-db:Front_Plate_Raise",
+  "alternates": [
+   "db-front-raise",
+   "cable-front-raise"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "kb": {
+   "mode": "single",
+   "start": 25
+  },
+  "group": "Shoulders"
+ },
+ {
+  "id": "half-kneel-db-press",
+  "name": "Half-Kneeling Single-Arm DB Press",
+  "equipment": [
+   "dumbbells",
+   "mat"
+  ],
+  "category": "push",
+  "muscles": [
+   "shoulders",
+   "core"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Switch sides halfway",
+  "unilateral": true,
+  "image": [
+   "img/half-kneel-db-press-0.webp",
+   "img/half-kneel-db-press-1.webp"
+  ],
+  "formCues": [
+   "Down knee under hip, front knee at 90 degrees",
+   "Squeeze the glute of the down leg",
+   "Neutral grip, press up beside the ear",
+   "Ribs down, no side lean",
+   "Lower to the shoulder under control",
+   "Switch sides at halfway"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=d3CRIDSCOhw",
+  "demoTitle": "Half Kneeling Single Arm DB Shoulder Press (Exercise Library)",
+  "demoChannel": "Horton Barbell",
+  "alternates": [
+   "db-shoulder-press",
+   "cable-front-raise",
+   "db-arnold-press"
+  ],
+  "reps": [
+   10,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Shoulders"
+ },
+ {
+  "id": "lat-pulldown",
+  "name": "Lat Pulldown",
+  "equipment": [
+   "cables",
+   "lat bar",
+   "pulldown seat"
+  ],
+  "category": "pull",
+  "muscles": [
+   "lats",
+   "biceps"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "Knees under pads",
+  "unilateral": false,
+  "image": [
+   "img/lat-pulldown-0.webp",
+   "img/lat-pulldown-1.webp"
+  ],
+  "formCues": [
+   "Grip just outside shoulders, thighs locked under pads",
+   "Pull elbows down to your back pockets",
+   "Bar to upper chest, chest up to meet it",
+   "Slight lean back, no swinging",
+   "Full stretch at the top, shoulders rise last",
+   "Think elbows, not hands"
+  ],
+  "imageSource": "free-exercise-db:Wide-Grip_Lat_Pulldown",
+  "alternates": [
+   "band-pullup",
+   "cable-straight-arm-pd",
+   "seated-cable-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Back"
+ },
+ {
+  "id": "pullup",
+  "name": "Pull-up",
+  "equipment": [
+   "pull-up bar"
+  ],
+  "category": "pull",
+  "muscles": [
+   "lats",
+   "biceps"
+  ],
+  "work": 35,
+  "rest": 75,
+  "cue": "Start with 3\u20135 reps, quality over quantity",
+  "unilateral": false,
+  "image": [
+   "img/pullup-0.webp",
+   "img/pullup-1.webp"
+  ],
+  "formCues": [
+   "Start with 3 to 5 reps, quality over quantity",
+   "Start from a dead hang, shoulders engaged",
+   "Pull elbows down toward your hips",
+   "Chin over the bar, chest toward it",
+   "Squeeze glutes, legs together, no kipping",
+   "Lower all the way under control"
+  ],
+  "imageSource": "free-exercise-db:Pullups",
+  "alternates": [
+   "band-pullup",
+   "negative-pullup",
+   "lat-pulldown"
+  ],
+  "reps": [
+   5,
+   8
+  ],
+  "startReps": 3,
+  "tempo": "3-1-1-0",
+  "group": "Back"
+ },
+ {
+  "id": "chinup",
+  "name": "Chin-up",
+  "equipment": [
+   "pull-up bar"
+  ],
+  "category": "pull",
+  "muscles": [
+   "lats",
+   "biceps"
+  ],
+  "work": 35,
+  "rest": 75,
+  "cue": "Start with 3\u20135 reps, quality over quantity",
+  "unilateral": false,
+  "image": [
+   "img/chinup-0.webp",
+   "img/chinup-1.webp"
+  ],
+  "formCues": [
+   "Start with 3 to 5 reps, quality over quantity",
+   "Palms facing you, shoulder-width",
+   "Lead with your chest toward the bar",
+   "Elbows drive down and slightly in",
+   "No swinging, legs still",
+   "Full lockout at the bottom each rep"
+  ],
+  "imageSource": "free-exercise-db:Chin-Up",
+  "alternates": [
+   "band-pullup",
+   "negative-pullup",
+   "lat-pulldown"
+  ],
+  "reps": [
+   5,
+   8
+  ],
+  "startReps": 3,
+  "tempo": "3-1-1-0",
+  "group": "Back"
+ },
+ {
+  "id": "seated-cable-row",
+  "name": "Seated Cable Row",
+  "equipment": [
+   "cables",
+   "V-handle"
+  ],
+  "category": "pull",
+  "muscles": [
+   "mid back",
+   "lats"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "Low pulley",
+  "unilateral": false,
+  "image": [
+   "img/seated-cable-row-0.webp",
+   "img/seated-cable-row-1.webp"
+  ],
+  "formCues": [
+   "Sit tall, knees slightly bent",
+   "Pull handle to your lower ribs",
+   "Squeeze shoulder blades together, pause",
+   "Don't lean back past vertical",
+   "Let shoulders reach forward on the return, spine stays neutral"
+  ],
+  "imageSource": "free-exercise-db:Seated_Cable_Rows",
+  "alternates": [
+   "db-chest-supported-row",
+   "db-row",
+   "smith-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Back"
+ },
+ {
+  "id": "cable-face-pull",
+  "name": "Face Pull",
+  "equipment": [
+   "cables",
+   "tricep rope"
+  ],
+  "category": "pull",
+  "muscles": [
+   "rear delts",
+   "upper back"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Pulley at eye level",
+  "unilateral": false,
+  "image": [
+   "img/cable-face-pull-0.webp",
+   "img/cable-face-pull-1.webp"
+  ],
+  "formCues": [
+   "Rope at eye level, thumbs toward you",
+   "Pull to your face, hands split by ears",
+   "Elbows high, at or above shoulders",
+   "Finish like a double biceps pose",
+   "Slow return, keep tension"
+  ],
+  "imageSource": "free-exercise-db:Face_Pull",
+  "demoUrl": "https://www.youtube.com/watch?v=ljgqer1ZpXg",
+  "demoTitle": "STOP F*cking Up Face Pulls (PROPER FORM!)",
+  "demoChannel": "ATHLEAN-X\u2122",
+  "alternates": [
+   "cable-rear-delt-fly",
+   "db-rear-delt-fly",
+   "db-bent-reverse-fly"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Rear delts"
+ },
+ {
+  "id": "cable-straight-arm-pd",
+  "name": "Straight-Arm Pulldown",
+  "equipment": [
+   "cables",
+   "straight bar"
+  ],
+  "category": "pull",
+  "muscles": [
+   "lats"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/cable-straight-arm-pd-0.webp",
+   "img/cable-straight-arm-pd-1.webp"
+  ],
+  "formCues": [
+   "Arms nearly straight, slight elbow bend",
+   "Hinge forward slightly, chest proud",
+   "Sweep the bar down to your thighs",
+   "Squeeze lats at the bottom",
+   "Don't bend elbows to cheat"
+  ],
+  "imageSource": "free-exercise-db:Straight-Arm_Pulldown",
+  "alternates": [
+   "lat-pulldown",
+   "band-pullup"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Back"
+ },
+ {
+  "id": "smith-row",
+  "name": "Smith Bent-Over Row",
+  "equipment": [
+   "smith"
+  ],
+  "category": "pull",
+  "muscles": [
+   "mid back",
+   "lats"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/smith-row-0.webp",
+   "img/smith-row-1.webp"
+  ],
+  "formCues": [
+   "Hinge to about 45 degrees, flat back",
+   "Pull bar to belly button",
+   "Elbows back, squeeze shoulder blades",
+   "Keep hips still, no standing up",
+   "Lower until arms are straight, keep the hinge"
+  ],
+  "imageSource": "free-exercise-db:Smith_Machine_Bent_Over_Row",
+  "alternates": [
+   "seated-cable-row",
+   "db-chest-supported-row",
+   "db-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Back"
+ },
+ {
+  "id": "smith-inverted-row",
+  "name": "Smith Inverted Row",
+  "equipment": [
+   "smith"
+  ],
+  "category": "pull",
+  "muscles": [
+   "upper back",
+   "biceps"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Bar at hip height",
+  "unilateral": false,
+  "image": [
+   "img/smith-inverted-row-0.webp",
+   "img/smith-inverted-row-1.webp"
+  ],
+  "formCues": [
+   "Body straight, heels on floor",
+   "Pull chest to the bar",
+   "Squeeze glutes so hips don't sag",
+   "Shoulder blades together at the top",
+   "Lower slowly to straight arms"
+  ],
+  "imageSource": "free-exercise-db:Inverted_Row",
+  "demoUrl": "https://www.youtube.com/watch?v=KOaCM1HMwU0",
+  "demoTitle": "Inverted Row",
+  "demoChannel": "Renaissance Periodization",
+  "alternates": [
+   "seated-cable-row",
+   "db-chest-supported-row",
+   "trx-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Back"
+ },
+ {
+  "id": "db-row",
+  "name": "One-Arm Dumbbell Row",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "pull",
+  "muscles": [
+   "lats",
+   "mid back"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Switch sides halfway",
+  "unilateral": true,
+  "image": [
+   "img/db-row-0.webp",
+   "img/db-row-1.webp"
+  ],
+  "formCues": [
+   "Hand and knee on bench, flat back",
+   "Pull dumbbell toward your hip, not your chest",
+   "Elbow close to body",
+   "Don't rotate the torso to lift",
+   "Full stretch at the bottom"
+  ],
+  "imageSource": "free-exercise-db:One-Arm_Dumbbell_Row",
+  "alternates": [
+   "seated-cable-row",
+   "db-chest-supported-row",
+   "smith-row"
+  ],
+  "reps": [
+   10,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Back"
+ },
+ {
+  "id": "db-chest-supported-row",
+  "name": "Chest-Supported Incline DB Row",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "pull",
+  "muscles": [
+   "upper back",
+   "rear delts"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-chest-supported-row-0.webp",
+   "img/db-chest-supported-row-1.webp"
+  ],
+  "formCues": [
+   "Chest on the incline, toes on the floor",
+   "Let arms hang straight down to start",
+   "Row elbows back, squeeze blades",
+   "Chest stays on the pad",
+   "Pause one second at the top"
+  ],
+  "imageSource": "free-exercise-db:Dumbbell_Incline_Row",
+  "alternates": [
+   "seated-cable-row",
+   "db-row",
+   "smith-inverted-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Back"
+ },
+ {
+  "id": "trx-row",
+  "name": "TRX Row",
+  "equipment": [
+   "TRX"
+  ],
+  "category": "pull",
+  "muscles": [
+   "upper back",
+   "biceps"
+  ],
+  "work": 40,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/trx-row-0.webp",
+   "img/trx-row-1.webp"
+  ],
+  "formCues": [
+   "Walk feet forward to increase difficulty",
+   "Body straight like a moving plank",
+   "Pull handles to your ribs, palms in",
+   "Squeeze shoulder blades at the top",
+   "Lower under control, don't drop"
+  ],
+  "imageSource": "free-exercise-db:Suspended_Row",
+  "demoUrl": "https://www.youtube.com/watch?v=7d8SbPUdHR0",
+  "demoTitle": "TRX Mid Row",
+  "demoChannel": "TRXtraining",
+  "alternates": [
+   "seated-cable-row",
+   "smith-inverted-row",
+   "db-chest-supported-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Back"
+ },
+ {
+  "id": "db-rear-delt-fly",
+  "name": "Rear Delt Fly",
+  "equipment": [
+   "light dumbbells",
+   "bench"
+  ],
+  "category": "pull",
+  "muscles": [
+   "rear delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-rear-delt-fly-0.webp",
+   "img/db-rear-delt-fly-1.webp"
+  ],
+  "formCues": [
+   "Chest on an incline bench or hinge flat-backed",
+   "Slight elbow bend, fixed",
+   "Open arms out wide, lead with pinkies",
+   "Keep shoulder blades still, move from the shoulder",
+   "Light weight, slow tempo"
+  ],
+  "imageSource": "free-exercise-db:Reverse_Flyes",
+  "alternates": [
+   "cable-rear-delt-fly",
+   "cable-face-pull",
+   "db-bent-reverse-fly"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Rear delts"
+ },
+ {
+  "id": "db-curl",
+  "name": "Dumbbell Biceps Curl",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "pull",
+  "muscles": [
+   "biceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-curl-0.webp",
+   "img/db-curl-1.webp"
+  ],
+  "formCues": [
+   "Elbows pinned at your sides",
+   "Turn palms up as you curl",
+   "Squeeze at the top, don't swing",
+   "Lower slowly, three seconds",
+   "Full extension at the bottom"
+  ],
+  "imageSource": "free-exercise-db:Dumbbell_Bicep_Curl",
+  "alternates": [
+   "db-hammer-curl",
+   "cable-curl",
+   "chinup"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Biceps"
+ },
+ {
+  "id": "db-hammer-curl",
+  "name": "Hammer Curl",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "pull",
+  "muscles": [
+   "biceps",
+   "forearms"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-hammer-curl-0.webp",
+   "img/db-hammer-curl-1.webp"
+  ],
+  "formCues": [
+   "Palms face each other the whole time",
+   "Elbows stay by your ribs",
+   "Curl to shoulder height, squeeze",
+   "No torso swing",
+   "Slow negative"
+  ],
+  "imageSource": "free-exercise-db:Hammer_Curls",
+  "alternates": [
+   "db-curl",
+   "cable-curl"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Biceps"
+ },
+ {
+  "id": "cable-curl",
+  "name": "Straight-Bar Cable Curl",
+  "equipment": [
+   "cables",
+   "straight bar"
+  ],
+  "category": "pull",
+  "muscles": [
+   "biceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/cable-curl-0.webp",
+   "img/cable-curl-1.webp"
+  ],
+  "formCues": [
+   "Stand close to the pulley, elbows fixed",
+   "Curl the bar to your upper chest",
+   "Squeeze biceps at the top",
+   "Keep wrists straight",
+   "Constant tension, no rest at the bottom"
+  ],
+  "imageSource": "free-exercise-db:Standing_Biceps_Cable_Curl",
+  "alternates": [
+   "db-hammer-curl",
+   "db-curl"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Biceps"
+ },
+ {
+  "id": "kb-high-pull",
+  "name": "Kettlebell High Pull",
+  "equipment": [
+   "kettlebell"
+  ],
+  "category": "pull",
+  "muscles": [
+   "upper back",
+   "traps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/kb-high-pull-0.webp",
+   "img/kb-high-pull-1.webp"
+  ],
+  "formCues": [
+   "Hinge and hike, power from the hips",
+   "Pull elbows high and wide, above the hands",
+   "Bell finishes at chest height",
+   "Keep shoulders down at the top",
+   "Let it fall back under control into the hinge"
+  ],
+  "imageSource": "free-exercise-db:Kettlebell_Sumo_High_Pull",
+  "demoUrl": "https://www.youtube.com/watch?v=qkUkFjF4dQQ",
+  "demoTitle": "How to Do Two-Hand Kettlebell High Pull",
+  "demoChannel": "Breaking Muscle",
+  "alternates": [
+   "cable-face-pull",
+   "db-shrug",
+   "db-upright-row"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "kb": {
+   "mode": "single",
+   "start": 35
+  },
+  "group": "Traps"
+ },
+ {
+  "id": "cable-rear-delt-fly",
+  "name": "Cable Rear Delt Fly",
+  "equipment": [
+   "cables",
+   "D-handles"
+  ],
+  "category": "pull",
+  "muscles": [
+   "rear delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Pulleys at shoulder height, cables crossed",
+  "unilateral": false,
+  "image": [
+   "img/cable-rear-delt-fly-0.webp",
+   "img/cable-rear-delt-fly-1.webp"
+  ],
+  "formCues": [
+   "Pulleys at shoulder height, cables crossed",
+   "Slight fixed bend in the elbows",
+   "Sweep arms out wide, move only at the shoulder",
+   "No shrugging",
+   "Pause with arms in a T",
+   "Return slowly, keep tension"
+  ],
+  "imageSource": "free-exercise-db:Cable_Rear_Delt_Fly",
+  "demoUrl": "https://www.youtube.com/watch?v=lq9K3lnHWKk",
+  "demoTitle": "How To PROPERLY Perform a Standing Cable Rear Delt Fly",
+  "demoChannel": "Colossus Fitness",
+  "alternates": [
+   "cable-face-pull",
+   "db-rear-delt-fly",
+   "db-bent-reverse-fly"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Rear delts"
+ },
+ {
+  "id": "db-bent-reverse-fly",
+  "name": "Bent-Over DB Reverse Fly",
+  "equipment": [
+   "light dumbbells"
+  ],
+  "category": "pull",
+  "muscles": [
+   "rear delts",
+   "upper back"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Chest on thighs if your back complains",
+  "unilateral": false,
+  "image": [
+   "img/db-bent-reverse-fly-0.webp",
+   "img/db-bent-reverse-fly-1.webp"
+  ],
+  "formCues": [
+   "Hinge to about 45 degrees, flat back",
+   "Chest on thighs or a bench if your back hurts",
+   "Thumbs leading, soft elbows",
+   "Lift to the sides, squeeze rear delts",
+   "Neck long, eyes to the floor",
+   "Light bells, slow lowering"
+  ],
+  "imageSource": "free-exercise-db:Seated_Bent-Over_Rear_Delt_Raise",
+  "alternates": [
+   "db-rear-delt-fly",
+   "cable-rear-delt-fly",
+   "cable-face-pull"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Rear delts"
+ },
+ {
+  "id": "band-pullup",
+  "name": "Band-Assisted Pull-up",
+  "equipment": [
+   "pull-up bar",
+   "resistance band"
+  ],
+  "category": "pull",
+  "muscles": [
+   "lats",
+   "biceps"
+  ],
+  "work": 35,
+  "rest": 75,
+  "cue": "Aim for 6\u201310 reps, quality over quantity",
+  "unilateral": false,
+  "image": [
+   "img/band-pullup-0.webp",
+   "img/band-pullup-1.webp"
+  ],
+  "formCues": [
+   "Aim for 6 to 10 good reps, quality over quantity",
+   "Loop the band securely; knee or foot in the loop",
+   "Shoulders down before you pull",
+   "Elbows to your ribs, chest to the bar",
+   "Lower all the way, slow",
+   "Use a lighter band as you get stronger"
+  ],
+  "imageSource": "free-exercise-db:Band_Assisted_Pull-Up",
+  "demoUrl": "https://www.youtube.com/watch?v=OjNVsAIAzuU",
+  "demoTitle": "Band Assisted Pullup | 2 Ways to Set Them Up",
+  "demoChannel": "All Strength Training",
+  "alternates": [
+   "lat-pulldown",
+   "negative-pullup",
+   "chinup"
+  ],
+  "reps": [
+   6,
+   10
+  ],
+  "tempo": "3-1-1-0",
+  "group": "Back"
+ },
+ {
+  "id": "negative-pullup",
+  "name": "Negative Pull-up",
+  "equipment": [
+   "pull-up bar",
+   "step"
+  ],
+  "category": "pull",
+  "muscles": [
+   "lats",
+   "biceps"
+  ],
+  "work": 35,
+  "rest": 75,
+  "cue": "Start with 3\u20135 slow lowers, quality over quantity",
+  "unilateral": false,
+  "image": [
+   "img/negative-pullup-0.webp",
+   "img/negative-pullup-1.webp"
+  ],
+  "formCues": [
+   "Start with 3 to 5 slow lowers, quality over quantity",
+   "Step up so the chin starts above the bar",
+   "Take 3 to 5 seconds to lower",
+   "Shoulders packed, core tight",
+   "Finish in a full hang, then reset on the step",
+   "Stop the set if you start dropping fast"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=gbPURTSxQLY",
+  "demoTitle": "How To Do a Negative Pull-Up | Exercise Guide",
+  "demoChannel": "Bodybuilding.com",
+  "alternates": [
+   "band-pullup",
+   "lat-pulldown",
+   "chinup"
+  ],
+  "reps": [
+   5,
+   8
+  ],
+  "startReps": 3,
+  "tempo": "5-1-2-1",
+  "group": "Back"
+ },
+ {
+  "id": "db-shrug",
+  "name": "Dumbbell Shrug",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "pull",
+  "muscles": [
+   "traps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Straight up, no rolling",
+  "unilateral": false,
+  "image": [
+   "img/db-shrug-0.webp",
+   "img/db-shrug-1.webp"
+  ],
+  "formCues": [
+   "Arms long, shrug straight up toward the ears",
+   "Pause one second at the top",
+   "No rolling the shoulders",
+   "Chin neutral, don't jut the head",
+   "Lower all the way for a stretch",
+   "Grip lightly if your elbow complains"
+  ],
+  "imageSource": "free-exercise-db:Dumbbell_Shrug",
+  "alternates": [
+   "cable-shrug",
+   "smith-shrug"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-2-1-0",
+  "group": "Traps"
+ },
+ {
+  "id": "smith-shrug",
+  "name": "Smith Machine Shrug",
+  "equipment": [
+   "smith"
+  ],
+  "category": "pull",
+  "muscles": [
+   "traps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Bar behind or in front of thighs",
+  "unilateral": false,
+  "image": [
+   "img/smith-shrug-0.webp",
+   "img/smith-shrug-1.webp"
+  ],
+  "formCues": [
+   "Bar close to the thighs",
+   "Lift shoulders straight up",
+   "Hold the squeeze at the top",
+   "Arms stay straight, no curling",
+   "Slow lowering",
+   "Stand tall, abs braced"
+  ],
+  "imageSource": "free-exercise-db:Smith_Machine_Behind_the_Back_Shrug",
+  "alternates": [
+   "db-shrug",
+   "cable-shrug"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-2-1-0",
+  "group": "Traps"
+ },
+ {
+  "id": "cable-shrug",
+  "name": "Cable Shrug",
+  "equipment": [
+   "cables",
+   "straight bar"
+  ],
+  "category": "pull",
+  "muscles": [
+   "traps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Low pulley, stand close",
+  "unilateral": false,
+  "image": [
+   "img/cable-shrug-0.webp",
+   "img/cable-shrug-1.webp"
+  ],
+  "formCues": [
+   "Stand close to the low pulley",
+   "Arms straight, shoulders up to the ears",
+   "Pause at the top",
+   "Control the stack down",
+   "No backward lean",
+   "Neck relaxed"
+  ],
+  "imageSource": "free-exercise-db:Cable_Shrugs",
+  "alternates": [
+   "db-shrug",
+   "smith-shrug"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-2-1-0",
+  "group": "Traps"
+ },
+ {
+  "id": "db-upright-row",
+  "name": "Dumbbell Upright Row",
+  "equipment": [
+   "light dumbbells"
+  ],
+  "category": "pull",
+  "muscles": [
+   "traps",
+   "side delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Elbows to shoulder height, no higher",
+  "unilateral": false,
+  "image": [
+   "img/db-upright-row-0.webp",
+   "img/db-upright-row-1.webp"
+  ],
+  "formCues": [
+   "Light bells, slightly wider than shoulder grip",
+   "Lead with the elbows",
+   "Stop with elbows at shoulder height",
+   "Bells stay close to the body",
+   "Stop if you feel a pinch",
+   "Lower slowly"
+  ],
+  "imageSource": "free-exercise-db:Standing_Dumbbell_Upright_Row",
+  "demoUrl": "https://www.youtube.com/watch?v=Rd5AsxOGqss",
+  "demoTitle": "How To Do Dumbbell Upright Rows",
+  "demoChannel": "PureGym",
+  "alternates": [
+   "cable-lateral-raise",
+   "db-lateral-raise",
+   "kb-high-pull"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Traps"
+ },
+ {
+  "id": "smith-squat",
+  "name": "Smith Machine Squat",
+  "equipment": [
+   "smith",
+   "squat pad"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 45,
+  "rest": 75,
+  "cue": "Feet slightly forward",
+  "unilateral": false,
+  "image": [
+   "img/smith-squat-0.webp",
+   "img/smith-squat-1.webp"
+  ],
+  "formCues": [
+   "Feet slightly in front of the bar",
+   "Brace big before each rep",
+   "Knees track over toes",
+   "Sit to at least parallel with a neutral spine",
+   "Drive through the whole foot",
+   "Keep chest up, bar on upper back"
+  ],
+  "imageSource": "free-exercise-db:Smith_Machine_Squat",
+  "alternates": [
+   "db-goblet-squat",
+   "smith-split-squat",
+   "db-bulgarian"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "smith-split-squat",
+  "name": "Smith Split Squat",
+  "equipment": [
+   "smith",
+   "squat pad"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Alternate legs per set",
+  "unilateral": true,
+  "image": [
+   "img/smith-split-squat-0.webp",
+   "img/smith-split-squat-1.webp"
+  ],
+  "formCues": [
+   "Long stance, front foot slightly forward",
+   "Drop straight down, back knee toward floor",
+   "Front knee tracks over toes",
+   "Torso upright, weight in front heel",
+   "Push up through the front foot"
+  ],
+  "imageSource": "free-exercise-db:Smith_Single-Leg_Split_Squat",
+  "alternates": [
+   "db-reverse-lunge",
+   "db-bulgarian",
+   "db-step-up"
+  ],
+  "reps": [
+   10,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "smith-rdl",
+  "name": "Smith Romanian Deadlift",
+  "equipment": [
+   "smith"
+  ],
+  "category": "legs",
+  "muscles": [
+   "hamstrings",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/smith-rdl-0.webp",
+   "img/smith-rdl-1.webp"
+  ],
+  "formCues": [
+   "Soft knees, push hips straight back",
+   "Bar stays close to legs",
+   "Flat back, chest proud",
+   "Lower to mid-shin or until hamstrings stretch",
+   "Squeeze glutes to stand, don't lean back"
+  ],
+  "imageSource": "free-exercise-db:Smith_Machine_Stiff-Legged_Deadlift",
+  "alternates": [
+   "db-hip-thrust",
+   "db-rdl",
+   "cable-pull-through"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "smith-calf-raise",
+  "name": "Smith Calf Raise",
+  "equipment": [
+   "smith",
+   "step"
+  ],
+  "category": "legs",
+  "muscles": [
+   "calves"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Toes on step",
+  "unilateral": false,
+  "image": [
+   "img/smith-calf-raise-0.webp",
+   "img/smith-calf-raise-1.webp"
+  ],
+  "formCues": [
+   "Balls of feet on the step, heels hanging",
+   "Full stretch at the bottom, pause",
+   "Rise as high as possible",
+   "Knees straight but not locked",
+   "Slow and controlled, no bouncing"
+  ],
+  "imageSource": "free-exercise-db:Smith_Machine_Calf_Raise",
+  "alternates": [
+   "step-runs",
+   "db-step-up"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-1-1",
+  "group": "Legs"
+ },
+ {
+  "id": "db-goblet-squat",
+  "name": "Goblet Squat",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-goblet-squat-0.webp",
+   "img/db-goblet-squat-1.webp"
+  ],
+  "formCues": [
+   "Hold the dumbbell vertically at your chest",
+   "Elbows inside the knees at the bottom",
+   "Chest tall, sit between your heels",
+   "Knees out over toes",
+   "Drive up through the whole foot"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=CkFzgR55gho",
+  "demoTitle": "How to Perform Dumbbell Goblet Squat",
+  "demoChannel": "Physique Development",
+  "alternates": [
+   "smith-squat",
+   "kb-goblet-squat",
+   "db-reverse-lunge"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "db-rdl",
+  "name": "Dumbbell Romanian Deadlift",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "legs",
+  "muscles": [
+   "hamstrings",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-rdl-0.webp",
+   "img/db-rdl-1.webp"
+  ],
+  "formCues": [
+   "Dumbbells slide down your thighs",
+   "Hips back, soft knees",
+   "Flat back, neck neutral",
+   "Stop when the hamstrings are stretched",
+   "Squeeze glutes to stand tall"
+  ],
+  "imageSource": "free-exercise-db:Stiff-Legged_Dumbbell_Deadlift",
+  "demoUrl": "https://www.youtube.com/watch?v=hQgFixeXdZo",
+  "demoTitle": "Dumbbell Romanian (RDL) Deadlift |TECHNIQUE for Beginners",
+  "demoChannel": "Mike | J2FIT Strength & Conditioning",
+  "alternates": [
+   "db-hip-thrust",
+   "cable-pull-through",
+   "smith-rdl"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "db-bulgarian",
+  "name": "Bulgarian Split Squat",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Alternate legs per set",
+  "unilateral": true,
+  "image": [
+   "img/db-bulgarian-0.webp",
+   "img/db-bulgarian-1.webp"
+  ],
+  "formCues": [
+   "Back foot laces-down on the bench",
+   "Front foot far enough that the knee stays near the toes",
+   "Drop the back knee straight down",
+   "Slight forward lean for glutes, upright for quads",
+   "Drive through the front heel"
+  ],
+  "imageSource": "free-exercise-db:Split_Squat_with_Dumbbells",
+  "demoUrl": "https://www.youtube.com/watch?v=hPlKPjohFS0",
+  "demoTitle": "The PERFECT Bulgarian Split Squat (Avoid These Errors!)",
+  "demoChannel": "Squat University",
+  "alternates": [
+   "db-reverse-lunge",
+   "smith-split-squat",
+   "db-step-up"
+  ],
+  "reps": [
+   10,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "db-reverse-lunge",
+  "name": "Reverse Lunge",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-reverse-lunge-0.webp",
+   "img/db-reverse-lunge-1.webp"
+  ],
+  "formCues": [
+   "Step back long and soft",
+   "Back knee lowers just above the floor",
+   "Front shin near vertical",
+   "Stay tall, hips square",
+   "Push through the front foot to return"
+  ],
+  "imageSource": "free-exercise-db:Dumbbell_Rear_Lunge",
+  "alternates": [
+   "db-bulgarian",
+   "smith-split-squat",
+   "db-goblet-squat"
+  ],
+  "reps": [
+   10,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "db-step-up",
+  "name": "Dumbbell Step-up",
+  "equipment": [
+   "dumbbells",
+   "step"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Step at full height",
+  "unilateral": false,
+  "image": [
+   "img/db-step-up-0.webp",
+   "img/db-step-up-1.webp"
+  ],
+  "formCues": [
+   "Whole foot on the step",
+   "Drive through the top leg, minimal push from the bottom foot",
+   "Stand fully tall at the top",
+   "Lower slowly, don't drop",
+   "Keep knee tracking over toes"
+  ],
+  "imageSource": "free-exercise-db:Dumbbell_Step_Ups",
+  "alternates": [
+   "db-reverse-lunge",
+   "db-bulgarian",
+   "db-goblet-squat"
+  ],
+  "reps": [
+   10,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "kb-swing",
+  "name": "Kettlebell Swing",
+  "equipment": [
+   "kettlebell"
+  ],
+  "category": "legs",
+  "muscles": [
+   "glutes",
+   "hamstrings",
+   "conditioning"
+  ],
+  "work": 30,
+  "rest": 30,
+  "cue": "Hinge, snap hips",
+  "unilateral": false,
+  "image": [
+   "img/kb-swing-0.webp",
+   "img/kb-swing-1.webp"
+  ],
+  "formCues": [
+   "Hike the bell back between your thighs",
+   "Snap hips forward, it's a hinge not a squat",
+   "Arms are ropes, the hips do the work",
+   "Bell floats to chest height",
+   "Squeeze glutes and brace at the top",
+   "Let it fall; hinge late"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=t2K49ju5mTk",
+  "demoTitle": "Kettlebell Kings Presents - Hinge Based Kettlebell Swing || Detailed Explanation || Follow along",
+  "demoChannel": "Kettlebell Kings",
+  "alternates": [
+   "db-hip-thrust",
+   "cable-pull-through",
+   "db-rdl"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "kb": {
+   "mode": "single",
+   "start": 35
+  },
+  "group": "Legs"
+ },
+ {
+  "id": "kb-goblet-squat",
+  "name": "Kettlebell Goblet Squat",
+  "equipment": [
+   "kettlebell"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 40,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/kb-goblet-squat-0.webp",
+   "img/kb-goblet-squat-1.webp"
+  ],
+  "formCues": [
+   "Hold the bell by the horns at your chest",
+   "Elbows inside your knees at the bottom",
+   "Chest up, spine neutral",
+   "Knees push out",
+   "Stand up through the whole foot"
+  ],
+  "imageSource": "free-exercise-db:Goblet_Squat",
+  "alternates": [
+   "db-goblet-squat",
+   "smith-squat",
+   "db-reverse-lunge"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "kb": {
+   "mode": "single",
+   "start": 35
+  },
+  "group": "Legs"
+ },
+ {
+  "id": "cable-pull-through",
+  "name": "Cable Pull-Through",
+  "equipment": [
+   "cables",
+   "tricep rope"
+  ],
+  "category": "legs",
+  "muscles": [
+   "glutes",
+   "hamstrings"
+  ],
+  "work": 40,
+  "rest": 40,
+  "cue": "Low pulley",
+  "unilateral": false,
+  "image": [
+   "img/cable-pull-through-0.webp",
+   "img/cable-pull-through-1.webp"
+  ],
+  "formCues": [
+   "Face away, rope between your legs",
+   "Hips back, flat back",
+   "Arms stay straight, just hold the rope",
+   "Drive hips forward and squeeze glutes",
+   "Don't lean back at the top"
+  ],
+  "imageSource": "free-exercise-db:Pull_Through",
+  "demoUrl": "https://www.youtube.com/watch?v=pv8e6OSyETE",
+  "demoTitle": "Cable Pull Through",
+  "demoChannel": "Renaissance Periodization",
+  "alternates": [
+   "db-hip-thrust",
+   "kb-swing",
+   "db-rdl"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "cable-kickback",
+  "name": "Cable Glute Kickback",
+  "equipment": [
+   "cables",
+   "ankle strap"
+  ],
+  "category": "legs",
+  "muscles": [
+   "glutes"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Alternate legs per set",
+  "unilateral": true,
+  "image": [
+   "img/cable-kickback-0.webp",
+   "img/cable-kickback-1.webp"
+  ],
+  "formCues": [
+   "Hinge slightly, hold the frame",
+   "Kick back and slightly up, knee nearly straight",
+   "Squeeze the glute, pause",
+   "Don't arch your lower back",
+   "Slow return, keep tension"
+  ],
+  "imageSource": "free-exercise-db:One-Legged_Cable_Kickback",
+  "alternates": [
+   "sl-hip-thrust",
+   "db-hip-thrust",
+   "cable-hip-abduction"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "cable-hip-abduction",
+  "name": "Cable Hip Abduction",
+  "equipment": [
+   "cables",
+   "ankle strap"
+  ],
+  "category": "legs",
+  "muscles": [
+   "glute med"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/cable-hip-abduction-0.webp",
+   "img/cable-hip-abduction-1.webp"
+  ],
+  "formCues": [
+   "Strap on the outside leg, stand tall",
+   "Lift leg straight out to the side",
+   "Toes point forward, not up",
+   "Don't lean the torso away",
+   "Control it back in, two seconds"
+  ],
+  "imageSource": "generated",
+  "alternates": [
+   "cable-kickback",
+   "sl-hip-thrust"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "db-hip-thrust",
+  "name": "Dumbbell Hip Thrust",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "legs",
+  "muscles": [
+   "glutes",
+   "hamstrings"
+  ],
+  "work": 40,
+  "rest": 60,
+  "cue": "Shoulder blades on bench edge, DB on hips",
+  "unilateral": false,
+  "image": [
+   "img/db-hip-thrust-0.webp",
+   "img/db-hip-thrust-1.webp"
+  ],
+  "formCues": [
+   "Bench edge under the shoulder blades",
+   "Hold the DB on the hip crease",
+   "Drive through the heels",
+   "Ribs down, chin tucked",
+   "Squeeze glutes at the top, shins vertical",
+   "Lower under control, hips just off the floor"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=29OfN4ztW_g",
+  "demoTitle": "Dumbbell Hip Thrust (FULL TUTORIAL) - Glute Exercises for Beginners",
+  "demoChannel": "Mike | J2FIT Strength & Conditioning",
+  "alternates": [
+   "sl-hip-thrust",
+   "cable-pull-through",
+   "smith-rdl"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "sl-hip-thrust",
+  "name": "Single-Leg Hip Thrust",
+  "equipment": [
+   "bench"
+  ],
+  "category": "legs",
+  "muscles": [
+   "glutes",
+   "hamstrings"
+  ],
+  "work": 40,
+  "rest": 45,
+  "cue": "Alternate legs per set",
+  "unilateral": true,
+  "image": [
+   "img/sl-hip-thrust-0.webp",
+   "img/sl-hip-thrust-1.webp"
+  ],
+  "formCues": [
+   "Upper back on the bench, one foot planted",
+   "Keep the hips level",
+   "Push through the heel of the working leg",
+   "Ribs down, no lower-back arch",
+   "Pause and squeeze at the top",
+   "Switch legs next set"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=A3UDYfDdfxE",
+  "demoTitle": "How to Perform: Single Leg Hip Thrusts",
+  "demoChannel": "GoTherex | Strong for Life",
+  "alternates": [
+   "db-hip-thrust",
+   "ball-ham-curl",
+   "cable-kickback"
+  ],
+  "reps": [
+   10,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "ball-ham-curl",
+  "name": "Stability Ball Hamstring Curl",
+  "equipment": [
+   "stability ball"
+  ],
+  "category": "legs",
+  "muscles": [
+   "hamstrings",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 30,
+  "cue": "Replaces machine leg curl",
+  "unilateral": false,
+  "image": [
+   "img/ball-ham-curl-0.webp",
+   "img/ball-ham-curl-1.webp"
+  ],
+  "formCues": [
+   "Heels on the ball, lift hips",
+   "Keep hips high as you curl",
+   "Pull the ball in with your heels",
+   "Squeeze glutes throughout",
+   "Roll out slowly"
+  ],
+  "imageSource": "free-exercise-db:Ball_Leg_Curl",
+  "demoUrl": "https://www.youtube.com/watch?v=XkESHgkTdFw",
+  "demoTitle": "Swiss Ball Hamstring Curl | Nuffield Health",
+  "demoChannel": "Nuffield Health",
+  "alternates": [
+   "sl-hip-thrust",
+   "trx-ham-curl",
+   "db-rdl"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "trx-ham-curl",
+  "name": "TRX Hamstring Curl",
+  "equipment": [
+   "TRX"
+  ],
+  "category": "legs",
+  "muscles": [
+   "hamstrings"
+  ],
+  "work": 40,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/trx-ham-curl-0.webp",
+   "img/trx-ham-curl-1.webp"
+  ],
+  "formCues": [
+   "Heels in the foot cradles, lie on your back",
+   "Lift hips into a bridge first",
+   "Curl heels toward your glutes",
+   "Keep hips up the whole time",
+   "Extend slowly, don't drop the hips"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=RkEHyudfkyM",
+  "demoTitle": "TRX Hamstring Curl",
+  "demoChannel": "TRXtraining",
+  "alternates": [
+   "ball-ham-curl",
+   "db-sl-rdl",
+   "smith-rdl"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "db-sl-rdl",
+  "name": "Single-Leg Dumbbell RDL",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "legs",
+  "muscles": [
+   "hamstrings",
+   "glutes",
+   "balance"
+  ],
+  "work": 40,
+  "rest": 40,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/db-sl-rdl-0.webp",
+   "img/db-sl-rdl-1.webp"
+  ],
+  "formCues": [
+   "Hinge on one leg, soft knee",
+   "Back leg and torso move as one line",
+   "Keep hips square, toes of the back foot down",
+   "Reach the dumbbell toward the floor",
+   "Squeeze the standing glute to return"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=84hrdsHgDuQ",
+  "demoTitle": "How To Do A Single Leg Deadlift | The Right Way | Well+Good",
+  "demoChannel": "Well+Good",
+  "alternates": [
+   "sl-hip-thrust",
+   "db-rdl",
+   "cable-pull-through"
+  ],
+  "reps": [
+   10,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "trx-pistol",
+  "name": "TRX Assisted Pistol Squat",
+  "equipment": [
+   "TRX"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "balance"
+  ],
+  "work": 35,
+  "rest": 40,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/trx-pistol-0.webp",
+   "img/trx-pistol-1.webp"
+  ],
+  "formCues": [
+   "Hold handles with arms extended",
+   "Sit back and down on one leg",
+   "Free leg reaches forward",
+   "Use straps for balance, minimal pull",
+   "Drive up through the heel"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=HqCHXb91yMQ",
+  "demoTitle": "How To TRX Assisted Pistol Squat",
+  "demoChannel": "Third Space London",
+  "alternates": [
+   "db-reverse-lunge",
+   "db-bulgarian",
+   "db-step-up"
+  ],
+  "reps": [
+   5,
+   8
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Legs"
+ },
+ {
+  "id": "wall-sit-ball",
+  "name": "Stability Ball Wall Squat",
+  "equipment": [
+   "stability ball"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads"
+  ],
+  "work": 40,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/wall-sit-ball-0.webp",
+   "img/wall-sit-ball-1.webp"
+  ],
+  "formCues": [
+   "Ball at lower back against the wall",
+   "Feet forward, hip-width",
+   "Sit until thighs are parallel",
+   "Knees track over toes",
+   "Push up through heels"
+  ],
+  "imageSource": "generated",
+  "alternates": [
+   "db-goblet-squat",
+   "kb-goblet-squat",
+   "smith-squat"
+  ],
+  "timed": true,
+  "group": "Legs"
+ },
+ {
+  "id": "plank",
+  "name": "Plank",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "core"
+  ],
+  "work": 40,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/plank-0.webp",
+   "img/plank-1.webp"
+  ],
+  "formCues": [
+   "Elbows under shoulders",
+   "Squeeze glutes and quads",
+   "Tuck ribs down, slight posterior pelvic tilt",
+   "Head neutral, eyes to floor",
+   "Breathe steadily, don't hold your breath"
+  ],
+  "imageSource": "free-exercise-db:Plank",
+  "alternates": [
+   "dead-bug",
+   "bosu-plank",
+   "pallof-press"
+  ],
+  "timed": true,
+  "group": "Core"
+ },
+ {
+  "id": "side-plank",
+  "name": "Side Plank",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "obliques"
+  ],
+  "work": 30,
+  "rest": 15,
+  "cue": "Switch side halfway",
+  "unilateral": true,
+  "image": [
+   "img/side-plank-0.webp",
+   "img/side-plank-1.webp"
+  ],
+  "formCues": [
+   "Elbow under shoulder",
+   "Hips high, body in a straight line",
+   "Stack feet or stagger for balance",
+   "Don't roll forward or back",
+   "Push the floor away"
+  ],
+  "imageSource": "free-exercise-db:Side_Bridge",
+  "alternates": [
+   "pallof-press",
+   "kb-suitcase-carry"
+  ],
+  "timed": true,
+  "group": "Core"
+ },
+ {
+  "id": "dead-bug",
+  "name": "Dead Bug",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "core"
+  ],
+  "work": 40,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/dead-bug-0.webp",
+   "img/dead-bug-1.webp"
+  ],
+  "formCues": [
+   "Press your lower back into the floor",
+   "Extend opposite arm and leg slowly",
+   "Exhale as you extend",
+   "Stop before your back lifts",
+   "Return and switch, no rushing"
+  ],
+  "imageSource": "free-exercise-db:Dead_Bug",
+  "demoUrl": "https://www.youtube.com/watch?v=GbSC02oU3To",
+  "demoTitle": "How to Do a Dead Bug: A Guide from Physical Therapists",
+  "demoChannel": "Hinge Health",
+  "alternates": [
+   "plank",
+   "reverse-crunch",
+   "pilates-ring-squeeze"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "pallof-press",
+  "name": "Pallof Press",
+  "equipment": [
+   "cables",
+   "D-handles"
+  ],
+  "category": "core",
+  "muscles": [
+   "anti-rotation core"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "Switch side halfway",
+  "unilateral": true,
+  "image": [
+   "img/pallof-press-0.webp",
+   "img/pallof-press-1.webp"
+  ],
+  "formCues": [
+   "Stand side-on to the cable, feet shoulder-width",
+   "Press straight out from your chest",
+   "Resist the rotation, hips square",
+   "Pause two seconds with arms extended",
+   "Brace like taking a punch"
+  ],
+  "imageSource": "free-exercise-db:Pallof_Press",
+  "demoUrl": "https://www.youtube.com/watch?v=5_8d8vHgZvU",
+  "demoTitle": "Pallof Press - How To Do Pallof Presses + Variations",
+  "demoChannel": "Girls Gone Strong | Women's Health & Fitness",
+  "alternates": [
+   "side-plank",
+   "kb-suitcase-carry",
+   "cable-woodchop"
+  ],
+  "reps": [
+   8,
+   12
+  ],
+  "tempo": "2-2-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "cable-woodchop",
+  "name": "Cable Woodchop",
+  "equipment": [
+   "cables",
+   "D-handles"
+  ],
+  "category": "core",
+  "muscles": [
+   "obliques"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "Switch side halfway",
+  "unilateral": true,
+  "image": [
+   "img/cable-woodchop-0.webp",
+   "img/cable-woodchop-1.webp"
+  ],
+  "formCues": [
+   "Rotate through the hips and torso together",
+   "Arms stay fairly straight",
+   "Pivot the back foot",
+   "Control the return, don't let the stack pull you",
+   "Finish tall and braced"
+  ],
+  "imageSource": "free-exercise-db:Standing_Cable_Wood_Chop",
+  "demoUrl": "https://www.youtube.com/watch?v=ZDt4MCvjMAA",
+  "demoTitle": "HOW TO: Cable Wood Chop",
+  "demoChannel": "Goodlife Health Clubs",
+  "alternates": [
+   "pallof-press",
+   "side-plank",
+   "russian-twist"
+  ],
+  "reps": [
+   8,
+   12
+  ],
+  "tempo": "2-0-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "cable-crunch",
+  "name": "Kneeling Rope Crunch",
+  "equipment": [
+   "cables",
+   "tricep rope"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/cable-crunch-0.webp",
+   "img/cable-crunch-1.webp"
+  ],
+  "formCues": [
+   "Kneel, rope beside your head",
+   "Crunch ribs toward hips, round your spine",
+   "Hips stay still, don't sit back",
+   "Exhale hard at the bottom",
+   "Slow return to a stretch"
+  ],
+  "imageSource": "free-exercise-db:Cable_Crunch",
+  "alternates": [
+   "ball-crunch",
+   "weighted-crunch",
+   "decline-situp"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "ball-rollout",
+  "name": "Stability Ball Rollout",
+  "equipment": [
+   "stability ball"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/ball-rollout-0.webp",
+   "img/ball-rollout-1.webp"
+  ],
+  "formCues": [
+   "Forearms on the ball, knees on the mat",
+   "Roll out until you feel abs stretch",
+   "Keep hips in line, no sagging",
+   "Tuck pelvis, ribs down",
+   "Pull back with abs, not hips"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=cDYihJOIW4g",
+  "demoTitle": "Stability Ball Rollout",
+  "demoChannel": "Mike Boyle Strength & Conditioning",
+  "alternates": [
+   "dead-bug",
+   "ball-pike",
+   "trx-fallout"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "ball-pike",
+  "name": "Stability Ball Pike / Jackknife",
+  "equipment": [
+   "stability ball"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs",
+   "shoulders"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/ball-pike-0.webp",
+   "img/ball-pike-1.webp"
+  ],
+  "formCues": [
+   "Shins or toes on the ball, hands under shoulders",
+   "Lift hips high toward the ceiling",
+   "Keep legs straight",
+   "Shoulders stay over the hands",
+   "Roll back slowly to a plank"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=eFcjeQ9tuEQ",
+  "demoTitle": "Stability Ball Pike Tutorial // School of Calisthenics",
+  "demoChannel": "School of Calisthenics",
+  "alternates": [
+   "reverse-crunch",
+   "ball-rollout",
+   "hanging-knee-raise"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "trx-fallout",
+  "name": "TRX Fallout",
+  "equipment": [
+   "TRX"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/trx-fallout-0.webp",
+   "img/trx-fallout-1.webp"
+  ],
+  "formCues": [
+   "Arms straight, lean into the straps",
+   "Lower forward like a plank",
+   "Hollow body, ribs down",
+   "Go only as far as you can hold position",
+   "Pull back with core and lats"
+  ],
+  "imageSource": "free-exercise-db:Suspended_Fallout",
+  "demoUrl": "https://www.youtube.com/watch?v=zglL3qPlqq0",
+  "demoTitle": "TRX Fallout",
+  "demoChannel": "Feldman Physical Therapy and Performance",
+  "alternates": [
+   "ball-rollout",
+   "dead-bug",
+   "plank"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "3-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "hanging-knee-raise",
+  "name": "Hanging Knee Raise",
+  "equipment": [
+   "pull-up bar"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs",
+   "hip flexors"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/hanging-knee-raise-0.webp",
+   "img/hanging-knee-raise-1.webp"
+  ],
+  "formCues": [
+   "Start from a still dead hang",
+   "Curl pelvis up, not just lift knees",
+   "Knees to chest height or higher",
+   "Lower slowly, no swinging",
+   "Shoulders engaged, don't hang loose"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=RD_A-Z15ER4",
+  "demoTitle": "Hanging Knee Raise",
+  "demoChannel": "Renaissance Periodization",
+  "alternates": [
+   "reverse-crunch",
+   "ball-pike",
+   "cable-crunch"
+  ],
+  "reps": [
+   5,
+   8
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "bosu-plank",
+  "name": "BOSU Mountain Hold Plank",
+  "equipment": [
+   "BOSU"
+  ],
+  "category": "core",
+  "muscles": [
+   "core"
+  ],
+  "work": 40,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/bosu-plank-0.webp",
+   "img/bosu-plank-1.webp"
+  ],
+  "formCues": [
+   "Forearms or hands on the dome",
+   "Body straight, glutes tight",
+   "Breathe, keep the BOSU steady",
+   "Push the dome away, shoulders strong",
+   "Eyes down, neck long"
+  ],
+  "imageSource": "generated",
+  "alternates": [
+   "plank",
+   "dead-bug"
+  ],
+  "timed": true,
+  "group": "Core"
+ },
+ {
+  "id": "russian-twist",
+  "name": "Med Ball Russian Twist",
+  "equipment": [
+   "medicine ball"
+  ],
+  "category": "core",
+  "muscles": [
+   "obliques"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/russian-twist-0.webp",
+   "img/russian-twist-1.webp"
+  ],
+  "formCues": [
+   "Lean back, chest tall",
+   "Rotate from the ribs, not just arms",
+   "Touch the ball beside each hip",
+   "Feet down for stability or up for challenge",
+   "Keep spine straight, don't round"
+  ],
+  "imageSource": "generated",
+  "alternates": [
+   "pallof-press",
+   "bicycle-crunch",
+   "cable-woodchop"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-0-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "pilates-ring-squeeze",
+  "name": "Pilates Ring Crunch Squeeze",
+  "equipment": [
+   "pilates ring",
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs",
+   "adductors"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/pilates-ring-squeeze-0.webp",
+   "img/pilates-ring-squeeze-1.webp"
+  ],
+  "formCues": [
+   "Ring between hands or knees, squeeze steadily",
+   "Curl head and shoulders up",
+   "Exhale on the crunch",
+   "Keep your lower back on the mat",
+   "Lower slowly, keep squeeze"
+  ],
+  "imageSource": "generated",
+  "alternates": [
+   "crunch",
+   "dead-bug",
+   "ball-crunch"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "kb-suitcase-carry",
+  "name": "Kettlebell Suitcase Carry",
+  "equipment": [
+   "kettlebell"
+  ],
+  "category": "core",
+  "muscles": [
+   "obliques",
+   "grip"
+  ],
+  "work": 40,
+  "rest": 20,
+  "cue": "Switch hands halfway",
+  "unilateral": true,
+  "image": [
+   "img/kb-suitcase-carry-0.webp",
+   "img/kb-suitcase-carry-1.webp"
+  ],
+  "formCues": [
+   "Stand tall, don't lean toward the bell",
+   "Shoulders level",
+   "Brace like a plank on your feet",
+   "Short, steady steps",
+   "Grip hard, wrist straight"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=3RKKnZhhelE",
+  "demoTitle": "How to Perform A Suitcase Carry",
+  "demoChannel": "Champion Physical Therapy and Performance",
+  "alternates": [
+   "side-plank",
+   "pallof-press"
+  ],
+  "timed": true,
+  "kb": {
+   "mode": "single",
+   "start": 35
+  },
+  "group": "Core"
+ },
+ {
+  "id": "situp",
+  "name": "Sit-up",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs",
+   "hip flexors"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/situp-0.webp",
+   "img/situp-1.webp"
+  ],
+  "formCues": [
+   "Feet anchored or flat, knees bent",
+   "Arms across the chest, not pulling the neck",
+   "Curl up one vertebra at a time",
+   "Exhale as you rise",
+   "Lower slowly",
+   "Stop if the lower back complains"
+  ],
+  "imageSource": "free-exercise-db:Sit-Up",
+  "alternates": [
+   "ball-crunch",
+   "crunch",
+   "decline-situp"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "crunch",
+  "name": "Crunch",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/crunch-0.webp",
+   "img/crunch-1.webp"
+  ],
+  "formCues": [
+   "Lower back stays on the floor",
+   "Hands lightly by the head, elbows wide",
+   "Lift shoulder blades only",
+   "Exhale and squeeze at the top",
+   "Lower slowly",
+   "Chin off the chest"
+  ],
+  "imageSource": "free-exercise-db:Crunches",
+  "alternates": [
+   "ball-crunch",
+   "pilates-ring-squeeze",
+   "situp"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "decline-situp",
+  "name": "Decline Bench Sit-up",
+  "equipment": [
+   "bench"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs",
+   "hip flexors"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "Feet hooked at the high end",
+  "unilateral": false,
+  "image": [
+   "img/decline-situp-0.webp",
+   "img/decline-situp-1.webp"
+  ],
+  "formCues": [
+   "Feet hooked at the high end",
+   "Arms across the chest",
+   "Curl up, don't yank",
+   "Control the lowering",
+   "Breathe out on the way up",
+   "Use a gentler angle if your back complains"
+  ],
+  "imageSource": "free-exercise-db:Decline_Crunch",
+  "alternates": [
+   "cable-crunch",
+   "weighted-crunch",
+   "situp"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "ball-crunch",
+  "name": "Stability Ball Crunch",
+  "equipment": [
+   "stability ball"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "Ball under lower back",
+  "unilateral": false,
+  "image": [
+   "img/ball-crunch-0.webp",
+   "img/ball-crunch-1.webp"
+  ],
+  "formCues": [
+   "Ball under the lower back",
+   "Feet wide for balance",
+   "Stretch back over the ball",
+   "Curl up by the ribs to the hips",
+   "Hands lightly by the head",
+   "Slow and controlled"
+  ],
+  "imageSource": "free-exercise-db:Exercise_Ball_Crunch",
+  "alternates": [
+   "crunch",
+   "cable-crunch",
+   "situp"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "bicycle-crunch",
+  "name": "Bicycle Crunch",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs",
+   "obliques"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/bicycle-crunch-0.webp",
+   "img/bicycle-crunch-1.webp"
+  ],
+  "formCues": [
+   "Lower back pressed into the mat",
+   "Elbow toward the opposite knee",
+   "Extend the other leg long",
+   "Rotate from the ribs, not the neck",
+   "Slow, no rushing",
+   "Exhale on each twist"
+  ],
+  "imageSource": "free-exercise-db:Air_Bike",
+  "demoUrl": "https://www.youtube.com/watch?v=wpRI3xBhJmo",
+  "demoTitle": "How To Do A Bicycle Crunch | The Right Way | Well+Good",
+  "demoChannel": "Well+Good",
+  "alternates": [
+   "dead-bug",
+   "crunch",
+   "russian-twist"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-0-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "reverse-crunch",
+  "name": "Reverse Crunch",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "lower abs"
+  ],
+  "work": 35,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/reverse-crunch-0.webp",
+   "img/reverse-crunch-1.webp"
+  ],
+  "formCues": [
+   "Knees bent at 90 degrees",
+   "Curl the hips off the floor",
+   "Use the abs, not momentum",
+   "Lower slowly",
+   "Arms flat by your sides",
+   "Don't swing the legs"
+  ],
+  "imageSource": "free-exercise-db:Reverse_Crunch",
+  "alternates": [
+   "dead-bug",
+   "hanging-knee-raise",
+   "ball-pike"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "weighted-crunch",
+  "name": "Weighted Crunch",
+  "equipment": [
+   "light dumbbells",
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs"
+  ],
+  "work": 35,
+  "rest": 30,
+  "cue": "DB or plate on chest",
+  "unilateral": false,
+  "image": [
+   "img/weighted-crunch-0.webp",
+   "img/weighted-crunch-1.webp"
+  ],
+  "formCues": [
+   "Hold a light DB or plate on the chest",
+   "Lower back stays down",
+   "Curl the ribs toward the hips",
+   "Pause at the top",
+   "Lower slowly",
+   "Neck relaxed"
+  ],
+  "imageSource": "free-exercise-db:Weighted_Crunches",
+  "alternates": [
+   "cable-crunch",
+   "ball-crunch",
+   "decline-situp"
+  ],
+  "reps": [
+   12,
+   15
+  ],
+  "tempo": "2-1-2-0",
+  "group": "Core"
+ },
+ {
+  "id": "row-sprint",
+  "name": "Rower Sprint",
+  "equipment": [
+   "rower"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "full body",
+   "conditioning"
+  ],
+  "work": 30,
+  "rest": 30,
+  "cue": "Damper 4\u20136, hard effort",
+  "unilateral": false,
+  "image": [
+   "img/row-sprint-0.webp",
+   "img/row-sprint-1.webp"
+  ],
+  "formCues": [
+   "Legs, then back, then arms",
+   "Arms, back, then legs on recovery",
+   "Drive hard with the legs",
+   "Handle stays level, not pulled to the chin",
+   "Keep shoulders relaxed, grip light"
+  ],
+  "imageSource": "free-exercise-db:Rowing_Stationary",
+  "demoUrl": "https://www.youtube.com/watch?v=4zWu1yuJ0_g",
+  "demoTitle": "Correct Rowing Machine Technique, Improve Your Rowing  | Concept2",
+  "demoChannel": "concept2usa",
+  "alternates": [
+   "mountain-climber",
+   "kb-thruster",
+   "burpee"
+  ],
+  "timed": true,
+  "group": "Conditioning"
+ },
+ {
+  "id": "row-steady",
+  "name": "Rower Steady Pace",
+  "equipment": [
+   "rower"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "conditioning"
+  ],
+  "work": 240,
+  "rest": 30,
+  "cue": "Conversational pace, ~22 spm",
+  "unilateral": false,
+  "image": [
+   "img/row-steady-0.webp",
+   "img/row-steady-1.webp"
+  ],
+  "formCues": [
+   "Legs, back, arms; then arms, back, legs",
+   "Long, smooth strokes",
+   "Ratio: one count drive, two counts recovery",
+   "Sit tall, slight lean back at finish",
+   "Relax shoulders and grip"
+  ],
+  "imageSource": "free-exercise-db:Rowing_Stationary",
+  "demoUrl": "https://www.youtube.com/watch?v=4zWu1yuJ0_g",
+  "demoTitle": "Correct Rowing Machine Technique, Improve Your Rowing  | Concept2",
+  "demoChannel": "concept2usa",
+  "alternates": [
+   "step-runs",
+   "mountain-climber",
+   "cat-cow"
+  ],
+  "timed": true,
+  "group": "Conditioning"
+ },
+ {
+  "id": "step-runs",
+  "name": "Step Platform Quick Steps",
+  "equipment": [
+   "step"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "conditioning",
+   "calves"
+  ],
+  "work": 30,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/step-runs-0.webp",
+   "img/step-runs-1.webp"
+  ],
+  "formCues": [
+   "Quick, light feet on the step",
+   "Stay on the balls of your feet",
+   "Pump the arms",
+   "Upright posture, no hunching",
+   "Whole foot lands on the step"
+  ],
+  "imageSource": "generated",
+  "alternates": [
+   "mountain-climber",
+   "burpee",
+   "row-sprint"
+  ],
+  "timed": true,
+  "group": "Conditioning"
+ },
+ {
+  "id": "burpee",
+  "name": "Burpee",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "full body"
+  ],
+  "work": 30,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/burpee-0.webp",
+   "img/burpee-1.webp"
+  ],
+  "formCues": [
+   "Hands planted, jump feet back to a plank",
+   "Chest to floor or push-up",
+   "Snap feet back under hips",
+   "Jump up with arms overhead",
+   "Land softly, knees bent"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=qLBImHhCXSw",
+  "demoTitle": "How To Do A Burpee | The Right Way | Well+Good",
+  "demoChannel": "Well+Good",
+  "alternates": [
+   "mountain-climber",
+   "kb-thruster",
+   "row-sprint"
+  ],
+  "timed": true,
+  "group": "Conditioning"
+ },
+ {
+  "id": "kb-thruster",
+  "name": "Kettlebell Thruster",
+  "equipment": [
+   "kettlebell"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "full body"
+  ],
+  "work": 30,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/kb-thruster-0.webp",
+   "img/kb-thruster-1.webp"
+  ],
+  "formCues": [
+   "Bells in rack position, elbows down",
+   "Squat deep, chest up",
+   "Drive up and press in one motion",
+   "Lock out overhead, biceps by ears",
+   "Lower to rack as you squat again"
+  ],
+  "imageSource": "free-exercise-db:Kettlebell_Thruster",
+  "demoUrl": "https://www.youtube.com/watch?v=Mr-l0Kvowi4",
+  "demoTitle": "Kettlebell 48 - the dreaded kettlebell thruster - Total body training in the minimum amount of time",
+  "demoChannel": "Mark Wildman",
+  "alternates": [
+   "mountain-climber",
+   "burpee",
+   "db-renegade-row"
+  ],
+  "timed": true,
+  "kb": {
+   "mode": "double",
+   "start": 25
+  },
+  "group": "Conditioning"
+ },
+ {
+  "id": "db-renegade-row",
+  "name": "Renegade Row",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "core",
+   "back"
+  ],
+  "work": 30,
+  "rest": 30,
+  "cue": "Hex DBs (flat sides)",
+  "unilateral": false,
+  "image": [
+   "img/db-renegade-row-0.webp",
+   "img/db-renegade-row-1.webp"
+  ],
+  "formCues": [
+   "Wide feet for stability",
+   "Hands on the hex DBs, plank position",
+   "Row one DB, keep hips square",
+   "Don't rotate to lift",
+   "Set it down quietly, then switch"
+  ],
+  "imageSource": "free-exercise-db:Alternating_Renegade_Row",
+  "demoUrl": "https://www.youtube.com/watch?v=4qEIChzM4ZA",
+  "demoTitle": "Renegade Row Guide | Form Tips, Muscles Worked, and Variations",
+  "demoChannel": "BarBend",
+  "alternates": [
+   "mountain-climber",
+   "burpee",
+   "kb-thruster"
+  ],
+  "reps": [
+   8,
+   12
+  ],
+  "tempo": "2-0-2-0",
+  "group": "Conditioning"
+ },
+ {
+  "id": "mountain-climber",
+  "name": "Mountain Climber",
+  "equipment": [
+   "mat"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "core",
+   "conditioning"
+  ],
+  "work": 30,
+  "rest": 20,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/mountain-climber-0.webp",
+   "img/mountain-climber-1.webp"
+  ],
+  "formCues": [
+   "Hands under shoulders",
+   "Drive knees toward chest",
+   "Keep hips low, level",
+   "Quick feet, steady breathing",
+   "Don't bounce your hips up"
+  ],
+  "imageSource": "free-exercise-db:Mountain_Climbers",
+  "alternates": [
+   "step-runs",
+   "db-renegade-row",
+   "burpee"
+  ],
+  "timed": true,
+  "group": "Conditioning"
+ },
+ {
+  "id": "trx-jump-squat",
+  "name": "TRX Jump Squat",
+  "equipment": [
+   "TRX"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "legs",
+   "conditioning"
+  ],
+  "work": 30,
+  "rest": 30,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/trx-jump-squat-0.webp",
+   "img/trx-jump-squat-1.webp"
+  ],
+  "formCues": [
+   "Hold handles, arms extended",
+   "Squat with hips back",
+   "Jump using legs, straps only for balance",
+   "Land softly, knees over toes",
+   "Reset quickly"
+  ],
+  "imageSource": "generated",
+  "demoUrl": "https://www.youtube.com/watch?v=japaBJ9xtS4",
+  "demoTitle": "Monday Move - TRX Squat Jump",
+  "demoChannel": "TRXtraining",
+  "alternates": [
+   "kb-thruster",
+   "mountain-climber",
+   "step-runs"
+  ],
+  "timed": true,
+  "group": "Conditioning"
+ },
+ {
+  "id": "foam-roll-tspine",
+  "name": "Foam Roll Upper Back",
+  "equipment": [
+   "foam roller"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "thoracic spine"
+  ],
+  "work": 60,
+  "rest": 0,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/foam-roll-tspine-0.webp",
+   "img/foam-roll-tspine-1.webp"
+  ],
+  "formCues": [
+   "Roller across mid-back, hands behind head",
+   "Lift hips, roll slowly",
+   "Pause on tight spots",
+   "Extend back over the roller",
+   "Don't roll lower back"
+  ],
+  "imageSource": "free-exercise-db:Rhomboids-SMR",
+  "demoUrl": "https://www.youtube.com/watch?v=NS73eSohTbc",
+  "demoTitle": "Self Myofascial Release: Foam Rolling-  Thoracic Spine",
+  "demoChannel": "National Academy of Sports Medicine (NASM)",
+  "alternates": [
+   "cat-cow",
+   "ball-chest-stretch"
+  ],
+  "timed": true,
+  "group": "Mobility"
+ },
+ {
+  "id": "foam-roll-legs",
+  "name": "Foam Roll Quads/IT/Glutes",
+  "equipment": [
+   "foam roller"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "legs"
+  ],
+  "work": 90,
+  "rest": 0,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/foam-roll-legs-0.webp",
+   "img/foam-roll-legs-1.webp"
+  ],
+  "formCues": [
+   "Roll slowly, about an inch per second",
+   "Pause 20 to 30 seconds on tight spots",
+   "Breathe and relax into it",
+   "Don't roll directly over knees or joints",
+   "Cover quads, outer thigh, glutes"
+  ],
+  "imageSource": "free-exercise-db:Quadriceps-SMR",
+  "demoUrl": "https://www.youtube.com/watch?v=ERTVBjwgPS4",
+  "demoTitle": "Self Myofascial Release: Foam Rolling - Quadriceps",
+  "demoChannel": "National Academy of Sports Medicine (NASM)",
+  "alternates": [
+   "worlds-greatest",
+   "cat-cow"
+  ],
+  "timed": true,
+  "group": "Mobility"
+ },
+ {
+  "id": "worlds-greatest",
+  "name": "World's Greatest Stretch",
+  "equipment": [
+   "mat"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "hips",
+   "t-spine"
+  ],
+  "work": 60,
+  "rest": 0,
+  "cue": "Alternate sides",
+  "unilateral": true,
+  "image": [
+   "img/worlds-greatest-0.webp",
+   "img/worlds-greatest-1.webp"
+  ],
+  "formCues": [
+   "Step into a deep lunge",
+   "Elbow to instep, hips low",
+   "Rotate and reach to the ceiling",
+   "Follow your hand with your eyes",
+   "Back leg straight, heel up"
+  ],
+  "imageSource": "free-exercise-db:Worlds_Greatest_Stretch",
+  "demoUrl": "https://www.youtube.com/watch?v=-CiWQ2IvY34",
+  "demoTitle": "The World's Greatest Stretch (Mobility Exercise) by Squat University",
+  "demoChannel": "Squat University",
+  "alternates": [
+   "cat-cow",
+   "foam-roll-legs"
+  ],
+  "timed": true,
+  "group": "Mobility"
+ },
+ {
+  "id": "cat-cow",
+  "name": "Cat-Cow",
+  "equipment": [
+   "mat"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "spine"
+  ],
+  "work": 40,
+  "rest": 0,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/cat-cow-0.webp",
+   "img/cat-cow-1.webp"
+  ],
+  "formCues": [
+   "Hands under shoulders, knees under hips",
+   "Inhale, drop belly, lift chest",
+   "Exhale, round your back, chin to chest",
+   "Move slowly, one vertebra at a time",
+   "Breathe with each movement"
+  ],
+  "imageSource": "free-exercise-db:Cat_Stretch",
+  "demoUrl": "https://www.youtube.com/watch?v=1Y0YjXS9sKI",
+  "demoTitle": "How to Do a Cat Cow Stretch: A Guide from Physical Therapists",
+  "demoChannel": "Hinge Health",
+  "alternates": [
+   "foam-roll-tspine",
+   "worlds-greatest"
+  ],
+  "timed": true,
+  "group": "Mobility"
+ },
+ {
+  "id": "ball-chest-stretch",
+  "name": "Stability Ball Chest Opener",
+  "equipment": [
+   "stability ball"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "chest",
+   "shoulders"
+  ],
+  "work": 45,
+  "rest": 0,
+  "cue": "",
+  "unilateral": false,
+  "image": [
+   "img/ball-chest-stretch-0.webp",
+   "img/ball-chest-stretch-1.webp"
+  ],
+  "formCues": [
+   "Kneel, arm on the ball",
+   "Roll ball out, sink chest toward the floor",
+   "Feel the stretch across chest and shoulder",
+   "Breathe deep, relax",
+   "Switch sides halfway"
+  ],
+  "imageSource": "free-exercise-db:Chest_Stretch_on_Stability_Ball",
+  "alternates": [
+   "foam-roll-tspine",
+   "cat-cow"
+  ],
+  "timed": true,
+  "group": "Mobility"
+ }
+]
