@@ -5,7 +5,9 @@ A lightweight, offline-capable workout player (plain HTML/JS, no build step).
 **Live:** https://lyubostanev.github.io/workout-app/
 
 ## Features
-- 3× full-body weekly plan by default, timed work/rest player with "next up" preview
+- Default 3-day rotating split: **Push** (chest/upper chest, front & side delts, triceps) → **Pull** (back/lats, rear delts, traps, biceps) → **Legs & Core** (quads, hams, glutes, calves, glute med, abs/obliques); each ~45 min with warm-up, short conditioning finisher and mobility cool-down
+- Timed work/rest player with "next up" preview; home card shows the rotation and the next workout
+- Light theme (green primary, blue secondary)
 - Per-exercise rep ranges (default 12–15; harder bodyweight moves 5–8; holds/carries/planks timed)
 - Per-exercise tempo with audible + visual count (toggle in Settings)
 - Equipment toggles (TRX, rower) and kettlebell inventory–aware load suggestions

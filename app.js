@@ -5,7 +5,7 @@ const LS = {
   get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
 };
-// Default plan: 3 full-body days (A/B/C). TRX and rower are OFF by default (rower malfunctioning).
+// Default plan: 3-day rotating split Push -> Pull -> Legs & Core (whole body covered across the 3 days). TRX and rower are OFF by default (rower malfunctioning).
 // Kettlebells on hand: 2 x 25 lb + 1 x 35 lb (suggestions snap to these). Tempo counting on by default.
 const DEFAULTS = { daysPerWeek: 3, minutes: 45, level: 'intermediate', voice: true, beeps: true,
   excluded: [], avoided: [], warmup: true, cooldown: true, trx: false, rower: false, tempo: true, kettlebells: [25, 25, 35] };
@@ -21,9 +21,18 @@ let shuffleN = 0;
 // Each day = name + block patterns (categories per superset). Blocks repeat until time budget is filled.
 const SPLITS = {
   3: [
-    { name: 'Full Body A', focus: 'Squat · Push · Pull', blocks: [['legs','push'],['pull','legs'],['push','pull'],['core','conditioning']] },
-    { name: 'Full Body B', focus: 'Hinge · Pull · Press', blocks: [['legs','pull'],['push','legs'],['pull','core'],['conditioning','conditioning']] },
-    { name: 'Full Body C', focus: 'Single-leg · Upper · Core', blocks: [['legs','push'],['pull','legs'],['push','core'],['conditioning','core']] },
+    // Slot syntax 'category:muscle/muscle' -> prefers exercises whose PRIMARY muscle matches, then any listed muscle,
+    // then anything in the category (so a missing piece of equipment never empties a slot).
+    // Main blocks are filled in order (and repeat only if the time budget allows); the finisher is always last.
+    { name: 'Push', short: 'Push', focus: 'Chest & upper chest · Front/side delts · Triceps',
+      blocks: [['push:chest','push:side delts'],['push:upper chest','push:triceps'],['push:shoulders','push:chest'],['push:front delts','push:triceps']],
+      finisher: ['conditioning','conditioning'], cooldown: ['ball-chest-stretch','foam-roll-tspine'] },
+    { name: 'Pull', short: 'Pull', focus: 'Back & lats · Rear delts · Traps · Biceps',
+      blocks: [['pull:lats','pull:rear delts'],['pull:mid back','pull:biceps'],['pull:lats','pull:traps'],['pull:upper back/rear delts','pull:biceps']],
+      finisher: ['conditioning','conditioning'], cooldown: ['foam-roll-tspine','cat-cow'] },
+    { name: 'Legs & Core', focus: 'Quads · Hams · Glutes · Calves · Glute med · Abs/obliques',
+      blocks: [['legs:quads','core:abs'],['legs:hamstrings','legs:calves'],['legs:glutes','core:obliques'],['legs:glute med','core:lower abs/core/abs']],
+      finisher: ['conditioning','conditioning'], cooldown: ['foam-roll-legs','cat-cow'] },
   ],
   4: [
     { name: 'Upper A', focus: 'Chest · Back · Shoulders', blocks: [['push','pull'],['push','pull'],['push','pull'],['core','core']] },
@@ -109,37 +118,49 @@ function generate() {
   // Fixed warm-up/cool-down picks fall back to their first usable alternate if avoided or missing equipment.
   const fixed = id => { const ok = x => okPool.find(e => e.id === x && !used.has(x)); const e = ok(id) || (byId(id)?.alternates || []).map(ok).find(Boolean); if (e) used.add(e.id); return e; };
   const recent = new Set((history.slice(-2).flatMap(h => h.exerciseIds || [])));
-  const pick = (cat, preferHeavy) => {
+  const pick = (slot, preferHeavy) => {
+    const [cat, mus] = slot.split(':'); const want = mus ? mus.split('/') : [];
     let c = pool.filter(e => e.category === cat && !used.has(e.id) && e.id !== 'row-steady');
     if (!c.length) return null;
-    const score = e => R() + (recent.has(e.id) ? -0.5 : 0) + (preferHeavy && e.rest >= 60 ? 0.6 : 0);
+    const fit = e => !want.length ? 0 : want.includes((e.muscles || [])[0]) ? 3 : (e.muscles || []).some(m => want.includes(m)) ? 1.5 : 0;
+    const score = e => fit(e) + R() + (recent.has(e.id) ? -0.5 : 0) + (preferHeavy && e.rest >= 60 ? 0.6 : 0);
     c = c.map(e => [score(e), e]).sort((a, b) => b[0] - a[0]);
     for (const [, e0] of c) { const e = sub(e0); if (!e) continue; used.add(e0.id); used.add(e.id); return e; }
     return null;
   };
   const scale = e => withReps({ ...e, work: Math.round(e.work * lv.w / 5) * 5, rest: Math.round(e.rest * lv.r / 5) * 5 });
   const budget = settings.minutes * 60;
-  const out = { day: day.name, focus: day.focus, dayIndex: di, splitLen: split.length, blocks: [] };
+  const out = { day: day.name, focus: day.focus, dayIndex: di, splitLen: split.length, nextDay: split[(di + 1) % split.length].name, blocks: [] };
   let t = 0;
   if (settings.warmup) {
     const wu = [fixed('row-steady'), fixed('worlds-greatest')].filter(Boolean).map((e, k) => ({ ...e, work: k === 0 && e.work > 60 ? 180 : 60, rest: 10 }));
     if (wu.length) { out.blocks.push({ name: 'Warm-up', rounds: 1, items: wu, kind: 'warmup' }); t += wu.reduce((s, e) => s + e.work + e.rest, 0); }
   }
-  const cdItems = settings.cooldown ? ['foam-roll-legs', 'ball-chest-stretch'].map(fixed).filter(Boolean).map(e => ({ ...e, work: 60, rest: 5 })) : [];
+  const cdItems = settings.cooldown ? (day.cooldown || ['foam-roll-legs', 'ball-chest-stretch']).map(fixed).filter(Boolean).map(e => ({ ...e, work: 60, rest: 5 })) : [];
   const cdTime = cdItems.reduce((s, e) => s + e.work + e.rest, 0);
+  const blockTime = (items, rounds) => rounds * (items.reduce((s, e) => s + e.work, 0) + (items.length - 1) * 15 + Math.max(...items.map(e => e.rest)));
+  // Short conditioning finisher (2 rounds) reserved up front so main work fills the rest of the budget.
+  const finItems = day.finisher ? day.finisher.map(c => pick(c, false)).filter(Boolean).map(scale) : [];
+  const finRounds = 2, finT = finItems.length ? blockTime(finItems, finRounds) + 30 : 0;
+  // Fill main blocks using the real step timeline (warm-up + blocks + finisher + cool-down) so the session lands near the target.
+  const finBlock = finItems.length ? { name: 'Finisher', rounds: finRounds, items: finItems, kind: 'finisher' } : null;
+  const cdBlock = cdItems.length ? { name: 'Cool-down', rounds: 1, items: cdItems, kind: 'cooldown' } : null;
+  const total = blocks => buildSteps({ blocks: blocks.filter(Boolean) }).reduce((a, x) => a + x.dur, 0);
   let bi = 0;
   while (bi < 10) {
     const pat = day.blocks[bi % day.blocks.length];
     const items = pat.map((c, k) => pick(c, bi < 2 && k === 0)).filter(Boolean).map(scale);
     if (!items.length) break;
-    const isFinisher = pat.every(c => c === 'conditioning' || c === 'core');
-    const rounds = isFinisher ? Math.max(2, lv.rounds) : lv.rounds;
-    const bt = rounds * (items.reduce((s, e) => s + e.work, 0) + (items.length - 1) * 15 + Math.max(...items.map(e => e.rest)));
-    if (t + bt + cdTime + 10 > budget * 1.03 && bi >= 2) break;
-    out.blocks.push({ name: isFinisher ? 'Finisher' : 'Block ' + String.fromCharCode(65 + bi), rounds, items, kind: isFinisher ? 'finisher' : 'main' });
-    t += bt + 30; bi++;
+    const isFinisher = !day.finisher && pat.every(c => /^(conditioning|core)/.test(c));
+    let rounds = isFinisher ? Math.max(2, lv.rounds) : lv.rounds;
+    const blk = r => ({ name: isFinisher ? 'Finisher' : 'Block ' + String.fromCharCode(65 + bi), rounds: r, items, kind: isFinisher ? 'finisher' : 'main' });
+    // Take the block at full rounds if it fits; otherwise shorter (min 2 rounds); always keep at least 2 main blocks.
+    while (bi >= 2 && rounds >= 2 && total([...out.blocks, blk(rounds), finBlock, cdBlock]) > budget * 1.04) rounds--;
+    if (rounds < 2 && bi >= 2) { items.forEach(e => used.delete(e.id)); break; }
+    out.blocks.push(blk(Math.max(rounds, 2))); bi++;
   }
-  if (cdItems.length) { out.blocks.push({ name: 'Cool-down', rounds: 1, items: cdItems, kind: 'cooldown' }); t += cdTime; }
+  if (finBlock) out.blocks.push(finBlock);
+  if (cdBlock) out.blocks.push(cdBlock);
   out.estMin = Math.round(buildSteps(out).reduce((a, x) => a + x.dur, 0) / 60);
   out.key = [dateKey(new Date()), di, shuffleN, settings.daysPerWeek, settings.minutes, settings.level].join('|');
   applySwaps(out);
@@ -360,8 +381,8 @@ function render() {
     ${s.type === 'work' && s.ex.targetReps ? `<div class="tempo${settings.tempo && s.ex.tempo ? '' : ' plain'}" id="tempo"><span class="tph" id="tph"></span><span class="trep" id="trep">${s.ex.targetReps} reps${s.ex.tempo ? ' · tempo ' + s.ex.tempo : ''}</span></div>` : ''}
     ${(() => { const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie && ie.image ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}"><img id="pimg" src="${ie.image[0]}" data-f="${ie.image.join('|')}" alt="${ie.name}">${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
     ${(() => { const cs = s.type === 'work' ? cuesFor(s.ex, s.round) : (s.next ? cuesFor(s.next.ex, s.next.round).slice(0, 1) : []); return cs.length ? `<div class="cues${s.type === 'work' ? '' : ' dim'}">${s.type === 'work' ? '' : '<b>Next focus:</b> '}${cs.map(c => `<div>• ${c}</div>`).join('')}</div>` : ''; })()}
-    <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="#262a33" stroke-width="7" fill="none"/>
-      <circle id="arc" cx="50" cy="50" r="45" stroke="${s.type === 'rest' ? '#4aa3ff' : '#ff5a36'}" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="0"/></svg>
+    <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="#dfe6e2" stroke-width="7" fill="none"/>
+      <circle id="arc" cx="50" cy="50" r="45" stroke="${s.type === 'rest' ? '#1f63c6' : '#17894b'}" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="0"/></svg>
       <div class="n" id="num">${fmt(P.left)}</div></div>
     <div class="next">${s.next ? `${s.next.ex.image ? `<img class="thumb" src="${s.next.ex.image[1]}" alt="">` : ''}<div><div class="mut">Next</div><div style="font-weight:600;font-size:18px">${s.next.ex.name}</div><div class="mut">${s.next.dur}s · ${s.next.ex.equipment.join(', ')}</div></div>` : '<div style="font-weight:600">Last one. Finish strong!</div>'}</div>
     <div class="ctrl"><button id="bPrev">⏮</button><button id="bPause" class="pri" style="flex:2">${P.paused ? '▶ Resume' : '⏸ Pause'}</button><button id="bSkip">⏭</button></div>
@@ -408,7 +429,8 @@ function renderToday() {
   $('#title').textContent = 'Today'; $('#sub').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
   $('#tab-today').innerHTML = `
    <div class="hero"><div class="s">Day ${w.dayIndex + 1} of ${split.length}${doneToday ? ' · ✅ trained today, this is up next' : ''}</div>
-     <div class="t">${w.day}</div><div class="s">${w.focus}</div>
+     <div class="rot">${split.map((d, k) => `<span class="${k === w.dayIndex ? 'on' : ''}">${d.short || d.name}</span>`).join('<i>→</i>')}</div>
+     <div class="t">${w.day}</div><div class="s">${w.focus}</div><div class="s nextday">Next workout: <b>${w.nextDay}</b></div>
      <span class="pill">⏱ ~${w.estMin} min</span><span class="pill">${w.blocks.length} blocks</span><span class="pill">${settings.level}</span></div>
    <button class="pri" id="bStart">▶ Start workout</button>
    ${w.blocks.map(b => `<div class="card block"><div class="bt">${b.name} <span class="mut">· ${b.rounds} round${b.rounds > 1 ? 's' : ''}</span></div>

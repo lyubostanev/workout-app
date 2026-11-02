@@ -1,4 +1,4 @@
-const CACHE = 'gymcoach-v7';
+const CACHE = 'gymcoach-v8';
 const ASSETS = ['./', './index.html', './app.js', './exercises.json', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-192-maskable.png', './icons/icon-512-maskable.png'];
 // Precache the app shell plus every exercise image listed in exercises.json (~2.7 MB) for offline gym use.
