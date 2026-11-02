@@ -524,6 +524,7 @@ function finish() {
   const mins = Math.round((Date.now() - P.started) / 60000);
   const lifts = today.blocks.filter(b => b.kind === 'main').flatMap(b => b.items);
   const tab = $('#tab-today');
+  tab.onclick = null; tab.onkeydown = null; closePreview(true);
   tab.innerHTML = `<div class="hero"><div class="t">Done! 🎉</div><div class="s">${today.day} · ${mins} min</div></div>
    <div class="card"><h2 style="margin-top:0">Log your weights</h2><div class="mut">Used for next time's suggestions.</div>
    ${lifts.map(e => { const sg = suggest(e.id), ss = Object.values(P.sets).filter(x => x.id === e.id).sort((a, b) => a.t - b.t), ls = ss[ss.length - 1]; return `<div class="logrow" data-id="${e.id}"><div>${e.name}${e.reps ? `<br><small class="mut">${e.reps[0]}–${e.reps[1]} reps</small>` : ''}${ss.length ? `<br><small class="mut">Sets: ${ss.map(x => setText(e, x)).join(', ')}</small>` : ''}</div>
@@ -540,6 +541,62 @@ function saveSession(mins, log) {
   LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); shuffleN = 0; today = generate();
 }
 
+/* ---------- exercise preview (pre-workout overview): big start/end images + details, never starts the workout ---------- */
+function previewHTML(bi, ii) {
+  const w = today, b = w.blocks[bi], e = b.items[ii], warm = b.kind === 'warmup' || b.kind === 'cooldown';
+  const sg = suggest(e.id), ls = lastSet(e.id), lp = !ls && lastPerf(e.id);
+  const last = ls ? setText(e, ls) : lp ? lastText(e, lp) : '';
+  const lastWhen = ls ? new Date(ls.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+  const bk = nextAlternate(w, bi, ii), bkName = bk ? byId(bk).name : '';
+  const vol = `${b.rounds} × ${e.targetReps ? e.targetReps + ' reps' : fmt(e.work) + (e.work < 60 ? ' s' : '')}`;
+  const volSub = e.targetReps ? (e.reps ? `range ${e.reps[0]}–${e.reps[1]} · ${fmt(e.work)}${e.work < 60 ? ' s' : ''} set` : '') : 'timed';
+  const rest = warm ? '10 s' : e.rest + ' s', restSub = warm ? 'transition' : 'after each set';
+  const imgs = e.image || [];
+  const st = (k, v, sub) => `<div class="pvst"><small>${k}</small><b>${v}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
+  return `<div class="pvsheet" id="pvSheet" role="dialog" aria-modal="true" aria-labelledby="pvTitle">
+    <div class="pvgrab" aria-hidden="true"></div>
+    <div class="pvhead"><div><div class="pvblk">${esc(b.name)}${e.origId && e.origId !== e.id ? ` · swapped for ${esc(byId(e.origId).name)}` : ''}</div><h2 id="pvTitle">${esc(e.name)}</h2><div class="mut">${esc(e.muscles.join(', '))}</div></div>
+      <button type="button" class="pvx" id="pvClose" aria-label="Close preview">✕</button></div>
+    ${imgs.length ? `<div class="pvimgs" id="pvImgs">${imgs.map((p, k) => `<figure><img src="${p}" alt="${esc(e.name)} – ${k ? 'end' : 'start'} position"><figcaption>${k === 0 ? 'Start' : k === imgs.length - 1 ? 'End' : 'Step ' + (k + 1)} position</figcaption></figure>`).join('')}</div>
+      ${imgs.length > 1 ? `<div class="pvdots" id="pvDots">${imgs.map((_, k) => `<i class="${k ? '' : 'on'}"></i>`).join('')}<span class="mut">swipe</span></div>` : ''}` : ''}
+    <div class="pvstats">
+      ${st('Sets × reps', vol, volSub)}
+      ${st('Tempo', settings.tempo && e.tempo && e.targetReps ? e.tempo : e.tempo ? e.tempo + ' <small>(counting off)</small>' : '—', e.tempo ? 'lower · hold · lift · pause' : 'own pace')}
+      ${st('Rest', rest, restSub)}
+      ${st('Equipment', esc(e.equipment.join(', ')), e.kb ? `KB ${e.kb.mode === 'double' ? 'pair' : 'single'}` : '')}
+    </div>
+    <div class="pvlast">${last ? `<div>Last logged: <b>${last}</b>${lastWhen ? ` <span class="mut">· ${lastWhen}</span>` : ''}</div>` : '<div class="mut">Nothing logged yet for this exercise.</div>'}${sg && sgText(e, sg) && !warm ? `<div>Today: try <b>${sgText(e, sg)}</b></div>` : ''}</div>
+    ${e.cue ? `<div class="pvcue">${esc(e.cue)}</div>` : ''}
+    ${(e.formCues || []).length ? `<h3>Form cues</h3><ul class="pvcues">${e.formCues.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
+    <div class="pvbk"><span>⇄ Backup swap</span><b>${bkName ? esc(bkName) : 'No backup available'}</b></div>
+    ${e.demoUrl ? `<a class="demo pvdemo" href="${e.demoUrl}" target="_blank" rel="noopener">▶ Watch demo video</a>` : ''}
+  </div>`;
+}
+function openPreview(bi, ii) {
+  closePreview(true);
+  const ov = document.createElement('div'); ov.id = 'pv'; ov.innerHTML = previewHTML(bi, ii); document.body.appendChild(ov);
+  document.documentElement.classList.add('pvopen'); requestAnimationFrame(() => ov.classList.add('on'));
+  const sh = $('#pvSheet'); $('#pvClose').onclick = () => closePreview();
+  ov.addEventListener('click', ev => { if (ev.target === ov) closePreview(); }); // tap outside the sheet
+  const im = $('#pvImgs'), dots = $('#pvDots');
+  if (im && dots) im.addEventListener('scroll', () => { const k = Math.round(im.scrollLeft / Math.max(1, im.clientWidth)); dots.querySelectorAll('i').forEach((d, j) => d.classList.toggle('on', j === k)); }, { passive: true });
+  // swipe down to close (only when the sheet is scrolled to the top and the gesture is mostly vertical)
+  let y0 = null, x0 = 0, dy = 0, drag = false;
+  sh.addEventListener('touchstart', ev => { if (sh.scrollTop > 0) { y0 = null; return; } y0 = ev.touches[0].clientY; x0 = ev.touches[0].clientX; dy = 0; drag = false; }, { passive: true });
+  sh.addEventListener('touchmove', ev => { if (y0 === null) return; const t = ev.touches[0]; dy = t.clientY - y0; const dx = t.clientX - x0;
+    if (!drag && dy > 10 && dy > Math.abs(dx) * 1.2) drag = true;
+    if (drag) { ev.preventDefault(); sh.style.transition = 'none'; sh.style.transform = `translateY(${Math.max(0, dy)}px)`; } }, { passive: false });
+  sh.addEventListener('touchend', () => { if (!drag) { y0 = null; return; } sh.style.transition = ''; if (dy > 110) closePreview(); else sh.style.transform = ''; y0 = null; drag = false; });
+  document.addEventListener('keydown', pvKey); $('#pvClose').focus({ preventScroll: true });
+}
+function pvKey(ev) { if (ev.key === 'Escape') closePreview(); }
+function closePreview(now) {
+  const ov = $('#pv'); document.removeEventListener('keydown', pvKey); document.documentElement.classList.remove('pvopen'); if (!ov) return;
+  if (now) { ov.remove(); return; }
+  ov.classList.remove('on'); const sh = $('#pvSheet'); if (sh) { sh.style.transition = ''; sh.style.transform = 'translateY(100%)'; }
+  setTimeout(() => ov.remove(), 220);
+}
+
 /* ---------- views ---------- */
 function renderToday() {
   const w = today; const split = SPLITS[settings.daysPerWeek] || SPLITS[4];
@@ -551,10 +608,14 @@ function renderToday() {
      <div class="t">${w.day}</div><div class="s">${w.focus}</div><div class="s nextday">Next workout: <b>${w.nextDay}</b></div>
      <span class="pill">⏱ ~${w.estMin} min</span><span class="pill">${w.blocks.length} blocks</span><span class="pill">${settings.level}</span></div>
    <button class="pri" id="bStart">▶ Start workout</button>
+   <div class="mut pvhint">Tap any exercise for a big preview</div>
    ${w.blocks.map(b => `<div class="card block"><div class="bt">${b.name} <span class="mut">· ${b.rounds} round${b.rounds > 1 ? 's' : ''}</span></div>
-     ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex" data-bi="${bi}" data-ii="${ii}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}<br><small>${e.targetReps ? e.targetReps + ' reps' + (settings.tempo && e.tempo ? ' · ' + e.tempo : '') + ' · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
+     ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex pv" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}<br><small>${e.targetReps ? e.targetReps + ' reps' + (settings.tempo && e.tempo ? ' · ' + e.tempo : '') + ' · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
    <div class="row" style="margin:10px 0 20px"><button id="bShuffle">🔀 Shuffle exercises</button><button id="bSkipDay">Skip to next day</button></div>`;
   $('#bStart').onclick = startWorkout;
+  const tt = $('#tab-today'); // tap a row (not its Swap/Avoid/Demo controls) -> large preview
+  tt.onclick = ev => { if (ev.target.closest('button,a,input,select')) return; const r = ev.target.closest('.ex.pv'); if (r) openPreview(+r.dataset.bi, +r.dataset.ii); };
+  tt.onkeydown = ev => { const r = ev.target.closest && ev.target.closest('.ex.pv'); if (r && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openPreview(+r.dataset.bi, +r.dataset.ii); } };
   $('#tab-today').querySelectorAll('button.swap').forEach(b => longPress(b, () => { avoidAndSwap(+b.dataset.bi, +b.dataset.ii); renderToday(); }, () => { doSwap(+b.dataset.bi, +b.dataset.ii); renderToday(); }));
   $('#tab-today').querySelectorAll('button.avoid').forEach(b => b.onclick = () => { avoidOriginal(+b.dataset.bi, +b.dataset.ii); renderToday(); });
   $('#bShuffle').onclick = () => { shuffleN++; today = generate(); renderToday(); };
@@ -632,6 +693,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, tempoState, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, tempoState, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });
