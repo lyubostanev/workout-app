@@ -152,7 +152,7 @@ function lastText(e, l) { return l ? [wText(e, Number(l.weight)), l.reps ? l.rep
 /* Reps set the work interval: target reps x ~4 s per rep (x2 for "switch sides halfway"), 20-90 s. */
 function withReps(x) {
   if (!x.reps) return x; const sg = suggest(x.id); x.targetReps = (sg && sg.reps) || x.startReps || x.reps[0];
-  const sides = x.unilateral && /switch/i.test(x.cue) ? 2 : 1; x.work = Math.min(90, Math.max(20, Math.round(x.targetReps * 4 * sides / 5) * 5));
+  const sides = x.unilateral && /switch|each side/i.test(x.cue) ? 2 : 1; x.work = Math.min(45 * (sides + 1), Math.max(20, Math.round(x.targetReps * 4 * sides / 5) * 5));
   return x;
 }
 /* Rest after EVERY work set (also between the two exercises of a pair and between rounds).
@@ -199,14 +199,16 @@ function generate() {
   }
   const cdItems = settings.cooldown ? (day.cooldown || ['foam-roll-legs', 'ball-chest-stretch']).map(fixed).filter(Boolean).map(e => ({ ...e, work: 60, rest: 5 })) : [];
   const cdTime = cdItems.reduce((s, e) => s + e.work + e.rest, 0);
-  const blockTime = (items, rounds) => rounds * (items.reduce((s, e) => s + e.work, 0) + (items.length - 1) * 15 + Math.max(...items.map(e => e.rest)));
   // Short conditioning finisher (2 rounds) reserved up front so main work fills the rest of the budget.
   const finItems = day.finisher ? day.finisher.map(c => pick(c, false)).filter(Boolean).map(scale) : [];
-  const finRounds = 2, finT = finItems.length ? blockTime(finItems, finRounds) + 30 : 0;
+  const finRounds = 2;
   // Fill main blocks using the real step timeline (warm-up + blocks + finisher + cool-down) so the session lands near the target.
   const finBlock = finItems.length ? { name: 'Finisher', rounds: finRounds, items: finItems, kind: 'finisher' } : null;
   const cdBlock = cdItems.length ? { name: 'Cool-down', rounds: 1, items: cdItems, kind: 'cooldown' } : null;
   const total = blocks => buildSteps({ blocks: blocks.filter(Boolean) }).reduce((a, x) => a + x.dur, 0);
+  // Fit to the chosen length using the TRUE total (every step buildSteps makes: work, switches, round rests,
+  // rest+setup between groups, warm-up -> first group setup, transitions, warm-up, cool-down). Goal: target -3 / +1 min.
+  const hi = budget + 60, lo = budget - 180, all = () => [...out.blocks, finBlock, cdBlock];
   let bi = 0;
   while (bi < 10) {
     const pat = day.blocks[bi % day.blocks.length];
@@ -215,18 +217,28 @@ function generate() {
     const isFinisher = !day.finisher && pat.every(c => /^(conditioning|core)/.test(c));
     let rounds = isFinisher ? Math.max(2, lv.rounds) : lv.rounds;
     const blk = r => ({ name: isFinisher ? 'Finisher' : 'Block ' + String.fromCharCode(65 + bi), rounds: r, items, kind: isFinisher ? 'finisher' : 'main' });
-    // Take the block at full rounds if it fits; otherwise shorter (min 2 rounds); always keep at least 2 main blocks (they may also drop to 2 rounds).
-    while (rounds >= (bi < 2 ? 3 : 2) && total([...out.blocks, blk(rounds), finBlock, cdBlock]) > budget * 1.04) rounds--;
-    if (rounds < 2 && bi >= 2) { items.forEach(e => used.delete(e.id)); break; }
-    out.blocks.push(blk(Math.max(rounds, 2))); bi++;
+    // Full rounds if it fits; else fewer (min 2); always keep at least 2 main blocks.
+    while (rounds > 2 && total([...out.blocks, blk(rounds), finBlock, cdBlock]) > hi) rounds--;
+    if (bi >= 2 && total([...out.blocks, blk(rounds), finBlock, cdBlock]) > hi) { items.forEach(e => used.delete(e.id)); break; }
+    out.blocks.push(blk(rounds)); bi++;
   }
+  // Still short? add a round to main blocks (up to level rounds + 1), then to the finisher, while staying <= +1 min.
+  const mains = () => out.blocks.filter(b => b.kind === 'main');
+  for (let pass = 0; pass < 2 && total(all()) < lo; pass++)
+    for (const b of [...mains(), finBlock].filter(Boolean)) { if (total(all()) >= lo) break; if (b.rounds >= lv.rounds + 1) continue; b.rounds++; if (total(all()) > hi) b.rounds--; }
+  // Still long (minimum 2 main blocks forced)? drop rounds from the last blocks, then the finisher to 1 round.
+  for (const b of [...mains()].reverse()) { while (total(all()) > hi && b.rounds > 2) b.rounds--; }
+  if (finBlock) while (total(all()) > hi && finBlock.rounds > 1) finBlock.rounds--;
   if (finBlock) out.blocks.push(finBlock);
   if (cdBlock) out.blocks.push(cdBlock);
-  out.estMin = Math.round(buildSteps(out).reduce((a, x) => a + x.dur, 0) / 60);
   out.key = [dateKey(new Date()), di, shuffleN, settings.daysPerWeek, settings.minutes, settings.level, settings.restSec, settings.switchSec, settings.setupSec].join('|');
   applySwaps(out);
+  out.totalSec = totalSec(out); out.estMin = Math.round(out.totalSec / 60);
   return out;
 }
+/* The one true session length: the sum of every step the player will run. Used by Today, preview and the player header. */
+function totalSec(w) { return buildSteps(w).reduce((a, x) => a + x.dur, 0); }
+const minText = s => Math.round(s / 60) + ' min';
 
 /* ---------- swaps (injury backups) ----------
    One tap = replace with the next curated alternate (no chooser). Tapping again cycles through the backups
@@ -361,12 +373,12 @@ function unlockAudio() {
     } catch (e) {}
   });
   if (!speechPrimed && 'speechSynthesis' in window) {
-    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); speechPrimed = true; } catch (e) {}
+    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; SPQ.keep.push(u); speechSynthesis.speak(u); speechPrimed = true; } catch (e) {}
   }
 }
 function stopKeepAlive() { try { silentEl && silentEl.pause(); } catch (e) {} }
 const playerOpen = () => { const el = document.getElementById('player'); return !!el && !el.classList.contains('hidden'); };
-['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => { resumeAudio(); if (silentEl && silentEl.paused && playerOpen()) silentEl.play().catch(() => {}); }, { capture: true, passive: true }));
+['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => { resumeAudio(); if (silentEl && silentEl.paused && playerOpen() && !speaking()) silentEl.play().catch(() => {}); }, { capture: true, passive: true }));
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { resumeAudio(); if (playerOpen() && silentEl) silentEl.play().catch(() => {}); } });
 // ---- Keep the screen awake during a workout ----
 // Screen Wake Lock API first; if it's missing or refused (older iOS, some home-screen PWAs), fall back to a tiny
@@ -403,7 +415,7 @@ function releaseWake() {
   WAKE.mode = 'off';
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && playerOpen()) acquireWake(); });
-['touchend', 'click'].forEach(t => document.addEventListener(t, () => { if (playerOpen() && WAKE.mode === 'video' && wakeVid && wakeVid.paused && wakeWanted()) wakeVid.play().catch(() => {}); }, { capture: true, passive: true }));
+['touchend', 'click'].forEach(t => document.addEventListener(t, () => { if (playerOpen() && WAKE.mode === 'video' && wakeVid && wakeVid.paused && wakeWanted()) { wakeVid.muted = true; wakeVid.play().catch(() => {}); } }, { capture: true, passive: true }));
 function beepFile(freq) {
   const f = BEEP_FILES.reduce((a, b) => Math.abs(b - freq) < Math.abs(a - freq) ? b : a);
   try { let el = beepEls[f]; if (!el) { el = beepEls[f] = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); } el.muted = false; el.currentTime = 0; const pr = el.play(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {}
@@ -411,6 +423,8 @@ function beepFile(freq) {
 let lastBeepPath = '';
 function beep(freq = 880, ms = 120, vol = 0.25, force = false) {
   if (!settings.beeps && !force) return;
+  if (speaking()) { SPQ.heldBeep = { args: [freq, ms, vol, force], at: Date.now() }; lastBeepPath = 'held'; return; } // never over speech
+  SPQ.beepUntil = Math.max(SPQ.beepUntil, Date.now() + ms + 40);
   const c = audioCtx();
   if (c && c.state === 'running') {
     try {
@@ -423,15 +437,52 @@ function beep(freq = 880, ms = 120, vol = 0.25, force = false) {
   }
   resumeAudio(); beepFile(freq); lastBeepPath = 'html';
 }
+/* Speech queue (iOS cut-off fix). One utterance at a time; later say() calls wait their turn instead of cancel()-ing
+   the one in progress. Stale speech is cancelled only when a new step starts (speechNewStep) or on pause/stop.
+   Beeps never play over speech: they are held and played when the speech ends. Utterances are kept referenced until
+   they finish (iOS Safari garbage-collects them mid-sentence and fires no onend otherwise). */
+const SPQ = { q: [], cur: null, t0: 0, keep: [], heldBeep: null, beepUntil: 0, notBefore: 0, timer: null, log: [] };
+const speaking = () => !!SPQ.cur;
 function say(text, force = false) {
   if ((!settings.voice && !force) || !('speechSynthesis' in window) || !text) return;
+  if (SPQ.q[SPQ.q.length - 1] === text || (SPQ.cur && SPQ.cur.text === text && !SPQ.q.length)) return; // no duplicates
+  SPQ.q.push(text); if (SPQ.q.length > 4) SPQ.q.splice(0, SPQ.q.length - 4);
+  pumpSpeech();
+}
+function pumpSpeech() {
+  clearTimeout(SPQ.timer); SPQ.timer = null;
+  if (SPQ.cur || !SPQ.q.length) return;
+  const wait = Math.max(SPQ.beepUntil, SPQ.notBefore) - Date.now();
+  if (wait > 0) { SPQ.timer = setTimeout(pumpSpeech, wait + 10); return; } // let a beep (or a cancel) finish first
+  const text = SPQ.q.shift();
   try {
-    if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text); u.rate = 1.05; u.volume = 1; u.lang = 'en-US';
+    const done = () => { if (SPQ.cur !== u) return; SPQ.cur = null; SPQ.keep = SPQ.keep.filter(x => x !== u); SPQ.log.push({ text, end: Date.now() }); afterSpeech(); };
+    u.onend = done; u.onerror = done;
+    SPQ.cur = u; SPQ.t0 = Date.now(); SPQ.keep.push(u); if (SPQ.keep.length > 6) SPQ.keep.shift();
     if (speechSynthesis.paused) speechSynthesis.resume();
     speechSynthesis.speak(u);
-  } catch (e) {}
+    // Watchdog: iOS sometimes never fires onend. Treat it as ended once the engine is idle (or after a hard cap).
+    const cap = 4000 + text.length * 90;
+    const wd = () => { if (SPQ.cur !== u) return; const el = Date.now() - SPQ.t0;
+      if ((el > 400 && !speechSynthesis.speaking && !speechSynthesis.pending) || el > cap) done(); else setTimeout(wd, 250); };
+    setTimeout(wd, 450);
+  } catch (e) { SPQ.cur = null; }
 }
+function afterSpeech() {
+  if (SPQ.heldBeep) { const b = SPQ.heldBeep; SPQ.heldBeep = null; if (Date.now() - b.at < 2500) { beep(...b.args); } }
+  if (playerOpen() && silentEl && silentEl.paused) silentEl.play().catch(() => {}); // keep-alive resumed only between utterances
+  pumpSpeech();
+}
+// New step: drop anything still queued and stop the (now stale) sentence; the next say() waits a moment after cancel().
+function speechNewStep() {
+  SPQ.q = []; SPQ.heldBeep = null; clearTimeout(SPQ.timer); SPQ.timer = null;
+  if (!('speechSynthesis' in window)) return;
+  const active = SPQ.cur || speechSynthesis.speaking || speechSynthesis.pending;
+  SPQ.cur = null;
+  if (active) { try { speechSynthesis.cancel(); } catch (e) {} SPQ.notBefore = Date.now() + 150; }
+}
+function speechStop() { speechNewStep(); }
 
 /* ---------- player ---------- */
 const P = { sets: {}, steps: [], i: 0, end: 0, left: 0, paused: false, timer: null, started: 0, lastBeep: -1, wake: null, halfSaid: false, cueOff: {}, cueSaid: 0, tk: '' };
@@ -491,7 +542,8 @@ function saveAndNext(pw) {
   enterStep();
 }
 function enterStep() {
-  const s = P.steps[P.i]; if (!s) return finish();
+  const s = P.steps[P.i]; if (!s) return finish(); if ($('#pv')) closePreview(true);
+  speechNewStep();
   P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.cueSaid = 0; P.tk = '';
   if (s.type === 'work') { beep(1200, 350); say(s.ex.name); }
   else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next up, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? 'Set up for ' + s.nextBlock + '. ' + s.dur + ' seconds.' + (s.next ? ' First up, ' + s.next.ex.name : '') : 'Rest, ' + s.dur + ' seconds.' + (s.next ? ' Next up, ' + s.next.ex.name : '')); }
@@ -521,7 +573,7 @@ function togglePause() {
 }
 // Demo videos open in a new tab / the YouTube app; the workout timer is paused first so nothing runs on while watching.
 function openDemo(url) {
-  if (!P.paused) { P.paused = true; if ('speechSynthesis' in window) speechSynthesis.cancel(); render(); }
+  if (!P.paused) { P.paused = true; speechStop(); render(); }
   window.open(url, '_blank', 'noopener');
 }
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -542,12 +594,12 @@ function doneEarly() {
 function quit() { if (!confirm('End workout? Progress so far will not be saved.')) return; stopPlayer(); }
 function stopPlayer() {
   clearInterval(P.timer); $('#player').classList.add('hidden');
-  releaseWake(); if ('speechSynthesis' in window) speechSynthesis.cancel(); stopKeepAlive();
+  releaseWake(); speechStop(); stopKeepAlive();
 }
 const fmt = s => { s = Math.ceil(s); return s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') : String(s); };
 function render() {
   const s = P.steps[P.i]; const el = $('#player'); if (!s) return;
-  el.className = s.type === 'work' ? 'work' : s.type === 'rest' ? 'rest' : '';
+  el.className = (s.type === 'work' ? 'work' : s.type === 'rest' ? 'rest' : '') + (s.setup ? ' setup' : '');
   const title = s.type === 'work' ? s.ex.name : s.type === 'rest' ? s.label : 'Get ready';
   const meta = s.type === 'work' ? `${s.block} · Round ${s.round}/${s.rounds}` : s.type === 'rest' && s.next ? `Up next: ${s.next.block} · Round ${s.next.round}/${s.next.rounds}` : s.block || '';
   const sg = s.type === 'work' && suggest(s.ex.id);
@@ -556,10 +608,10 @@ function render() {
   const nowW = s.type === 'work' ? Object.values(P.sets).filter(x => x.id === s.ex.id).sort((a, b) => a.t - b.t).map(x => setText(s.ex, x)) : [];
   const doneSteps = P.steps.slice(0, P.i).reduce((a, x) => a + x.dur, 0), total = P.steps.reduce((a, x) => a + x.dur, 0);
   el.innerHTML = `
-    <div class="row" style="flex:0"><div class="mut">${meta}</div><div class="mut" style="text-align:right">${P.i + 1}/${P.steps.length}</div></div>
+    <div class="row" style="flex:0"><div class="mut">${meta}</div><div class="mut" style="text-align:right">${P.i + 1}/${P.steps.length} · <span id="remT">${minText(remainSec())}</span> left<br><small>of ${minText(P.steps.reduce((a, x) => a + x.dur, 0))}</small></div></div>
     <div class="bar"><i style="width:${(100 * doneSteps / total).toFixed(1)}%"></i></div>
     <div class="phase">${s.type === 'work' ? 'Work' : s.type === 'rest' ? (s.setup ? 'Set up' : s.sw ? 'Switch' : 'Rest') : 'Prepare'}${P.paused ? ' · Paused' : ''}</div>
-    <div class="exname">${title}</div>
+    <div class="exname">${title}${s.setup ? `<span class="sutime" id="num2">${fmt(P.left)}</span>` : ''}</div>
     <div class="mut">${s.type === 'work' ? (s.ex.cue || s.ex.muscles.join(', ')) : s.setup ? (s.restPart ? `Rest ${s.restPart} s + set up ${s.setupPart} s` : `Set up ${s.setupPart} s`) : s.type === 'rest' && !s.transition && !pw ? `Done: ${esc(s.after)} · breathe, shake it out` : ''}</div>
     ${s.setup ? setupHTML(s) : ''}
     ${histHTML(hist)}
@@ -567,28 +619,43 @@ function render() {
     ${pw ? setLogHTML(pw) : ''}
     ${s.type === 'work' && s.ex.targetReps ? `<div class="target" id="target">${s.ex.targetReps} reps</div>` : ''}
     ${s.type === 'work' ? `<button type="button" class="donebtn" id="bDone">Done ✓<small>${P.steps[P.i + 1] && logStepFor(P.i + 1) ? 'finished early · log this set now' : 'finished early · move on'}</small></button>` : ''}
-    ${(() => { const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie && ie.image ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}${pw ? ' small' : ''}"><img id="pimg" src="${ie.image[0]}" data-f="${ie.image.join('|')}" alt="${ie.name}">${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
-    ${(() => { const cs = s.type === 'work' ? cuesFor(s.ex, s.round) : (s.next && !pw ? cuesFor(s.next.ex, s.next.round).slice(0, 1) : []); return cs.length ? `<div class="cues${s.type === 'work' ? '' : ' dim'}">${s.type === 'work' ? '' : '<b>Next focus:</b> '}${cs.map(c => `<div>• ${c}</div>`).join('')}</div>` : ''; })()}
+    ${(() => { if (s.setup) return ''; const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie && ie.image ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}${pw ? ' small' : ''}"><img id="pimg" src="${ie.image[0]}" data-f="${ie.image.join('|')}" alt="${ie.name}">${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
+    ${(() => { if (s.setup) return ''; const cs = s.type === 'work' ? cuesFor(s.ex, s.round) : (s.next && !pw ? cuesFor(s.next.ex, s.next.round).slice(0, 1) : []); return cs.length ? `<div class="cues${s.type === 'work' ? '' : ' dim'}">${s.type === 'work' ? '' : '<b>Next focus:</b> '}${cs.map(c => `<div>• ${c}</div>`).join('')}</div>` : ''; })()}
     <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="#d9e7f2" stroke-width="7" fill="none"/>
       <circle id="arc" cx="50" cy="50" r="45" stroke="${s.type === 'rest' ? '#1d4ed8' : '#0ea5e9'}" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="0"/></svg>
       <div class="n" id="num">${fmt(P.left)}</div></div>
-    <div class="next">${s.next ? `${s.next.ex.image ? `<img class="thumb" src="${s.next.ex.image[1]}" alt="">` : ''}<div><div class="mut">Next</div><div style="font-weight:600;font-size:18px">${s.next.ex.name}</div><div class="mut">${s.next.ex.targetReps ? s.next.ex.targetReps + ' reps · ' : ''}${s.next.dur}s · ${s.next.ex.equipment.join(', ')}</div></div>` : '<div style="font-weight:600">Last one. Finish strong!</div>'}</div>
+    ${s.setup ? '' : `<div class="next">${s.next ? `${s.next.ex.image ? `<img class="thumb" src="${s.next.ex.image[1]}" alt="">` : ''}<div><div class="mut">Next</div><div style="font-weight:600;font-size:18px">${s.next.ex.name}</div><div class="mut">${s.next.ex.targetReps ? s.next.ex.targetReps + ' reps · ' : ''}${s.next.dur}s · ${s.next.ex.equipment.join(', ')}</div></div>` : '<div style="font-weight:600">Last one. Finish strong!</div>'}</div>`}
     <div class="ctrl"><button id="bPrev">⏮</button><button id="bPause" class="pri" style="flex:2">${P.paused ? '▶ Resume' : '⏸ Pause'}</button><button id="bSkip" title="Skip (no log)" aria-label="Skip without logging">⏭</button></div>
     <button id="bQuit" style="margin-top:4px;padding:8px;background:none;color:var(--mut);flex-shrink:0">End workout</button>`;
   $('#bPause').onclick = togglePause; if (pw) wireSetLog(pw);
   const bd = $('#bDemo'); if (bd) bd.onclick = ev => { ev.preventDefault(); openDemo(bd.href); }; $('#bSkip').onclick = () => skip(1); const bdn = $('#bDone'); if (bdn) bdn.onclick = doneEarly;
+  el.querySelectorAll('.bpx').forEach(c => { const o = () => { if (+c.dataset.bi >= 0) openPreview(+c.dataset.bi, +c.dataset.ii); }; c.onclick = o; c.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); o(); } }; });
   const bs = $('#bSwap'); if (bs) longPress(bs, () => playerSwap(true), () => playerSwap(false));
   const ba = $('#bAvoid'); if (ba) ba.onclick = () => { const s = P.steps[P.i], tgt = s.type === 'work' ? s.ex : s.next && s.next.ex, sl = findSlot(tgt); if (sl) { avoidOriginal(...sl); render(); } }; $('#bPrev').onclick = () => skip(-1); $('#bQuit').onclick = quit;
   renderTime();
 }
+/* Block preview on the 'Set up · next group' screen: both exercises, big start/end frames, equipment,
+   target sets x reps, last session's sets (excluding this session) and today's suggestion. Tap a card -> big preview sheet. */
 function setupHTML(s) {
-  const b = today.blocks.find(x => x.name === s.nextBlock), items = (b && b.items) || s.nextItems || [];
+  const bi = today.blocks.findIndex(x => x.name === s.nextBlock), b = today.blocks[bi], items = (b && b.items) || s.nextItems || [];
+  const rounds = (b && b.rounds) || s.nextRounds, warm = b && (b.kind === 'warmup' || b.kind === 'cooldown');
   const eq = [...new Set(items.flatMap(e => e.equipment || []))];
-  return `<div class="hist setupcard" id="setupCard"><div class="hh">Next group · ${esc(s.nextBlock)} · ${(b && b.rounds) || s.nextRounds} rounds</div>${items.map(e => `<div class="hr"><span>${esc(e.name)}</span><b>${e.targetReps ? e.targetReps + ' reps' : fmt(e.work) + (e.work < 60 ? ' s' : '')}</b></div>`).join('')}${eq.length ? `<div class="sueq">Equipment: ${esc(eq.join(', '))}</div>` : ''}</div>`;
+  const card = (e, ii) => { const im = e.image || [], last = recentHistory(e, 1, P.started)[0], sg = !warm && suggest(e.id), sgt = sg && sgText(e, sg);
+    const tgt = `${rounds} × ${e.targetReps ? e.targetReps + ' reps' : fmt(e.work) + (e.work < 60 ? ' s' : '')}`;
+    return `<div class="bpx" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">
+      <div class="bpn"><span class="bpk">${String.fromCharCode(65 + ii)}</span>${esc(e.name)}<i aria-hidden="true">ⓘ</i></div>
+      ${im.length ? `<div class="bpimgs">${[im[0], im[im.length - 1]].filter((x, k, a) => k === 0 || x !== a[0]).map((p, k) => `<figure><img src="${p}" alt="${esc(e.name)} ${k ? 'end' : 'start'}"><figcaption>${k ? 'End' : 'Start'}</figcaption></figure>`).join('')}</div>` : ''}
+      <div class="bprow"><small>Target</small><b class="bptgt">${tgt}</b></div>
+      <div class="bprow"><small>Last time</small>${last ? `<b class="bplast">${last.txt}</b><span class="bpd">${last.date}</span>` : '<b class="bplast none">No history yet</b>'}</div>
+      ${sgt ? `<div class="bprow"><small>Today</small><b class="bptry">try ${sgt}</b></div>` : ''}
+      <div class="bpeq">${esc((e.equipment || []).join(', ') || 'no equipment')}</div></div>`; };
+  return `<div class="setupcard bp" id="setupCard"><div class="hh">Next: ${esc(s.nextBlock)} · ${rounds} rounds${items.length > 1 ? ' · superset' : ''}</div>
+    <div class="bpl">${items.map(card).join('')}</div>${eq.length ? `<div class="sueq">Set up: ${esc(eq.join(', '))}</div>` : ''}</div>`;
 }
+function remainSec() { return P.left + P.steps.slice(P.i + 1).reduce((a, x) => a + x.dur, 0); }
 function renderTime() {
   const s = P.steps[P.i]; if (!s) return;
-  const n = $('#num'), a = $('#arc'); if (n) n.textContent = fmt(P.left);
+  const n = $('#num'), a = $('#arc'), n2 = $('#num2'), rt = $('#remT'); if (rt) rt.textContent = minText(remainSec()); if (n) n.textContent = fmt(P.left); if (n2) n2.textContent = fmt(P.left);
   if (a) a.setAttribute('stroke-dashoffset', (282.7 * (1 - P.left / s.dur)).toFixed(1));
   const im = $('#pimg'); // alternate start/end frames every ~1.2s while working
   if (im && !P.paused) { const f = im.dataset.f.split('|'), k = s.type === 'work' ? Math.floor((s.dur - P.left) / 1.2) % f.length : 0; if (!im.src.endsWith(f[k])) im.src = f[k]; }
@@ -627,7 +694,7 @@ function previewHTML(bi, ii) {
   const st = (k, v, sub) => `<div class="pvst"><small>${k}</small><b>${v}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
   return `<div class="pvsheet" id="pvSheet" role="dialog" aria-modal="true" aria-labelledby="pvTitle">
     <div class="pvgrab" aria-hidden="true"></div>
-    <div class="pvhead"><div><div class="pvblk">${esc(b.name)}${e.origId && e.origId !== e.id ? ` · swapped for ${esc(byId(e.origId).name)}` : ''}</div><h2 id="pvTitle">${esc(e.name)}</h2><div class="mut">${esc(e.muscles.join(', '))}</div></div>
+    <div class="pvhead"><div><div class="pvblk">${esc(b.name)} · workout ${minText(totalSec(w))}${e.origId && e.origId !== e.id ? ` · swapped for ${esc(byId(e.origId).name)}` : ''}</div><h2 id="pvTitle">${esc(e.name)}</h2><div class="mut">${esc(e.muscles.join(', '))}</div></div>
       <button type="button" class="pvx" id="pvClose" aria-label="Close preview">✕</button></div>
     ${imgs.length ? `<div class="pvimgs" id="pvImgs">${imgs.map((p, k) => `<figure><img src="${p}" alt="${esc(e.name)} – ${k ? 'end' : 'start'} position"><figcaption>${k === 0 ? 'Start' : k === imgs.length - 1 ? 'End' : 'Step ' + (k + 1)} position</figcaption></figure>`).join('')}</div>
       ${imgs.length > 1 ? `<div class="pvdots" id="pvDots">${imgs.map((_, k) => `<i class="${k ? '' : 'on'}"></i>`).join('')}<span class="mut">swipe</span></div>` : ''}` : ''}
@@ -678,7 +745,7 @@ function renderToday() {
    <div class="hero"><div class="s">Day ${w.dayIndex + 1} of ${split.length}${doneToday ? ' · ✅ trained today, this is up next' : ''}</div>
      <div class="rot">${split.map((d, k) => `<span class="${k === w.dayIndex ? 'on' : ''}">${d.short || d.name}</span>`).join('<i>→</i>')}</div>
      <div class="t">${w.day}</div><div class="s">${w.focus}</div><div class="s nextday">Next workout: <b>${w.nextDay}</b></div>
-     <span class="pill">⏱ ~${w.estMin} min</span><span class="pill">${w.blocks.length} blocks</span><span class="pill">${settings.level}</span></div>
+     <span class="pill" id="estPill">⏱ ${minText(totalSec(w))}</span><span class="pill">${w.blocks.length} blocks</span><span class="pill">${settings.level}</span></div>
    <button class="pri" id="bStart">▶ Start workout</button>
    <div class="mut pvhint">Tap any exercise for a big preview</div>
    ${w.blocks.map(b => `<div class="card block"><div class="bt">${b.name} <span class="mut">· ${b.rounds} round${b.rounds > 1 ? 's' : ''}</span></div>
@@ -769,6 +836,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, SPQ, say, speechNewStep, totalSec, remainSec, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });

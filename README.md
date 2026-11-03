@@ -23,6 +23,7 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - "Watch demo" buttons link to third-party YouTube videos; those videos are not included or cached here.
 
 ### New
+- **Block preview** before each group: both exercises with start/end images, target sets × reps, last session's weight × reps per set and today's suggestion. Tap a card for the full preview.
 - **Done ✓** on the work screen: finished early? Tap it to end the set and log weight/reps right away (⏭ skips without logging).
 - Each exercise screen shows its **History**: the last 3 sessions with dates and weight × reps per set.
 - Keeps the iPhone screen awake during a workout (Wake Lock API, with a muted inline-video fallback). Toggle: Settings › Keep screen awake (default on).
@@ -31,3 +32,7 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - Supersets: A → 10 s switch → B, then full rest after the round (default 60 s). Between groups: rest + set-up time (default +30 s) with the next group's exercises and equipment on screen. All three are in Settings. Spoken + beeped with next-exercise preview.
 - Per-set logging of weight and reps on the rest screen, plus a big **Save & next exercise** button that stores the set and jumps straight to the next exercise. The rest keeps running while you enter numbers.
 - iPhone sound fix (audio unlocked on Start, audio-file fallback) and Settings › Test sound. If silent, turn off silent mode.
+
+### v15 timing + speech
+- The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
+- Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
