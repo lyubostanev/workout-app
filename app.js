@@ -6,11 +6,12 @@ const LS = {
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
 };
 // Default plan: 3-day rotating split Push -> Pull -> Legs & Core (whole body covered across the 3 days). TRX and rower are OFF by default (rower malfunctioning).
-// Kettlebells on hand: 2 x 25 lb + 1 x 35 lb (suggestions snap to these). Tempo counting on by default.
+// Kettlebells on hand: 2 x 25 lb + 1 x 35 lb (suggestions snap to these). No tempo counting (removed).
 const DEFAULTS = { daysPerWeek: 3, minutes: 45, level: 'intermediate', voice: true, beeps: true,
-  excluded: [], avoided: [], warmup: true, cooldown: true, trx: false, rower: false, tempo: true, kettlebells: [25, 25, 35],
-  restSec: 60, restOverrides: {} };  // restSec = 'Rest between sets'; restOverrides = per-exercise rest {id: seconds}
+  excluded: [], avoided: [], warmup: true, cooldown: true, trx: false, rower: false, kettlebells: [25, 25, 35],
+  restSec: 60, restOverrides: {}, keepAwake: true, switchSec: 10, setupSec: 30 };  // restSec = 'Rest between rounds' (after both exercises of a pair); switchSec = A->B switch; setupSec = extra time between groups; restOverrides = per-exercise rest {id: seconds}
 let settings = Object.assign({}, DEFAULTS, LS.get('gc_settings', {}));
+delete settings.tempo; // tempo feature removed entirely
 if (!Array.isArray(settings.avoided)) settings.avoided = [];
 if (!settings.restOverrides || typeof settings.restOverrides !== 'object') settings.restOverrides = {};
 if (!Array.isArray(settings.kettlebells) || !settings.kettlebells.length) settings.kettlebells = DEFAULTS.kettlebells.slice();
@@ -85,6 +86,23 @@ const loggable = (e, kind) => kind === 'main' && ['push', 'pull', 'legs', 'core'
 let setLog = LS.get('gc_setlog', {});   // {exerciseId: [{date, s: sessionStart, k: setKey, w, r}]}
 function lastSet(id, excludeSession) { const a = setLog[id] || []; for (let i = a.length - 1; i >= 0; i--) if (!excludeSession || a[i].s !== excludeSession) return a[i]; return null; }
 const setText = (e, x) => x ? [x.w ? wText(e, Number(x.w)) : (isBW(e) ? 'BW' : ''), x.r ? x.r + ' reps' : ''].filter(Boolean).join(' × ') : '';
+/* Last few sessions for an exercise (newest first): per-set log grouped by session, plus older saved-session summaries. */
+function recentHistory(e, n = 3, exclude) {
+  const by = {};
+  (setLog[e.id] || []).forEach(x => { if (exclude && x.s === exclude) return; const g = by[x.s] = by[x.s] || { t: 0, sets: [] }; g.sets.push(x); g.t = Math.max(g.t, +new Date(x.date)); });
+  const out = Object.values(by).map(g => ({ t: g.t, txt: setsShort(e, g.sets) }));
+  const days = new Set(out.map(o => dateKey(new Date(o.t))));
+  history.forEach(h => { if (h.skipped) return; const d = dateKey(new Date(h.date)); if (days.has(d)) return;
+    const ss = (h.sets || []).filter(x => x.id === e.id).map(x => ({ w: x.weight, r: x.reps })), l = (h.log || []).find(x => x.id === e.id && (x.weight || x.reps));
+    if (ss.length || l) { out.push({ t: +new Date(h.date), txt: ss.length ? setsShort(e, ss) : lastText(e, l) }); days.add(d); } });
+  return out.sort((a, b) => b.t - a.t).slice(0, n).map(o => ({ ...o, date: new Date(o.t).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) }));
+}
+// "25 lb × 12, 12, 11" (consecutive sets at the same weight share the weight)
+function setsShort(e, sets) {
+  const parts = []; sets.forEach(x => { const w = x.w ? wText(e, Number(x.w)) : (isBW(e) ? 'BW' : '—'), r = x.r || '?'; const p = parts[parts.length - 1]; if (p && p.w === w) p.r.push(r); else parts.push({ w, r: [r] }); });
+  return parts.map(p => `${p.w} × ${p.r.join(', ')}`).join(' · ');
+}
+const histHTML = (rows, cls = '') => rows.length ? `<div class="hist ${cls}"><div class="hh">History</div>${rows.map(r => `<div class="hr"><span>${r.date}</span><b>${r.txt}</b></div>`).join('')}</div>` : '';
 const setKey = st => st.block + '|' + st.round + '|' + st.ex.id;
 function setPrefill(st) {
   const e = st.ex, k = setKey(st); if (P.sets[k]) return P.sets[k];
@@ -113,8 +131,6 @@ function kbOptions(e) {
   return Object.keys(c).map(Number).filter(w => e.kb.mode !== 'double' || c[w] >= 2).sort((a, b) => a - b);
 }
 function snapKB(e, w) { const o = kbOptions(e); return o.length ? o.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a) : w; }
-const tempoParts = t => String(t || '').split('-').map(Number);
-const tempoSum = t => tempoParts(t).reduce((a, b) => a + (b || 0), 0);
 /* Double progression with lighter loads: add reps inside the exercise's range first; at the top of the range
    (and logged Easy) the load goes up one small step (KB: next bell you own) and reps reset to the bottom.
    Hard = drop reps (or load at the bottom of the range). Returns {weight, reps, last} or null. */
@@ -133,16 +149,15 @@ function suggest(id) {
 const wText = (e, w) => w ? (e.kb && e.kb.mode === 'double' ? `2×${w} lb` : `${w} lb`) : '';
 function sgText(e, sg) { if (!sg) return ''; return [wText(e, sg.weight), sg.reps ? sg.reps + ' reps' : ''].filter(Boolean).join(' × '); }
 function lastText(e, l) { return l ? [wText(e, Number(l.weight)), l.reps ? l.reps + ' reps' : ''].filter(Boolean).join(' × ') : ''; }
-/* Reps + tempo set the work interval: target reps x tempo seconds (x2 for "switch sides halfway"), 20-120 s.
-   With tempo counting off, the exercise keeps its normal timed interval and just shows the rep target. */
+/* Reps set the work interval: target reps x ~4 s per rep (x2 for "switch sides halfway"), 20-90 s. */
 function withReps(x) {
   if (!x.reps) return x; const sg = suggest(x.id); x.targetReps = (sg && sg.reps) || x.startReps || x.reps[0];
-  if (settings.tempo && x.tempo) { const sides = x.unilateral && /switch/i.test(x.cue) ? 2 : 1; x.work = Math.min(120, Math.max(20, Math.round(x.targetReps * tempoSum(x.tempo) * sides / 5) * 5)); }
+  const sides = x.unilateral && /switch/i.test(x.cue) ? 2 : 1; x.work = Math.min(90, Math.max(20, Math.round(x.targetReps * 4 * sides / 5) * 5));
   return x;
 }
 /* Rest after EVERY work set (also between the two exercises of a pair and between rounds).
    Priority: per-exercise override (Library) > exercise data restSec > rule:
-   lifts (push/pull/legs) = max('Rest between sets', the exercise's own minimum) ; core/conditioning = max(30, half of it).
+   lifts (push/pull/legs) = max('Rest between rounds', the exercise's own minimum) ; core/conditioning = max(30, half of it).
    Scaled by level (beginner longer, advanced shorter). Warm-up/cool-down moves only get a 10 s transition. */
 function restFor(e) {
   const ov = (settings.restOverrides || {})[e.id]; if (ov) return ov;
@@ -208,7 +223,7 @@ function generate() {
   if (finBlock) out.blocks.push(finBlock);
   if (cdBlock) out.blocks.push(cdBlock);
   out.estMin = Math.round(buildSteps(out).reduce((a, x) => a + x.dur, 0) / 60);
-  out.key = [dateKey(new Date()), di, shuffleN, settings.daysPerWeek, settings.minutes, settings.level, settings.restSec].join('|');
+  out.key = [dateKey(new Date()), di, shuffleN, settings.daysPerWeek, settings.minutes, settings.level, settings.restSec, settings.switchSec, settings.setupSec].join('|');
   applySwaps(out);
   return out;
 }
@@ -229,7 +244,7 @@ function nextAlternate(w, bi, ii) {
   const nx = c[(c.indexOf(cur.id) + 1) % c.length];
   return nx && nx !== cur.id ? nx : null;
 }
-// A swap keeps the slot's rest and round structure; with tempo on, the work interval follows the new exercise's reps x tempo.
+// A swap keeps the slot's rest and round structure; the work interval follows the new exercise's reps.
 const makeItem = (slot, id) => withReps({ ...byId(id), work: slot.work, rest: (settings.restOverrides || {})[id] || slot.rest, origId: slot.origId || slot.id });
 function persistSwaps(w = today) {
   const slots = {}; w.blocks.forEach((b, bi) => b.items.forEach((e, ii) => { if (e.origId && e.origId !== e.id) slots[bi + ':' + ii] = e.id; }));
@@ -289,6 +304,8 @@ function toast(msg) {
   let t = $('#toast'); if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
   t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2600);
 }
+const clampSwitch = () => Math.min(30, Math.max(5, +settings.switchSec || 10));
+const clampSetup = () => Math.min(90, Math.max(15, +settings.setupSec || 30));
 /* Flatten blocks into timed steps */
 function buildSteps(w) {
   const steps = [{ type: 'prep', dur: 10, ex: w.blocks[0].items[0], label: 'Get ready' }];
@@ -298,13 +315,17 @@ function buildSteps(w) {
         steps.push({ type: 'work', dur: e.work, ex: e, block: b.name, round: r, rounds: b.rounds });
         const lastInRound = i === b.items.length - 1;
         const lastOfBlock = lastInRound && r === b.rounds;
-        // Full rest after every set: the exercise's own rest (lifts ~60 s, core/conditioning ~30 s), never a short 15 s hop.
+        // Superset structure: A -> short switch -> B; full rest only after the round; between groups rest + setup time.
         const warm = b.kind === 'warmup' || b.kind === 'cooldown';
-        let rest = warm ? 10 : e.rest;
-        if (lastOfBlock && bi < w.blocks.length - 1) rest = Math.max(rest, warm ? 10 : 30);
-        if (bi === w.blocks.length - 1 && lastOfBlock) rest = 0;
-        if (rest > 0) steps.push({ type: 'rest', dur: rest, block: b.name, transition: warm, after: e.name,
-          label: warm ? 'Transition' : lastOfBlock ? 'Rest · next block' : lastInRound ? 'Rest · next round' : 'Rest between sets' });
+        const nb = w.blocks[bi + 1];
+        if (lastOfBlock && !nb) return; // end of workout
+        if (lastOfBlock) { // into the next group (also warm-up -> first group): set-up time, not the 10 s hop
+          const su = clampSetup(), rp = warm ? 0 : e.rest;
+          steps.push({ type: 'rest', dur: rp + su, restPart: rp, setupPart: su, setup: true, block: b.name, after: e.name,
+            nextBlock: nb.name, nextRounds: nb.rounds, nextItems: nb.items, label: 'Set up · next group' });
+        } else if (warm) steps.push({ type: 'rest', dur: 10, block: b.name, transition: true, after: e.name, label: 'Transition' });
+        else if (!lastInRound) steps.push({ type: 'rest', dur: clampSwitch(), block: b.name, sw: true, after: e.name, label: 'Switch · next exercise' });
+        else steps.push({ type: 'rest', dur: e.rest, block: b.name, after: e.name, label: 'Rest · next round' });
       });
     }
   });
@@ -347,6 +368,42 @@ function stopKeepAlive() { try { silentEl && silentEl.pause(); } catch (e) {} }
 const playerOpen = () => { const el = document.getElementById('player'); return !!el && !el.classList.contains('hidden'); };
 ['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => { resumeAudio(); if (silentEl && silentEl.paused && playerOpen()) silentEl.play().catch(() => {}); }, { capture: true, passive: true }));
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { resumeAudio(); if (playerOpen() && silentEl) silentEl.play().catch(() => {}); } });
+// ---- Keep the screen awake during a workout ----
+// Screen Wake Lock API first; if it's missing or refused (older iOS, some home-screen PWAs), fall back to a tiny
+// muted, looping, inline video (the NoSleep.js trick). The lock is dropped by the OS when the page is hidden, so it is
+// re-acquired on visibilitychange and on resume; released when the workout finishes or is closed.
+const NOSLEEP_MP4 = 'data:video/mp4;base64,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GCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcAAAAHQZqgF85wjAEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcAAAAHQZrAF85wjAEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwAAAAdBmuAXznCMARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwAAAAdBmwAXznCMARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHAAAAB0GbIBfOcIwBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAH';
+const WAKE = { mode: 'off', err: null };
+let wakeVid = null;
+const wakeWanted = () => settings.keepAwake !== false && playerOpen();
+function videoWake() {
+  if (!wakeVid) {
+    wakeVid = document.createElement('video');
+    wakeVid.setAttribute('playsinline', ''); wakeVid.setAttribute('webkit-playsinline', ''); wakeVid.setAttribute('muted', '');
+    wakeVid.muted = true; wakeVid.loop = true; wakeVid.setAttribute('aria-hidden', 'true'); wakeVid.id = 'wakeVid';
+    wakeVid.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1';
+    wakeVid.src = NOSLEEP_MP4; document.body.appendChild(wakeVid);
+  }
+  WAKE.mode = 'video';
+  const pr = wakeVid.play(); if (pr && pr.catch) pr.catch(e => { WAKE.err = 'video:' + (e && e.name); });
+}
+function acquireWake() {
+  if (!wakeWanted()) return;
+  if (P.wake && !P.wake.released) return;            // already held
+  if (!('wakeLock' in navigator) || !navigator.wakeLock) { videoWake(); return; } // synchronous: stays inside the tap on iOS
+  navigator.wakeLock.request('screen').then(l => {
+    if (!wakeWanted()) { l.release().catch(() => {}); return; }
+    P.wake = l; WAKE.mode = 'wakelock'; WAKE.err = null; if (wakeVid) wakeVid.pause();
+    l.addEventListener('release', () => { if (P.wake === l) { P.wake = null; if (WAKE.mode === 'wakelock') WAKE.mode = 'released'; } });
+  }).catch(e => { WAKE.err = e && e.name; videoWake(); });
+}
+function releaseWake() {
+  const l = P.wake; P.wake = null; try { l && l.release().catch(() => {}); } catch (e) {}
+  if (wakeVid) { try { wakeVid.pause(); } catch (e) {} }
+  WAKE.mode = 'off';
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && playerOpen()) acquireWake(); });
+['touchend', 'click'].forEach(t => document.addEventListener(t, () => { if (playerOpen() && WAKE.mode === 'video' && wakeVid && wakeVid.paused && wakeWanted()) wakeVid.play().catch(() => {}); }, { capture: true, passive: true }));
 function beepFile(freq) {
   const f = BEEP_FILES.reduce((a, b) => Math.abs(b - freq) < Math.abs(a - freq) ? b : a);
   try { let el = beepEls[f]; if (!el) { el = beepEls[f] = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); } el.muted = false; el.currentTime = 0; const pr = el.play(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {}
@@ -378,16 +435,6 @@ function say(text, force = false) {
 
 /* ---------- player ---------- */
 const P = { sets: {}, steps: [], i: 0, end: 0, left: 0, paused: false, timer: null, started: 0, lastBeep: -1, wake: null, halfSaid: false, cueOff: {}, cueSaid: 0, tk: '' };
-/* Tempo counter: e.g. 3-1-2-0 = 3 s slow lowering, 1 s hold, 2 s drive, 0 s pause. Shown big on screen and
-   counted audibly (a distinct tone starts each phase, soft ticks count the seconds inside it). */
-const TEMPO_PH = [['Slow', '⬇', 520], ['Hold', '⏸', 700], ['Drive', '⬆', 980], ['Pause', '⏸', 700]];
-function tempoState(s, left) {
-  if (!settings.tempo || s.type !== 'work' || !s.ex.tempo) return null;
-  const parts = tempoParts(s.ex.tempo), cyc = tempoSum(s.ex.tempo); if (!cyc) return null;
-  const el = Math.max(0, s.dur - left), rep = Math.floor(el / cyc) + 1; let t = el % cyc;
-  for (let k = 0; k < 4; k++) { const d = parts[k] || 0; if (!d) continue; if (t < d) return { rep, phase: k, sec: Math.floor(t) + 1, of: d, name: TEMPO_PH[k][0], icon: TEMPO_PH[k][1] }; t -= d; }
-  return null;
-}
 /* Form cues rotate across sessions: each session starts one cue further along per exercise
    (last offset kept in localStorage gc_cueidx), and each round within a session shows the next pair. */
 function assignCueOffsets(steps) {
@@ -406,7 +453,7 @@ async function startWorkout() {
   unlockAudio(); // must run synchronously in the tap, before any await (iOS)
   P.steps = buildSteps(today); P.i = 0; P.started = Date.now(); P.sets = {}; P.paused = false; P.cueOff = assignCueOffsets(P.steps);
   $('#player').classList.remove('hidden');
-  try { if ('wakeLock' in navigator) P.wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+  acquireWake(); // keep the screen on (Wake Lock API, or a muted looping video fallback)
   enterStep();
   clearInterval(P.timer); P.timer = setInterval(tick, 200);
 }
@@ -416,21 +463,37 @@ function setLogHTML(pw) {
   return `<div class="setlog" id="setlog"><div class="slh"><b>Log set ${pw.round}/${pw.rounds}</b> · ${esc(e.name)}</div>
     <div class="stps"><div class="stp"><button type="button" data-d="w-1" aria-label="less weight">−</button><div class="v"><b id="lw">${v.w ? (e.kb && e.kb.mode === 'double' ? '2×' : '') + v.w : bw ? 'BW' : '—'}</b><small>${bw ? (v.w ? '+lb' : 'bodyweight') : 'lb'}</small></div><button type="button" data-d="w1" aria-label="more weight">+</button></div>
     <div class="stp"><button type="button" data-d="r-1" aria-label="fewer reps">−</button><div class="v"><b id="lr">${v.r || '—'}</b><small>reps</small></div><button type="button" data-d="r1" aria-label="more reps">+</button></div></div>
-    <div class="mut slm" id="slm">${P.sets[setKey(pw)] && !P.sets[setKey(pw)].auto ? '✓ Saved' : 'Saved as shown · tap − / + to correct'}</div></div>`;
+    <button type="button" class="savebtn" id="bSaveSet">✓ Save &amp; next exercise</button>
+    <div class="mut slm" id="slm">${slmText(pw)}</div></div>`;
+}
+function slmText(pw) {
+  const st = P.steps[P.i] || {}, saved = P.sets[setKey(pw)] && !P.sets[setKey(pw)].auto;
+  if (st.sw) return P.paused ? (saved ? '✓ Saved · ' : '') + 'Timer paused while you log · Save goes on' : 'Tap ± to log (timer pauses) · or log it on the next rest';
+  return saved ? '✓ Saved · rest keeps running' : 'Rest keeps running · Save skips the rest';
 }
 function wireSetLog(pw) {
   const box = $('#setlog'); if (!box) return;
   box.querySelectorAll('button[data-d]').forEach(b => b.onclick = () => {
     const cur = P.sets[setKey(pw)] || setPrefill(pw); let w = cur.w, r = cur.r; const d = b.dataset.d;
     if (d[0] === 'w') w = stepWeight(pw.ex, w, +d.slice(1)); else r = Math.max(0, (Number(r) || 0) + +d.slice(1)) || null;
-    recordSet(pw, w, r, false); box.outerHTML = setLogHTML(pw); wireSetLog(pw); const m = $('#slm'); if (m) m.textContent = '✓ Saved';
+    recordSet(pw, w, r, false);
+    const st = P.steps[P.i]; if (st && st.sw && !P.paused) { P.paused = true; P.logHold = true; render(); return; } // 10 s switch: don't rush the logging
+    box.outerHTML = setLogHTML(pw); wireSetLog(pw);
   });
+  const sv = $('#bSaveSet'); if (sv) sv.onclick = () => saveAndNext(pw);
+}
+// Save: store the set as shown and jump straight to the next exercise (skip the rest of this rest/transition).
+function saveAndNext(pw) {
+  const cur = P.sets[setKey(pw)] || setPrefill(pw); recordSet(pw, cur.w, cur.r, false); P.saved = (P.saved || 0) + 1;
+  unlockAudio(); P.paused = false; P.logHold = false; P.i++;
+  while (P.steps[P.i] && P.steps[P.i].type === 'rest') P.i++;
+  enterStep();
 }
 function enterStep() {
   const s = P.steps[P.i]; if (!s) return finish();
   P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.cueSaid = 0; P.tk = '';
   if (s.type === 'work') { beep(1200, 350); say(s.ex.name); }
-  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)]) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next up, ' + s.next.ex.name : '') : 'Rest, ' + s.dur + ' seconds.' + (s.next ? ' Next up, ' + s.next.ex.name : '')); }
+  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)]) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next up, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? 'Set up for ' + s.nextBlock + '. ' + s.dur + ' seconds.' + (s.next ? ' First up, ' + s.next.ex.name : '') : 'Rest, ' + s.dur + ' seconds.' + (s.next ? ' Next up, ' + s.next.ex.name : '')); }
   else if (s.type === 'prep') say('Get ready. First up, ' + s.ex.name);
   render();
 }
@@ -447,13 +510,12 @@ function tick() {
     else if (P.cueSaid === 1 && cs[1] && s.dur >= 30 && el >= s.dur / 2 + (sw ? 3 : 0) && left > 5) { P.cueSaid = 2; say(cs[1]); }
   }
   if (s.type === 'rest' && !s.transition && s.dur >= 20 && !P.halfSaid && left <= 10 && left > 9) { P.halfSaid = true; beep(700, 120); say('10 seconds' + (s.next ? '. Get ready for ' + s.next.ex.name : '')); }
-  const ts = tempoState(s, left); // audible tempo count (stays quiet under the final 3-2-1 beeps)
-  if (ts && left > 3.5) { const k = ts.rep + ':' + ts.phase + ':' + ts.sec; if (k !== P.tk) { P.tk = k; P.tempoBeeps = (P.tempoBeeps || 0) + 1; if (ts.sec === 1) beep(TEMPO_PH[ts.phase][2], 140, 0.22); else beep(420, 45, 0.1); } }
   if (left <= 0) { P.i++; enterStep(); return; }
   renderTime();
 }
 function togglePause() {
   if (P.paused) { P.end = Date.now() + P.left * 1000; P.paused = false; } else { P.paused = true; }
+  acquireWake(); // screen stays on while paused too; re-acquire if iOS dropped it
   render();
 }
 // Demo videos open in a new tab / the YouTube app; the workout timer is paused first so nothing runs on while watching.
@@ -474,7 +536,7 @@ function skip(d = 1) { P.i = Math.max(0, P.i + d); enterStep(); }
 function quit() { if (!confirm('End workout? Progress so far will not be saved.')) return; stopPlayer(); }
 function stopPlayer() {
   clearInterval(P.timer); $('#player').classList.add('hidden');
-  try { P.wake && P.wake.release(); } catch (e) {} if ('speechSynthesis' in window) speechSynthesis.cancel(); stopKeepAlive();
+  releaseWake(); if ('speechSynthesis' in window) speechSynthesis.cancel(); stopKeepAlive();
 }
 const fmt = s => { s = Math.ceil(s); return s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') : String(s); };
 function render() {
@@ -484,18 +546,20 @@ function render() {
   const meta = s.type === 'work' ? `${s.block} · Round ${s.round}/${s.rounds}` : s.type === 'rest' && s.next ? `Up next: ${s.next.block} · Round ${s.next.round}/${s.next.rounds}` : s.block || '';
   const sg = s.type === 'work' && suggest(s.ex.id);
   const pw = s.type === 'rest' ? logStepFor(P.i) : null;
-  const lastW = s.type === 'work' ? (() => { const ls = lastSet(s.ex.id, P.started); if (ls) return setText(s.ex, ls); const lp = lastPerf(s.ex.id); return lp ? lastText(s.ex, lp) : ''; })() : '';
+  const hist = s.type === 'work' ? recentHistory(s.ex, 3, P.started) : [];
   const nowW = s.type === 'work' ? Object.values(P.sets).filter(x => x.id === s.ex.id).sort((a, b) => a.t - b.t).map(x => setText(s.ex, x)) : [];
   const doneSteps = P.steps.slice(0, P.i).reduce((a, x) => a + x.dur, 0), total = P.steps.reduce((a, x) => a + x.dur, 0);
   el.innerHTML = `
     <div class="row" style="flex:0"><div class="mut">${meta}</div><div class="mut" style="text-align:right">${P.i + 1}/${P.steps.length}</div></div>
     <div class="bar"><i style="width:${(100 * doneSteps / total).toFixed(1)}%"></i></div>
-    <div class="phase">${s.type === 'work' ? 'Work' : s.type === 'rest' ? 'Rest' : 'Prepare'}${P.paused ? ' · Paused' : ''}</div>
+    <div class="phase">${s.type === 'work' ? 'Work' : s.type === 'rest' ? (s.setup ? 'Set up' : s.sw ? 'Switch' : 'Rest') : 'Prepare'}${P.paused ? ' · Paused' : ''}</div>
     <div class="exname">${title}</div>
-    <div class="mut">${s.type === 'work' ? (s.ex.cue || s.ex.muscles.join(', ')) : s.type === 'rest' && !s.transition && !pw ? `Done: ${esc(s.after)} · breathe, shake it out` : ''}</div>
-    ${s.type === 'work' && (lastW || nowW.length || (sg && sgText(s.ex, sg))) ? `<div class="lastline">${lastW ? `<span>Last: <b>${lastW}</b></span>` : ''}${nowW.length ? `<span>Today: ${nowW.join(', ')}</span>` : ''}${sg && sgText(s.ex, sg) ? `<span>Try ${sgText(s.ex, sg)}</span>` : ''}</div>` : ''}
+    <div class="mut">${s.type === 'work' ? (s.ex.cue || s.ex.muscles.join(', ')) : s.setup ? (s.restPart ? `Rest ${s.restPart} s + set up ${s.setupPart} s` : `Set up ${s.setupPart} s`) : s.type === 'rest' && !s.transition && !pw ? `Done: ${esc(s.after)} · breathe, shake it out` : ''}</div>
+    ${s.setup ? setupHTML(s) : ''}
+    ${histHTML(hist)}
+    ${s.type === 'work' && (nowW.length || (sg && sgText(s.ex, sg))) ? `<div class="lastline">${nowW.length ? `<span>Today: ${nowW.join(', ')}</span>` : ''}${sg && sgText(s.ex, sg) ? `<span>Try ${sgText(s.ex, sg)}</span>` : ''}</div>` : ''}
     ${pw ? setLogHTML(pw) : ''}
-    ${s.type === 'work' && s.ex.targetReps ? `<div class="tempo${settings.tempo && s.ex.tempo ? '' : ' plain'}" id="tempo"><span class="tph" id="tph"></span><span class="trep" id="trep">${s.ex.targetReps} reps${s.ex.tempo ? ' · tempo ' + s.ex.tempo : ''}</span></div>` : ''}
+    ${s.type === 'work' && s.ex.targetReps ? `<div class="target" id="target">${s.ex.targetReps} reps</div>` : ''}
     ${(() => { const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie && ie.image ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}${pw ? ' small' : ''}"><img id="pimg" src="${ie.image[0]}" data-f="${ie.image.join('|')}" alt="${ie.name}">${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
     ${(() => { const cs = s.type === 'work' ? cuesFor(s.ex, s.round) : (s.next && !pw ? cuesFor(s.next.ex, s.next.round).slice(0, 1) : []); return cs.length ? `<div class="cues${s.type === 'work' ? '' : ' dim'}">${s.type === 'work' ? '' : '<b>Next focus:</b> '}${cs.map(c => `<div>• ${c}</div>`).join('')}</div>` : ''; })()}
     <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="#d9e7f2" stroke-width="7" fill="none"/>
@@ -510,11 +574,14 @@ function render() {
   const ba = $('#bAvoid'); if (ba) ba.onclick = () => { const s = P.steps[P.i], tgt = s.type === 'work' ? s.ex : s.next && s.next.ex, sl = findSlot(tgt); if (sl) { avoidOriginal(...sl); render(); } }; $('#bPrev').onclick = () => skip(-1); $('#bQuit').onclick = quit;
   renderTime();
 }
+function setupHTML(s) {
+  const b = today.blocks.find(x => x.name === s.nextBlock), items = (b && b.items) || s.nextItems || [];
+  const eq = [...new Set(items.flatMap(e => e.equipment || []))];
+  return `<div class="hist setupcard" id="setupCard"><div class="hh">Next group · ${esc(s.nextBlock)} · ${(b && b.rounds) || s.nextRounds} rounds</div>${items.map(e => `<div class="hr"><span>${esc(e.name)}</span><b>${e.targetReps ? e.targetReps + ' reps' : fmt(e.work) + (e.work < 60 ? ' s' : '')}</b></div>`).join('')}${eq.length ? `<div class="sueq">Equipment: ${esc(eq.join(', '))}</div>` : ''}</div>`;
+}
 function renderTime() {
   const s = P.steps[P.i]; if (!s) return;
   const n = $('#num'), a = $('#arc'); if (n) n.textContent = fmt(P.left);
-  const tb = $('#tempo'), ts = tempoState(s, P.left);
-  if (tb && ts) { tb.dataset.phase = ts.name.toLowerCase(); $('#tph').textContent = `${ts.icon} ${ts.name} ${ts.sec}${ts.of > 1 ? '/' + ts.of : ''}`; $('#trep').textContent = `Rep ${Math.min(ts.rep, s.ex.targetReps)}/${s.ex.targetReps} · ${s.ex.tempo}`; }
   if (a) a.setAttribute('stroke-dashoffset', (282.7 * (1 - P.left / s.dur)).toFixed(1));
   const im = $('#pimg'); // alternate start/end frames every ~1.2s while working
   if (im && !P.paused) { const f = im.dataset.f.split('|'), k = s.type === 'work' ? Math.floor((s.dur - P.left) / 1.2) % f.length : 0; if (!im.src.endsWith(f[k])) im.src = f[k]; }
@@ -544,13 +611,11 @@ function saveSession(mins, log) {
 /* ---------- exercise preview (pre-workout overview): big start/end images + details, never starts the workout ---------- */
 function previewHTML(bi, ii) {
   const w = today, b = w.blocks[bi], e = b.items[ii], warm = b.kind === 'warmup' || b.kind === 'cooldown';
-  const sg = suggest(e.id), ls = lastSet(e.id), lp = !ls && lastPerf(e.id);
-  const last = ls ? setText(e, ls) : lp ? lastText(e, lp) : '';
-  const lastWhen = ls ? new Date(ls.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+  const sg = suggest(e.id), hist = recentHistory(e, 3);
   const bk = nextAlternate(w, bi, ii), bkName = bk ? byId(bk).name : '';
   const vol = `${b.rounds} × ${e.targetReps ? e.targetReps + ' reps' : fmt(e.work) + (e.work < 60 ? ' s' : '')}`;
-  const volSub = e.targetReps ? (e.reps ? `range ${e.reps[0]}–${e.reps[1]} · ${fmt(e.work)}${e.work < 60 ? ' s' : ''} set` : '') : 'timed';
-  const rest = warm ? '10 s' : e.rest + ' s', restSub = warm ? 'transition' : 'after each set';
+  const volSub = e.targetReps ? (e.reps ? `range ${e.reps[0]}–${e.reps[1]}` : '') : 'timed';
+  const rest = warm ? '10 s' : e.rest + ' s', restSub = warm ? 'transition' : b.items.length > 1 ? (ii < b.items.length - 1 ? `after the round · ${clampSwitch()} s switch to next` : 'after the round (both done)') : 'after each round';
   const imgs = e.image || [];
   const st = (k, v, sub) => `<div class="pvst"><small>${k}</small><b>${v}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
   return `<div class="pvsheet" id="pvSheet" role="dialog" aria-modal="true" aria-labelledby="pvTitle">
@@ -561,11 +626,11 @@ function previewHTML(bi, ii) {
       ${imgs.length > 1 ? `<div class="pvdots" id="pvDots">${imgs.map((_, k) => `<i class="${k ? '' : 'on'}"></i>`).join('')}<span class="mut">swipe</span></div>` : ''}` : ''}
     <div class="pvstats">
       ${st('Sets × reps', vol, volSub)}
-      ${st('Tempo', settings.tempo && e.tempo && e.targetReps ? e.tempo : e.tempo ? e.tempo + ' <small>(counting off)</small>' : '—', e.tempo ? 'lower · hold · lift · pause' : 'own pace')}
+      ${st('Set time', fmt(e.work) + (e.work < 60 ? ' s' : ''), e.targetReps ? 'per set · own pace' : 'per round')}
       ${st('Rest', rest, restSub)}
       ${st('Equipment', esc(e.equipment.join(', ')), e.kb ? `KB ${e.kb.mode === 'double' ? 'pair' : 'single'}` : '')}
     </div>
-    <div class="pvlast">${last ? `<div>Last logged: <b>${last}</b>${lastWhen ? ` <span class="mut">· ${lastWhen}</span>` : ''}</div>` : '<div class="mut">Nothing logged yet for this exercise.</div>'}${sg && sgText(e, sg) && !warm ? `<div>Today: try <b>${sgText(e, sg)}</b></div>` : ''}</div>
+    <div class="pvlast">${hist.length ? histHTML(hist, 'pvh') : '<div class="mut">Nothing logged yet for this exercise.</div>'}${sg && sgText(e, sg) && !warm ? `<div>Today: try <b>${sgText(e, sg)}</b></div>` : ''}</div>
     ${e.cue ? `<div class="pvcue">${esc(e.cue)}</div>` : ''}
     ${(e.formCues || []).length ? `<h3>Form cues</h3><ul class="pvcues">${e.formCues.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
     <div class="pvbk"><span>⇄ Backup swap</span><b>${bkName ? esc(bkName) : 'No backup available'}</b></div>
@@ -610,7 +675,7 @@ function renderToday() {
    <button class="pri" id="bStart">▶ Start workout</button>
    <div class="mut pvhint">Tap any exercise for a big preview</div>
    ${w.blocks.map(b => `<div class="card block"><div class="bt">${b.name} <span class="mut">· ${b.rounds} round${b.rounds > 1 ? 's' : ''}</span></div>
-     ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex pv" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}<br><small>${e.targetReps ? e.targetReps + ' reps' + (settings.tempo && e.tempo ? ' · ' + e.tempo : '') + ' · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
+     ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex pv" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}<br><small>${e.targetReps ? e.targetReps + ' reps · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
    <div class="row" style="margin:10px 0 20px"><button id="bShuffle">🔀 Shuffle exercises</button><button id="bSkipDay">Skip to next day</button></div>`;
   $('#bStart').onclick = startWorkout;
   const tt = $('#tab-today'); // tap a row (not its Swap/Avoid/Demo controls) -> large preview
@@ -638,9 +703,9 @@ function renderLibrary() {
   const tl = $('#tab-library'); tl.onclick = ev => { const r = ev.target.closest('.ex.lib'); if (r) $('#det-' + r.dataset.id).classList.toggle('hidden'); };
   tl.onchange = ev => { const sel = ev.target.closest('select.rov'); if (!sel) return; const v = +sel.value; if (v) settings.restOverrides[sel.dataset.id] = v; else delete settings.restOverrides[sel.dataset.id];
     LS.set('gc_settings', settings); today = generate(); const row = tl.querySelector('.ex.lib[data-id="' + sel.dataset.id + '"] .mut'); if (row) row.textContent = byId(sel.dataset.id).work + 's / ' + restFor(byId(sel.dataset.id)) + 's rest ›'; };
-  tl.innerHTML = cats.map(c => `<h2>${c}</h2><div class="card">${available().filter(e => (e.group || e.category) === c).map(e => `<div class="ex lib" data-id="${e.id}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}${settings.avoided.includes(e.id) ? ' <span class="tag">avoided</span>' : ''}<br><small>${e.muscles.join(', ')}${e.reps ? ' · ' + e.reps[0] + '–' + e.reps[1] + ' reps' : ' · timed'}${e.tempo ? ' · ' + e.tempo : ''}</small></div><div class="mut">${e.work}s / ${restFor(e)}s rest ›</div></div>
+  tl.innerHTML = cats.map(c => `<h2>${c}</h2><div class="card">${available().filter(e => (e.group || e.category) === c).map(e => `<div class="ex lib" data-id="${e.id}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}${settings.avoided.includes(e.id) ? ' <span class="tag">avoided</span>' : ''}<br><small>${e.muscles.join(', ')}${e.reps ? ' · ' + e.reps[0] + '–' + e.reps[1] + ' reps' : ' · timed'}</small></div><div class="mut">${e.work}s / ${restFor(e)}s rest ›</div></div>
       <div class="libdet hidden" id="det-${e.id}">${(e.image || []).map(p => `<img loading="lazy" src="${p}" alt="">`).join('')}
-        <div class="mut" style="margin:6px 0 2px">${e.equipment.join(', ')}${e.cue ? ' · ' + e.cue : ''}</div><div class="mut" style="font-size:13px">${e.reps ? `Reps ${e.reps[0]}–${e.reps[1]}${e.startReps ? ` (start at ${e.startReps})` : ''}` : 'Timed'}${e.tempo ? ` · Tempo ${e.tempo} (lower-hold-lift-pause)` : ''}${e.kb ? ` · KB: ${e.kb.mode === 'double' ? '2×' : ''}${snapKB(e, e.kb.start)} lb to start` : ''}</div>${e.demoUrl ? `<div style="margin:6px 0">${demoLink(e, '', '▶ Watch demo')}<div class="mut" style="font-size:12px;margin-top:4px">${esc(e.demoTitle)} · ${esc(e.demoChannel)}</div></div>` : ''}${e.category !== 'mobility' ? `<div class="restov"><span class="mut" style="font-size:13px">Rest after each set</span><select class="rov" data-id="${e.id}"><option value="">Default (${restFor({ ...e, id: '' })} s)</option>${[20, 30, 45, 60, 75, 90, 120, 150].map(v => `<option value="${v}" ${settings.restOverrides[e.id] === v ? 'selected' : ''}>${v} s</option>`).join('')}</select></div>` : ''}<b>Form cues</b><ul>${(e.formCues || []).map(c => `<li>${c}</li>`).join('')}</ul><div class="mut" style="font-size:13px;margin-bottom:8px"><b>Swap backups:</b> ${(e.alternates || []).map(a => (byId(a) || {}).name || a).join(' → ')}</div></div>`).join('')}</div>`).join('');
+        <div class="mut" style="margin:6px 0 2px">${e.equipment.join(', ')}${e.cue ? ' · ' + e.cue : ''}</div><div class="mut" style="font-size:13px">${e.reps ? `Reps ${e.reps[0]}–${e.reps[1]}${e.startReps ? ` (start at ${e.startReps})` : ''}` : 'Timed'}${e.kb ? ` · KB: ${e.kb.mode === 'double' ? '2×' : ''}${snapKB(e, e.kb.start)} lb to start` : ''}</div>${e.demoUrl ? `<div style="margin:6px 0">${demoLink(e, '', '▶ Watch demo')}<div class="mut" style="font-size:12px;margin-top:4px">${esc(e.demoTitle)} · ${esc(e.demoChannel)}</div></div>` : ''}${e.category !== 'mobility' ? `<div class="restov"><span class="mut" style="font-size:13px">Rest after each set</span><select class="rov" data-id="${e.id}"><option value="">Default (${restFor({ ...e, id: '' })} s)</option>${[20, 30, 45, 60, 75, 90, 120, 150].map(v => `<option value="${v}" ${settings.restOverrides[e.id] === v ? 'selected' : ''}>${v} s</option>`).join('')}</select></div>` : ''}<b>Form cues</b><ul>${(e.formCues || []).map(c => `<li>${c}</li>`).join('')}</ul><div class="mut" style="font-size:13px;margin-bottom:8px"><b>Swap backups:</b> ${(e.alternates || []).map(a => (byId(a) || {}).name || a).join(' → ')}</div></div>`).join('')}</div>`).join('');
 }
 function renderSettings() {
   $('#title').textContent = 'Settings'; $('#sub').textContent = 'Tune the plan to you';
@@ -650,15 +715,18 @@ function renderSettings() {
   $('#tab-settings').innerHTML = `<div class="card">
     <label>Days per week</label><select id="sDays">${[3, 4, 5].map(d => `<option ${d == settings.daysPerWeek ? 'selected' : ''}>${d}</option>`).join('')}</select>
     <label>Session length (minutes)</label><select id="sMin">${[30, 45, 60].map(d => `<option ${d == settings.minutes ? 'selected' : ''}>${d}</option>`).join('')}</select>
-    <label>Rest between sets (lifts; core/conditioning get half, min 30 s)</label><select id="sRest">${[30, 45, 60, 75, 90, 120].map(d => `<option value="${d}" ${d == settings.restSec ? 'selected' : ''}>${d} s</option>`).join('')}</select>
+    <label>Switch time within pair (A → B)</label><select id="sSwitch">${[5, 10, 15, 20, 30].map(d => `<option value="${d}" ${d == clampSwitch() ? 'selected' : ''}>${d} s</option>`).join('')}</select>
+    <label>Rest between rounds (after both exercises; lifts; core/conditioning get half, min 30 s)</label><select id="sRest">${[30, 45, 60, 75, 90, 120].map(d => `<option value="${d}" ${d == settings.restSec ? 'selected' : ''}>${d} s</option>`).join('')}</select>
+    <label>Setup time between groups (added to the rest)</label><select id="sSetup">${[15, 30, 45, 60, 75, 90].map(d => `<option value="${d}" ${d == clampSetup() ? 'selected' : ''}>+${d} s</option>`).join('')}</select>
     <label>Level</label><select id="sLvl">${Object.keys(LEVEL).map(l => `<option ${l === settings.level ? 'selected' : ''}>${l}</option>`).join('')}</select>
     <div class="chk"><input type="checkbox" id="sBeep" ${settings.beeps ? 'checked' : ''}><span>Beeps (3-2-1 countdown)</span></div>
     <div class="chk"><input type="checkbox" id="sVoice" ${settings.voice ? 'checked' : ''}><span>Voice cues (exercise names + form cues)</span></div>
+    <div class="chk"><input type="checkbox" id="sAwake" ${settings.keepAwake !== false ? 'checked' : ''}><span>Keep screen awake <small class="mut">· during a workout</small></span></div>
     <button id="bTestSound" type="button" style="width:100%;margin:8px 0 4px">🔊 Test sound</button>
     <div class="mut" id="soundNote" style="font-size:13px">No sound on iPhone? Turn off silent mode (ring switch / Action button), turn the volume up, then tap Test sound once.</div>
     <div class="chk"><input type="checkbox" id="sWu" ${settings.warmup ? 'checked' : ''}><span>Include warm-up</span></div>
     <div class="chk"><input type="checkbox" id="sCd" ${settings.cooldown ? 'checked' : ''}><span>Include cool-down</span></div>
-    <div class="chk"><input type="checkbox" id="sTempo" ${settings.tempo ? 'checked' : ''}><span>Tempo counting (slow reps, e.g. 3-1-2-0: count shown + beeps during sets)</span></div></div>
+</div>
     <h2>Equipment switches</h2><div class="card" id="eqToggles">
     <div class="chk"><input type="checkbox" id="sTrx" ${settings.trx ? 'checked' : ''}><span><b>TRX</b> <small class="mut">· ${nTrx} exercises · off = never programmed or offered as a swap</small></span></div>
     <div class="chk"><input type="checkbox" id="sRower" ${settings.rower ? 'checked' : ''}><span><b>Rower</b> <small class="mut">· ${nRow} exercises · off while it's malfunctioning; warm-up uses step runs instead</small></span></div>
@@ -667,9 +735,10 @@ function renderSettings() {
     <h2>Avoided exercises</h2><div class="card" id="avoidList">${settings.avoided.length ? settings.avoided.map(id => `<div class="ex"><div style="flex:1">${(byId(id) || {}).name || id}<br><small>auto-replaced by ${((byId(id) || {}).alternates || []).filter(a => !settings.avoided.includes(a)).map(a => (byId(a) || {}).name).filter(Boolean).slice(0, 1).join('') || 'its backups'}</small></div><button class="unavoid" data-id="${id}">Un-avoid</button></div>`).join('') : '<div class="mut">None. Hold ⇄ Swap on an exercise to avoid it permanently.</div>'}</div>
     <button id="bReset" style="width:100%;margin:10px 0 20px">Clear history</button>`;
   const save = () => {
-    settings.daysPerWeek = +$('#sDays').value; settings.minutes = +$('#sMin').value; settings.level = $('#sLvl').value; settings.restSec = +$('#sRest').value;
+    settings.daysPerWeek = +$('#sDays').value; settings.minutes = +$('#sMin').value; settings.level = $('#sLvl').value; settings.restSec = +$('#sRest').value; settings.switchSec = +$('#sSwitch').value; settings.setupSec = +$('#sSetup').value;
     settings.beeps = $('#sBeep').checked; settings.voice = $('#sVoice').checked; settings.warmup = $('#sWu').checked; settings.cooldown = $('#sCd').checked;
-    settings.tempo = $('#sTempo').checked; settings.trx = $('#sTrx').checked; settings.rower = $('#sRower').checked;
+    settings.keepAwake = $('#sAwake').checked; if (settings.keepAwake) acquireWake(); else releaseWake();
+    settings.trx = $('#sTrx').checked; settings.rower = $('#sRower').checked;
     const kb = $('#sKb').value.split(/[^0-9.]+/).map(Number).filter(x => x > 0); if (kb.length) settings.kettlebells = kb;
     settings.excluded = [...document.querySelectorAll('.eq')].filter(c => !c.checked).map(c => c.value);
     LS.set('gc_settings', settings); today = generate();
@@ -693,6 +762,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, tempoState, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });

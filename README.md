@@ -9,7 +9,7 @@ A lightweight, offline-capable workout player (plain HTML/JS, no build step).
 - Timed work/rest player with "next up" preview; home card shows the rotation and the next workout
 - Light theme (white + light blue, darker-blue accents)
 - Per-exercise rep ranges (default 12–15; harder bodyweight moves 5–8; holds/carries/planks timed)
-- Per-exercise tempo with audible + visual count (toggle in Settings)
+- Per-exercise rep ranges; lift at your own pace (no tempo counting)
 - Equipment toggles (TRX, rower) and kettlebell inventory–aware load suggestions
 - Swap / avoid exercises, installable PWA with offline cache
 
@@ -23,7 +23,10 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - "Watch demo" buttons link to third-party YouTube videos; those videos are not included or cached here.
 
 ### New
-- Tap any exercise on the Today overview for a big preview (start/end images, sets × reps, tempo, rest, equipment, form cues, last logged, backup swap)
-- Full rest after every set (Settings › Rest between sets, default 60 s; core 30 s; per-exercise override in Library), spoken + beeped with next-exercise preview.
-- Per-set logging of weight and reps on the rest screen, "Last: 25 lb × 12" on the exercise screen, history keeps every set.
+- Each exercise screen shows its **History**: the last 3 sessions with dates and weight × reps per set.
+- Keeps the iPhone screen awake during a workout (Wake Lock API, with a muted inline-video fallback). Toggle: Settings › Keep screen awake (default on).
+- Tempo removed completely (no counter, beeps, tile or setting).
+- Tap any exercise on the Today overview for a big preview (start/end images, sets × reps, set time, rest, equipment, form cues, last few sessions, backup swap)
+- Supersets: A → 10 s switch → B, then full rest after the round (default 60 s). Between groups: rest + set-up time (default +30 s) with the next group's exercises and equipment on screen. All three are in Settings. Spoken + beeped with next-exercise preview.
+- Per-set logging of weight and reps on the rest screen, plus a big **Save & next exercise** button that stores the set and jumps straight to the next exercise. The rest keeps running while you enter numbers.
 - iPhone sound fix (audio unlocked on Start, audio-file fallback) and Settings › Test sound. If silent, turn off silent mode.

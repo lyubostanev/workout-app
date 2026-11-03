@@ -55,9 +55,7 @@ select,input{width:100%;font:inherit;background:#fff;color:var(--txt);border:1px
 .chk{display:flex;align-items:center;gap:10px;margin:8px 0}.chk input{width:auto}
 .logrow{display:grid;grid-template-columns:1fr 64px 56px 64px;gap:6px;align-items:center;margin:6px 0;font-size:14px}
 .logrow input{padding:8px}.logrow>div:first-child:only-of-type{grid-column:auto}
-.tempo{margin:8px auto 0;flex-shrink:0;display:flex;align-items:baseline;justify-content:center;gap:12px;padding:6px 16px;border-radius:14px;background:#e6effc;border:1px solid #c9daf5;max-width:320px}
-.tempo .tph{font-size:26px;font-weight:800;letter-spacing:.5px}.tempo .trep{font-size:14px;color:#3d4f6b}
-.tempo.plain .tph{display:none}.tempo[data-phase=slow] .tph{color:var(--rest)}.tempo[data-phase=hold] .tph,.tempo[data-phase=pause] .tph{color:#9a6200}.tempo[data-phase=drive] .tph{color:var(--accT)}
+.target{margin:8px auto 0;flex-shrink:0;text-align:center;padding:6px 16px;border-radius:14px;background:#e6effc;border:1px solid #c9daf5;max-width:320px;font-size:22px;font-weight:800;color:var(--rest)}
 .demo{display:inline-block;background:#e6effc;color:var(--rest);text-decoration:none;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
 .demo.sm{padding:3px 8px;margin:4px 0 0 6px;font-size:12px;border-radius:8px}
 .pimg{position:relative}.pimg .demo{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.72);color:#fff;padding:6px 10px;font-size:13px}
@@ -108,6 +106,13 @@ html.pvopen,html.pvopen body{overflow:hidden}
 .pvcues{margin:0;padding-left:20px;color:#0c4a6e;font-size:15px}.pvcues li{margin:4px 0}
 .pvbk{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#eef3fb;border-radius:14px;padding:10px 12px;margin:12px 0 8px}.pvbk span{color:var(--mut);font-size:14px;white-space:nowrap}.pvbk b{text-align:right}
 .pvdemo{display:block;text-align:center;margin:6px 0 0}
+.hist{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 12px;font-size:14px;flex-shrink:0}
+.hist .hh{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-bottom:2px}
+.hist .hr{display:flex;justify-content:space-between;gap:10px;padding:2px 0}.hist .hr span{color:var(--mut);white-space:nowrap}.hist .hr b{color:var(--rest);text-align:right}
+.setupcard{border:2px solid var(--acc)}.setupcard .sueq{margin-top:4px;padding-top:4px;border-top:1px solid var(--line);color:var(--accT);font-weight:600}
+.hist.pvh{border:0;padding:0;margin:0;font-size:15px}
+.savebtn{display:block;width:100%;margin-top:10px;min-height:56px;font-size:19px;font-weight:800;background:var(--acc);color:var(--onacc);border-radius:14px}
+.savebtn:active{background:var(--acc2)}
 </style>
 </head>
 <body>
