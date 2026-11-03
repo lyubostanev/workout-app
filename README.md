@@ -12,6 +12,7 @@ A lightweight, offline-capable workout player (plain HTML/JS, no build step).
 - Per-exercise rep ranges; lift at your own pace (no tempo counting)
 - Equipment toggles (TRX, rower) and kettlebell inventory–aware load suggestions
 - Swap / avoid exercises, installable PWA with offline cache
+- **v16:** realistic session length (10 s setup + 5 s/rep per set, ×2 each-side, + ~15 s logging/transition per set, self-calibrating from recorded sessions); day-specific joint-friendly warm-ups with dynamic stretches; choose today's day from the ones left in the cycle (or any day via "Other day…")
 
 ## Run locally
 Serve the folder with any static server, e.g. `python3 -m http.server`, then open `http://localhost:8000/`.

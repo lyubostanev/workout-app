@@ -14,7 +14,7 @@
   ],
   "work": 40,
   "rest": 60,
-  "cue": "Bar over mid-chest, elbows ~45\u00b0",
+  "cue": "Bar over mid-chest, elbows ~45°",
   "unilateral": false,
   "image": [
    "img/smith-bench-0.webp",
@@ -57,7 +57,7 @@
   ],
   "work": 40,
   "rest": 60,
-  "cue": "Bench at 30\u00b0",
+  "cue": "Bench at 30°",
   "unilateral": false,
   "image": [
    "img/smith-incline-bench-0.webp",
@@ -688,7 +688,7 @@
   ],
   "work": 40,
   "rest": 45,
-  "cue": "Bench at 30\u00b0",
+  "cue": "Bench at 30°",
   "unilateral": false,
   "image": [
    "img/db-incline-fly-0.webp",
@@ -935,7 +935,7 @@
   ],
   "work": 35,
   "rest": 75,
-  "cue": "Start with 3\u20135 reps, quality over quantity",
+  "cue": "Start with 3–5 reps, quality over quantity",
   "unilateral": false,
   "image": [
    "img/pullup-0.webp",
@@ -976,7 +976,7 @@
   ],
   "work": 35,
   "rest": 75,
-  "cue": "Start with 3\u20135 reps, quality over quantity",
+  "cue": "Start with 3–5 reps, quality over quantity",
   "unilateral": false,
   "image": [
    "img/chinup-0.webp",
@@ -1074,7 +1074,7 @@
   "imageSource": "free-exercise-db:Face_Pull",
   "demoUrl": "https://www.youtube.com/watch?v=ljgqer1ZpXg",
   "demoTitle": "STOP F*cking Up Face Pulls (PROPER FORM!)",
-  "demoChannel": "ATHLEAN-X\u2122",
+  "demoChannel": "ATHLEAN-X™",
   "alternates": [
    "cable-rear-delt-fly",
    "db-rear-delt-fly",
@@ -1623,7 +1623,7 @@
   ],
   "work": 35,
   "rest": 75,
-  "cue": "Aim for 6\u201310 reps, quality over quantity",
+  "cue": "Aim for 6–10 reps, quality over quantity",
   "unilateral": false,
   "image": [
    "img/band-pullup-0.webp",
@@ -1667,7 +1667,7 @@
   ],
   "work": 35,
   "rest": 75,
-  "cue": "Start with 3\u20135 slow lowers, quality over quantity",
+  "cue": "Start with 3–5 slow lowers, quality over quantity",
   "unilateral": false,
   "image": [
    "img/negative-pullup-0.webp",
@@ -3561,7 +3561,7 @@
   ],
   "work": 30,
   "rest": 30,
-  "cue": "Damper 4\u20136, hard effort",
+  "cue": "Damper 4–6, hard effort",
   "unilateral": false,
   "image": [
    "img/row-sprint-0.webp",
@@ -4029,5 +4029,567 @@
   ],
   "timed": true,
   "group": "Mobility"
+ },
+ {
+  "id": "wu-arm-circles",
+  "name": "Arm Circles",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "shoulders"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Small circles, forward then back",
+  "unilateral": false,
+  "image": [
+   "img/wu-arm-circles-0.webp",
+   "img/wu-arm-circles-1.webp"
+  ],
+  "formCues": [
+   "Arms out to the sides, small circles",
+   "Go forward, then reverse",
+   "Keep it pain-free, smaller circles if the right shoulder pinches",
+   "Shoulders down, away from your ears",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Arm_Circles",
+  "alternates": [
+   "wu-band-pull-apart",
+   "st-dyn-chest"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "wu-band-pull-apart",
+  "name": "Band Pull-Apart",
+  "equipment": [
+   "resistance band"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "rear delts",
+   "upper back"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Light band, soft elbows",
+  "unilateral": false,
+  "image": [
+   "img/wu-band-pull-apart-0.webp",
+   "img/wu-band-pull-apart-1.webp"
+  ],
+  "formCues": [
+   "Light band, arms straight out at chest height",
+   "Soft elbows, don't lock them",
+   "Pull the band apart, squeeze your shoulder blades",
+   "Control it back, slow",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Band_Pull_Apart",
+  "alternates": [
+   "wu-arm-circles",
+   "wu-band-pulldown"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "wu-scap-pushup",
+  "name": "Scap Push-up (incline)",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "serratus",
+   "shoulders"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Hands on a bench or wall, arms straight",
+  "unilateral": false,
+  "image": [
+   "img/wu-scap-pushup-0.webp",
+   "img/wu-scap-pushup-1.webp"
+  ],
+  "formCues": [
+   "Hands on a bench or the wall, arms straight",
+   "Let your chest sink between your shoulder blades",
+   "Then push the floor away, upper back rounds slightly",
+   "Small motion, elbows stay straight but not locked",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Incline_Push-Up",
+  "alternates": [
+   "wu-light-press",
+   "wu-arm-circles"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "wu-light-press",
+  "name": "Light Incline Push-up",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "chest",
+   "triceps"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Easy reps, about half effort",
+  "unilateral": false,
+  "image": [
+   "img/wu-light-press-0.webp",
+   "img/wu-light-press-1.webp"
+  ],
+  "formCues": [
+   "Hands on a bench, easy reps at half effort",
+   "Elbows about 45 degrees, not flared",
+   "Stop short of any elbow or shoulder pain",
+   "Brace your core, no sagging lower back",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Incline_Push-Up_Medium",
+  "alternates": [
+   "wu-scap-pushup",
+   "st-dyn-chest"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "st-dyn-chest",
+  "name": "Dynamic Chest Opener",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "chest",
+   "front delts"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Dynamic stretch · gentle arm swings",
+  "unilateral": false,
+  "image": [
+   "img/st-dyn-chest-0.webp",
+   "img/st-dyn-chest-1.webp"
+  ],
+  "formCues": [
+   "Swing your arms open to a gentle chest stretch",
+   "Then cross them in front of you",
+   "Stay within a comfortable range for the right shoulder",
+   "Smooth rhythm, don't bounce",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Dynamic_Chest_Stretch",
+  "alternates": [
+   "wu-arm-circles",
+   "wu-band-pull-apart"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true,
+  "stretch": true
+ },
+ {
+  "id": "st-triceps",
+  "name": "Triceps Stretch",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "triceps"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Dynamic stretch · each side, switch halfway",
+  "unilateral": true,
+  "image": [
+   "img/st-triceps-0.webp",
+   "img/st-triceps-1.webp"
+  ],
+  "formCues": [
+   "Reach one hand down your upper back",
+   "Gently guide the elbow with the other hand",
+   "If the right shoulder complains, pull the arm across your chest instead",
+   "Light stretch only, no forcing the elbow",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Triceps_Stretch",
+  "alternates": [
+   "st-biceps",
+   "st-dyn-chest"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true,
+  "stretch": true
+ },
+ {
+  "id": "wu-band-pulldown",
+  "name": "Band Straight-Arm Pulldown",
+  "equipment": [
+   "resistance band",
+   "pull-up bar"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "lats"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Band over the bar, light tension",
+  "unilateral": false,
+  "image": [
+   "img/wu-band-pulldown-0.webp",
+   "img/wu-band-pulldown-1.webp"
+  ],
+  "formCues": [
+   "Loop a light band over the bar",
+   "Arms long, soft elbows",
+   "Sweep your hands down to your thighs",
+   "Ribs down, don't arch your lower back",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Straight-Arm_Pulldown",
+  "alternates": [
+   "wu-band-pull-apart",
+   "wu-scap-pull"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "wu-scap-pull",
+  "name": "Scap Pulls + Supported Hang",
+  "equipment": [
+   "pull-up bar"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "lats",
+   "traps"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Feet on the floor or step to take weight off",
+  "unilateral": false,
+  "image": [
+   "img/wu-scap-pull-0.webp",
+   "img/wu-scap-pull-1.webp"
+  ],
+  "formCues": [
+   "Hang with feet on the floor or a step to unload",
+   "Pull your shoulder blades down without bending your elbows",
+   "Hold 2 seconds, then relax into a gentle hang",
+   "Keep weight off the left elbow and right shoulder, use your feet",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Scapular_Pull-Up",
+  "alternates": [
+   "wu-band-pulldown",
+   "st-childs-pose"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "st-biceps",
+  "name": "Standing Biceps Stretch",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "biceps",
+   "chest"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Dynamic stretch · gentle, soft elbows",
+  "unilateral": false,
+  "image": [
+   "img/st-biceps-0.webp",
+   "img/st-biceps-1.webp"
+  ],
+  "formCues": [
+   "Hands behind you, palms together or on a doorframe",
+   "Gently lift and open the chest",
+   "Soft elbows, no hard lockout for the left elbow",
+   "Ease in and out, don't hold a strong stretch",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Standing_Biceps_Stretch",
+  "alternates": [
+   "st-triceps",
+   "st-dyn-chest"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true,
+  "stretch": true
+ },
+ {
+  "id": "st-childs-pose",
+  "name": "Child's Pose Lat Reach",
+  "equipment": [
+   "mat"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "lats",
+   "lower back"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Dynamic stretch · walk the hands side to side",
+  "unilateral": false,
+  "image": [
+   "img/st-childs-pose-0.webp",
+   "img/st-childs-pose-1.webp"
+  ],
+  "formCues": [
+   "Sit back toward your heels, arms long",
+   "Walk your hands to one side, then the other",
+   "Breathe into your back ribs",
+   "Knees wider if your knees or hips complain",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Childs_Pose",
+  "alternates": [
+   "cat-cow",
+   "wu-scap-pull"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true,
+  "stretch": true
+ },
+ {
+  "id": "wu-hip-circles",
+  "name": "Standing Hip Circles",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "hips"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Hands on hips, slow circles both ways",
+  "unilateral": false,
+  "image": [
+   "img/wu-hip-circles-0.webp",
+   "img/wu-hip-circles-1.webp"
+  ],
+  "formCues": [
+   "Hands on hips, feet shoulder-width",
+   "Slow circles, then reverse",
+   "Keep the range comfortable for your lower back",
+   "Knees soft",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Standing_Hip_Circles",
+  "alternates": [
+   "wu-leg-swings",
+   "cat-cow"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "wu-leg-swings",
+  "name": "Leg Swings",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "hamstrings",
+   "hip flexors"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Hold something for balance · switch sides halfway",
+  "unilateral": true,
+  "image": [
+   "img/wu-leg-swings-0.webp",
+   "img/wu-leg-swings-1.webp"
+  ],
+  "formCues": [
+   "Hold a rack or wall for balance",
+   "Swing one leg forward and back, relaxed",
+   "Start small, grow the range gradually",
+   "Stand tall, no rounding the lower back",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Front_Leg_Raises",
+  "alternates": [
+   "wu-hip-circles",
+   "wu-bw-squat"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "wu-glute-bridge",
+  "name": "Glute Bridge",
+  "equipment": [
+   "mat"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "glutes",
+   "hamstrings"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Squeeze glutes, ribs down",
+  "unilateral": false,
+  "image": [
+   "img/wu-glute-bridge-0.webp",
+   "img/wu-glute-bridge-1.webp"
+  ],
+  "formCues": [
+   "Lie on your back, feet flat, hip-width",
+   "Squeeze glutes and lift the hips",
+   "Ribs down, don't arch the lower back",
+   "Pause at the top, lower slowly",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Butt_Lift_Bridge",
+  "alternates": [
+   "dead-bug",
+   "wu-bw-squat"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "wu-bw-squat",
+  "name": "Bodyweight Squat (easy depth)",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Pain-free depth, knees over toes",
+  "unilateral": false,
+  "image": [
+   "img/wu-bw-squat-0.webp",
+   "img/wu-bw-squat-1.webp"
+  ],
+  "formCues": [
+   "Feet shoulder-width, toes slightly out",
+   "Sit down to a depth that's comfortable for your knees",
+   "Knees track over your toes",
+   "Stand up tall, slow and smooth",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Bodyweight_Squat",
+  "alternates": [
+   "wu-glute-bridge",
+   "wu-leg-swings"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true
+ },
+ {
+  "id": "st-hip-flexor",
+  "name": "Kneeling Hip Flexor Stretch",
+  "equipment": [
+   "mat"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "hip flexors",
+   "quads"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Dynamic stretch · each side, pad under the knee",
+  "unilateral": true,
+  "image": [
+   "img/st-hip-flexor-0.webp",
+   "img/st-hip-flexor-1.webp"
+  ],
+  "formCues": [
+   "Half-kneel with a pad under the down knee",
+   "Tuck your tailbone, squeeze the back glute",
+   "Gently shift forward and back",
+   "Stop before any lower back pinch",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:Kneeling_Hip_Flexor",
+  "alternates": [
+   "st-hamstring",
+   "wu-hip-circles"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true,
+  "stretch": true
+ },
+ {
+  "id": "st-hamstring",
+  "name": "Lying Hamstring Stretch",
+  "equipment": [
+   "mat"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "hamstrings"
+  ],
+  "work": 30,
+  "rest": 0,
+  "cue": "Dynamic stretch · each side, back flat on the floor",
+  "unilateral": true,
+  "image": [
+   "img/st-hamstring-0.webp",
+   "img/st-hamstring-1.webp"
+  ],
+  "formCues": [
+   "Lie on your back, hold behind one thigh at 90 degrees",
+   "Slowly straighten and bend the knee",
+   "Lower back stays flat on the floor",
+   "Gentle range, no forcing",
+   "Breathe steadily, move slowly, no straining"
+  ],
+  "imageSource": "free-exercise-db:90_90_Hamstring",
+  "alternates": [
+   "st-hip-flexor",
+   "wu-glute-bridge"
+  ],
+  "timed": true,
+  "group": "Warm-up",
+  "warmup": true,
+  "stretch": true
  }
 ]

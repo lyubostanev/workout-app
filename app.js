@@ -29,13 +29,16 @@ const SPLITS = {
     // Main blocks are filled in order (and repeat only if the time budget allows); the finisher is always last.
     { name: 'Push', short: 'Push', focus: 'Chest & upper chest · Front/side delts · Triceps',
       blocks: [['push:chest','push:side delts'],['push:upper chest','push:triceps'],['push:shoulders','push:chest'],['push:front delts','push:triceps']],
-      finisher: ['conditioning','conditioning'], cooldown: ['ball-chest-stretch','foam-roll-tspine'] },
+      finisher: ['conditioning','conditioning'], cooldown: ['ball-chest-stretch','foam-roll-tspine'],
+      warmup: ['wu-arm-circles','wu-band-pull-apart','wu-scap-pushup','st-dyn-chest','st-triceps','wu-light-press'] },
     { name: 'Pull', short: 'Pull', focus: 'Back & lats · Rear delts · Traps · Biceps',
       blocks: [['pull:lats','pull:rear delts'],['pull:mid back','pull:biceps'],['pull:lats','pull:traps'],['pull:upper back/rear delts','pull:biceps']],
-      finisher: ['conditioning','conditioning'], cooldown: ['foam-roll-tspine','cat-cow'] },
+      finisher: ['conditioning','conditioning'], cooldown: ['foam-roll-tspine','cat-cow'],
+      warmup: ['cat-cow','wu-band-pulldown','wu-scap-pull','wu-band-pull-apart','st-childs-pose','st-biceps'] },
     { name: 'Legs & Core', focus: 'Quads · Hams · Glutes · Calves · Glute med · Abs/obliques',
       blocks: [['legs:quads','core:abs'],['legs:hamstrings','legs:calves'],['legs:glutes','core:obliques'],['legs:glute med','core:lower abs/core/abs']],
-      finisher: ['conditioning','conditioning'], cooldown: ['foam-roll-legs','cat-cow'] },
+      finisher: ['conditioning','conditioning'], cooldown: ['foam-roll-legs','cat-cow'],
+      warmup: ['wu-hip-circles','wu-leg-swings','wu-glute-bridge','dead-bug','st-hip-flexor','st-hamstring','wu-bw-squat'] },
   ],
   4: [
     { name: 'Upper A', focus: 'Chest · Back · Shoulders', blocks: [['push','pull'],['push','pull'],['push','pull'],['core','core']] },
@@ -68,9 +71,31 @@ function available() { return LIB.filter(e => !switchedOff(e) && !settings.exclu
 // Generation pool: equipment you have, minus exercises you've marked "avoid" (injury).
 function genPool() { return available().filter(e => !settings.avoided.includes(e.id)); }
 const byId = id => LIB.find(e => e.id === id);
+/* Training cycle: each day of the split once, in any order. Derived from history (day name / dayIndex; old entries
+   without a day count as "next in order"). When every day is done the cycle resets. */
+function cycleState() {
+  const split = SPLITS[settings.daysPerWeek] || SPLITS[4], n = split.length; let done = [], last = -1;
+  history.filter(h => h.split === settings.daysPerWeek).forEach(h => {
+    const nm = String(h.day || '').replace(/ \(skipped\)$/, '');
+    let i = Number.isInteger(h.dayIndex) && h.dayIndex < n ? h.dayIndex : split.findIndex(d => d.name === nm);
+    if (i < 0) i = (last + 1) % n;
+    if (!done.includes(i)) done.push(i); last = i;
+    if (done.length >= n) done = [];
+  });
+  const order = [...Array(n).keys()].map(k => (last + 1 + k) % n), remaining = order.filter(i => !done.includes(i));
+  return { n, done, last, remaining, next: remaining[0] ?? 0 };
+}
+// Day picked on the Today screen; valid until the next session is saved (or the split changes).
+const pickSig = () => history.length + '|' + settings.daysPerWeek;
+let dayPick = LS.get('gc_daypick', null);
 function nextDayIndex() {
-  const split = SPLITS[settings.daysPerWeek] || SPLITS[4];
-  return history.filter(h => h.split === settings.daysPerWeek).length % split.length;
+  const n = (SPLITS[settings.daysPerWeek] || SPLITS[4]).length;
+  if (dayPick && dayPick.sig === pickSig() && dayPick.di >= 0 && dayPick.di < n) return dayPick.di;
+  return cycleState().next;
+}
+function pickDay(di, temp) {
+  dayPick = { di, sig: pickSig() }; if (!temp) LS.set('gc_daypick', dayPick);
+  shuffleN = 0; localStorage.removeItem('gc_swaps'); today = generate(); return today;
 }
 function lastPerf(id) {
   let hl = null, hd = 0;
@@ -149,12 +174,27 @@ function suggest(id) {
 const wText = (e, w) => w ? (e.kb && e.kb.mode === 'double' ? `2×${w} lb` : `${w} lb`) : '';
 function sgText(e, sg) { if (!sg) return ''; return [wText(e, sg.weight), sg.reps ? sg.reps + ' reps' : ''].filter(Boolean).join(' × '); }
 function lastText(e, l) { return l ? [wText(e, Number(l.weight)), l.reps ? l.reps + ' reps' : ''].filter(Boolean).join(' × ') : ''; }
-/* Reps set the work interval: target reps x ~4 s per rep (x2 for "switch sides halfway"), 20-90 s. */
+/* ---------- time model (v16) ----------
+   Work interval = ~10 s to get set (grab/unrack, get in position) + target reps x 5 s (x2 for each-side moves), 25-150 s.
+   On top of the timers, every lifting set costs extra real time the timers don't run for (logging, pauses, re-racking,
+   walking to the next station): OVH s per set. OVH starts at 15 s and is calibrated from the sessions he actually did
+   (gc_timing: wall-clock vs planned time per session and per step). The estimate shown everywhere and used to fit the
+   chosen length = sum of all steps + OVH x lifting sets. */
+const SET_SETUP = 10, SEC_PER_REP = 5, OVH_DEFAULT = 15;
 function withReps(x) {
   if (!x.reps) return x; const sg = suggest(x.id); x.targetReps = (sg && sg.reps) || x.startReps || x.reps[0];
-  const sides = x.unilateral && /switch|each side/i.test(x.cue) ? 2 : 1; x.work = Math.min(45 * (sides + 1), Math.max(20, Math.round(x.targetReps * 4 * sides / 5) * 5));
+  const sides = x.unilateral && /switch|each side/i.test(x.cue) ? 2 : 1;
+  x.work = Math.min(150, Math.max(25, Math.round((SET_SETUP + x.targetReps * SEC_PER_REP * sides) / 5) * 5));
   return x;
 }
+const isLiftStep = s => s.type === 'work' && s.kind !== 'warmup' && s.kind !== 'cooldown';
+// Extra seconds per lifting set, from real sessions: mean of the default and the last 5 measured sessions (5-60 s).
+function ovhPerSet() {
+  const T = LS.get('gc_timing', []).filter(x => x.sets >= 4 && x.actualSec > 0).slice(-5);
+  const v = [OVH_DEFAULT, ...T.map(x => (x.actualSec - x.plannedSec) / x.sets)];
+  return Math.round(Math.min(60, Math.max(5, v.reduce((a, b) => a + b, 0) / v.length)));
+}
+function estSec(w, ovh = ovhPerSet()) { const st = buildSteps(w); return st.reduce((a, x) => a + x.dur, 0) + ovh * st.filter(isLiftStep).length; }
 /* Rest after EVERY work set (also between the two exercises of a pair and between rounds).
    Priority: per-exercise override (Library) > exercise data restSec > rule:
    lifts (push/pull/legs) = max('Rest between rounds', the exercise's own minimum) ; core/conditioning = max(30, half of it).
@@ -166,6 +206,12 @@ function restFor(e) {
   const lv = LEVEL[settings.level] || LEVEL.intermediate, base = settings.restSec || 60, r5 = x => Math.round(x / 5) * 5;
   if (['push', 'pull', 'legs'].includes(e.category)) return Math.max(30, r5(Math.max(base, e.rest) * lv.r));
   return Math.max(20, r5(Math.max(30, base / 2, e.rest) * lv.r));
+}
+function warmupFor(day) {
+  if (day.warmup) return day.warmup;
+  const cats = new Set(day.blocks.flat().map(c => c.split(':')[0]));
+  if (cats.has('legs') && !cats.has('push')) return ['wu-hip-circles', 'wu-leg-swings', 'wu-glute-bridge', 'dead-bug', 'st-hip-flexor', 'wu-bw-squat'];
+  return ['wu-arm-circles', 'cat-cow', 'wu-band-pull-apart', 'wu-scap-pushup', 'st-dyn-chest', 'st-childs-pose'];
 }
 function generate() {
   const split = SPLITS[settings.daysPerWeek] || SPLITS[4];
@@ -191,10 +237,13 @@ function generate() {
   };
   const scale = e => withReps({ ...e, work: Math.round(e.work * lv.w / 5) * 5, rest: restFor(e) });
   const budget = settings.minutes * 60;
-  const out = { day: day.name, focus: day.focus, dayIndex: di, splitLen: split.length, nextDay: split[(di + 1) % split.length].name, blocks: [] };
+  const cy = cycleState(), rem = cy.remaining.filter(i => i !== di);
+  const out = { day: day.name, focus: day.focus, dayIndex: di, splitLen: split.length, nextDay: split[rem.length ? rem[0] : (di + 1) % split.length].name, blocks: [] };
   let t = 0;
   if (settings.warmup) {
-    const wu = [fixed('row-steady'), fixed('worlds-greatest')].filter(Boolean).map((e, k) => ({ ...e, work: k === 0 && e.work > 60 ? 180 : 60, rest: 10 }));
+    // Day-specific prep + a short dynamic-stretch segment (gentle on lower back, right shoulder, left elbow, knees).
+    const wt = settings.minutes <= 30 ? 25 : 30;
+    const wu = warmupFor(day).map(fixed).filter(Boolean).map(e => ({ ...e, work: e.unilateral ? Math.round(wt * 1.6 / 5) * 5 : wt, rest: 10 }));
     if (wu.length) { out.blocks.push({ name: 'Warm-up', rounds: 1, items: wu, kind: 'warmup' }); t += wu.reduce((s, e) => s + e.work + e.rest, 0); }
   }
   const cdItems = settings.cooldown ? (day.cooldown || ['foam-roll-legs', 'ball-chest-stretch']).map(fixed).filter(Boolean).map(e => ({ ...e, work: 60, rest: 5 })) : [];
@@ -204,11 +253,12 @@ function generate() {
   const finRounds = 2;
   // Fill main blocks using the real step timeline (warm-up + blocks + finisher + cool-down) so the session lands near the target.
   const finBlock = finItems.length ? { name: 'Finisher', rounds: finRounds, items: finItems, kind: 'finisher' } : null;
+  let fin = finBlock;
   const cdBlock = cdItems.length ? { name: 'Cool-down', rounds: 1, items: cdItems, kind: 'cooldown' } : null;
-  const total = blocks => buildSteps({ blocks: blocks.filter(Boolean) }).reduce((a, x) => a + x.dur, 0);
-  // Fit to the chosen length using the TRUE total (every step buildSteps makes: work, switches, round rests,
-  // rest+setup between groups, warm-up -> first group setup, transitions, warm-up, cool-down). Goal: target -3 / +1 min.
-  const hi = budget + 60, lo = budget - 180, all = () => [...out.blocks, finBlock, cdBlock];
+  const ovh = ovhPerSet(), total = blocks => estSec({ blocks: blocks.filter(Boolean) }, ovh);
+  // Fit to the chosen length using the REALISTIC estimate (every step buildSteps makes + per-set overhead).
+  // Realistic estimate must not exceed the chosen length; up to 4 min under is fine (fewer blocks/rounds beat cramming).
+  const hi = budget, lo = budget - 240, all = () => [...out.blocks, fin, cdBlock];
   let bi = 0;
   while (bi < 10) {
     const pat = day.blocks[bi % day.blocks.length];
@@ -218,22 +268,23 @@ function generate() {
     let rounds = isFinisher ? Math.max(2, lv.rounds) : lv.rounds;
     const blk = r => ({ name: isFinisher ? 'Finisher' : 'Block ' + String.fromCharCode(65 + bi), rounds: r, items, kind: isFinisher ? 'finisher' : 'main' });
     // Full rounds if it fits; else fewer (min 2); always keep at least 2 main blocks.
-    while (rounds > 2 && total([...out.blocks, blk(rounds), finBlock, cdBlock]) > hi) rounds--;
+    while (rounds > Math.max(2, bi >= 2 ? lv.rounds - 1 : 2) && total([...out.blocks, blk(rounds), finBlock, cdBlock]) > hi) rounds--;
     if (bi >= 2 && total([...out.blocks, blk(rounds), finBlock, cdBlock]) > hi) { items.forEach(e => used.delete(e.id)); break; }
     out.blocks.push(blk(rounds)); bi++;
   }
-  // Still short? add a round to main blocks (up to level rounds + 1), then to the finisher, while staying <= +1 min.
+  // Still short? add a round to main blocks (up to level rounds + 1), then to the finisher, while staying <= target.
   const mains = () => out.blocks.filter(b => b.kind === 'main');
   for (let pass = 0; pass < 2 && total(all()) < lo; pass++)
     for (const b of [...mains(), finBlock].filter(Boolean)) { if (total(all()) >= lo) break; if (b.rounds >= lv.rounds + 1) continue; b.rounds++; if (total(all()) > hi) b.rounds--; }
   // Still long (minimum 2 main blocks forced)? drop rounds from the last blocks, then the finisher to 1 round.
   for (const b of [...mains()].reverse()) { while (total(all()) > hi && b.rounds > 2) b.rounds--; }
-  if (finBlock) while (total(all()) > hi && finBlock.rounds > 1) finBlock.rounds--;
-  if (finBlock) out.blocks.push(finBlock);
+  if (fin) while (total(all()) > hi && fin.rounds > 1) fin.rounds--;
+  if (fin && total(all()) > hi) { fin.items.forEach(e => used.delete(e.id)); fin = null; } // drop the finisher before cramming
+  if (fin) out.blocks.push(fin);
   if (cdBlock) out.blocks.push(cdBlock);
   out.key = [dateKey(new Date()), di, shuffleN, settings.daysPerWeek, settings.minutes, settings.level, settings.restSec, settings.switchSec, settings.setupSec].join('|');
   applySwaps(out);
-  out.totalSec = totalSec(out); out.estMin = Math.round(out.totalSec / 60);
+  out.stepSec = totalSec(out); out.totalSec = estSec(out); out.estMin = Math.round(out.totalSec / 60);
   return out;
 }
 /* The one true session length: the sum of every step the player will run. Used by Today, preview and the player header. */
@@ -283,7 +334,7 @@ function doSwap(bi, ii, reason = 'swap') {
   persistSwaps(w);
   if (P.steps.length) { // live session: point every step for this slot at the new exercise
     let hit = false; P.steps.forEach((s, k) => { if (s.ex === cur) { s.ex = ni; hit = true; if (k !== P.i && s.type === 'work') s.dur = ni.work; } });
-    if (hit && !(id in P.cueOff)) Object.assign(P.cueOff, assignCueOffsets(P.steps.filter(s => s.ex === ni)));
+    P.est = 0; if (hit && !(id in P.cueOff)) Object.assign(P.cueOff, assignCueOffsets(P.steps.filter(s => s.ex === ni)));
   }
   return ni;
 }
@@ -324,7 +375,7 @@ function buildSteps(w) {
   w.blocks.forEach((b, bi) => {
     for (let r = 1; r <= b.rounds; r++) {
       b.items.forEach((e, i) => {
-        steps.push({ type: 'work', dur: e.work, ex: e, block: b.name, round: r, rounds: b.rounds });
+        steps.push({ type: 'work', dur: e.work, ex: e, block: b.name, kind: b.kind, round: r, rounds: b.rounds });
         const lastInRound = i === b.items.length - 1;
         const lastOfBlock = lastInRound && r === b.rounds;
         // Superset structure: A -> short switch -> B; full rest only after the round; between groups rest + setup time.
@@ -503,6 +554,7 @@ function cuesFor(ex, round = 1) {
 async function startWorkout() {
   unlockAudio(); // must run synchronously in the tap, before any await (iOS)
   P.steps = buildSteps(today); P.i = 0; P.started = Date.now(); P.sets = {}; P.paused = false; P.cueOff = assignCueOffsets(P.steps);
+  P.ovh = ovhPerSet(); P.est = estSec(today, P.ovh); P.tl = []; P.prevI = null; P.stepT0 = 0; P.maxI = 0; P.pausedMs = 0; P.pauseT = 0; P.timingSaved = false;
   $('#player').classList.remove('hidden');
   acquireWake(); // keep the screen on (Wake Lock API, or a muted looping video fallback)
   enterStep();
@@ -541,7 +593,26 @@ function saveAndNext(pw) {
   while (P.steps[P.i] && P.steps[P.i].type === 'rest') P.i++;
   enterStep();
 }
+/* Actual time per step (wall clock incl. pauses/logging) vs planned, recorded from v16 on (calibrates OVH). */
+function stampStep() {
+  const now = Date.now();
+  if (P.prevI != null && P.stepT0 && P.steps[P.prevI]) { const s = P.steps[P.prevI];
+    P.tl.push({ i: P.prevI, t: s.type === 'work' ? (isLiftStep(s) ? 'set' : 'move') : s.type === 'prep' ? 'prep' : s.setup ? 'setup' : s.sw ? 'switch' : 'rest', id: s.ex ? s.ex.id : undefined, plan: s.dur, act: Math.round((now - P.stepT0) / 1000) }); }
+  P.prevI = P.i; P.stepT0 = now; P.maxI = Math.max(P.maxI || 0, P.i);
+}
+// One record per session (finished or ended early): planned seconds of the part he got through vs real elapsed.
+function recordTiming(ended) {
+  if (P.timingSaved || !P.started || !P.steps.length) return null;
+  const reach = ended === 'finish' ? P.steps.length : Math.min(P.i, P.steps.length), done = P.steps.slice(0, reach);
+  const actualSec = Math.round(((ended === 'finish' ? Date.now() : P.stepT0 || Date.now()) - P.started) / 1000);
+  const rec = { date: new Date().toISOString(), day: today.day, minutes: settings.minutes, ended, plannedSec: done.reduce((a, x) => a + x.dur, 0), actualSec,
+    sets: done.filter(isLiftStep).length, pausedSec: Math.round((P.pausedMs || 0) / 1000), ovhUsed: P.ovh, estSec: today.totalSec,
+    blocksDone: new Set(done.filter(isLiftStep).map(s => s.block)).size, blocksTotal: today.blocks.filter(b => b.kind === 'main' || b.kind === 'finisher').length, steps: (P.tl || []).slice(-250) };
+  if (actualSec < 120) return null;
+  const T = LS.get('gc_timing', []); T.push(rec); LS.set('gc_timing', T.slice(-20)); P.timingSaved = true; return rec;
+}
 function enterStep() {
+  stampStep();
   const s = P.steps[P.i]; if (!s) return finish(); if ($('#pv')) closePreview(true);
   speechNewStep();
   P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.cueSaid = 0; P.tk = '';
@@ -567,7 +638,7 @@ function tick() {
   renderTime();
 }
 function togglePause() {
-  if (P.paused) { P.end = Date.now() + P.left * 1000; P.paused = false; } else { P.paused = true; }
+  if (P.paused) { P.end = Date.now() + P.left * 1000; P.paused = false; if (P.pauseT) P.pausedMs = (P.pausedMs || 0) + Date.now() - P.pauseT; P.pauseT = 0; } else { P.paused = true; P.pauseT = Date.now(); }
   acquireWake(); // screen stays on while paused too; re-acquire if iOS dropped it
   render();
 }
@@ -591,7 +662,7 @@ function doneEarly() {
   const s = P.steps[P.i]; if (!s || s.type !== 'work') return;
   unlockAudio(); P.done = { i: P.i, left: Math.round(P.left) }; P.skipped = null; P.paused = false; P.logHold = false; P.i++; enterStep();
 }
-function quit() { if (!confirm('End workout? Progress so far will not be saved.')) return; stopPlayer(); }
+function quit() { if (!confirm('End workout? Sets so far are not saved (the time it took is kept to improve the time estimate).')) return; stampStep(); recordTiming('quit'); stopPlayer(); today = generate(); renderToday(); }
 function stopPlayer() {
   clearInterval(P.timer); $('#player').classList.add('hidden');
   releaseWake(); speechStop(); stopKeepAlive();
@@ -608,7 +679,7 @@ function render() {
   const nowW = s.type === 'work' ? Object.values(P.sets).filter(x => x.id === s.ex.id).sort((a, b) => a.t - b.t).map(x => setText(s.ex, x)) : [];
   const doneSteps = P.steps.slice(0, P.i).reduce((a, x) => a + x.dur, 0), total = P.steps.reduce((a, x) => a + x.dur, 0);
   el.innerHTML = `
-    <div class="row" style="flex:0"><div class="mut">${meta}</div><div class="mut" style="text-align:right">${P.i + 1}/${P.steps.length} · <span id="remT">${minText(remainSec())}</span> left<br><small>of ${minText(P.steps.reduce((a, x) => a + x.dur, 0))}</small></div></div>
+    <div class="row" style="flex:0"><div class="mut">${meta}</div><div class="mut" style="text-align:right">${P.i + 1}/${P.steps.length} · <span id="remT">${minText(remainSec())}</span> left<br><small>of ~${minText(P.est || estSec(today))}</small></div></div>
     <div class="bar"><i style="width:${(100 * doneSteps / total).toFixed(1)}%"></i></div>
     <div class="phase">${s.type === 'work' ? 'Work' : s.type === 'rest' ? (s.setup ? 'Set up' : s.sw ? 'Switch' : 'Rest') : 'Prepare'}${P.paused ? ' · Paused' : ''}</div>
     <div class="exname">${title}${s.setup ? `<span class="sutime" id="num2">${fmt(P.left)}</span>` : ''}</div>
@@ -652,7 +723,7 @@ function setupHTML(s) {
   return `<div class="setupcard bp" id="setupCard"><div class="hh">Next: ${esc(s.nextBlock)} · ${rounds} rounds${items.length > 1 ? ' · superset' : ''}</div>
     <div class="bpl">${items.map(card).join('')}</div>${eq.length ? `<div class="sueq">Set up: ${esc(eq.join(', '))}</div>` : ''}</div>`;
 }
-function remainSec() { return P.left + P.steps.slice(P.i + 1).reduce((a, x) => a + x.dur, 0); }
+function remainSec() { const rest = P.steps.slice(P.i + 1), cur = P.steps[P.i]; return P.left + rest.reduce((a, x) => a + x.dur, 0) + (P.ovh ?? ovhPerSet()) * (rest.filter(isLiftStep).length + (cur && isLiftStep(cur) ? 1 : 0)); }
 function renderTime() {
   const s = P.steps[P.i]; if (!s) return;
   const n = $('#num'), a = $('#arc'), n2 = $('#num2'), rt = $('#remT'); if (rt) rt.textContent = minText(remainSec()); if (n) n.textContent = fmt(P.left); if (n2) n2.textContent = fmt(P.left);
@@ -661,6 +732,7 @@ function renderTime() {
   if (im && !P.paused) { const f = im.dataset.f.split('|'), k = s.type === 'work' ? Math.floor((s.dur - P.left) / 1.2) % f.length : 0; if (!im.src.endsWith(f[k])) im.src = f[k]; }
 }
 function finish() {
+  const timing = recordTiming('finish'); P.timingRec = timing;
   stopPlayer(); beep(1320, 500); say('Workout complete. Great job!');
   const mins = Math.round((Date.now() - P.started) / 60000);
   const lifts = today.blocks.filter(b => b.kind === 'main').flatMap(b => b.items);
@@ -677,9 +749,9 @@ function finish() {
   };
 }
 function saveSession(mins, log) {
-  history.push({ date: new Date().toISOString(), day: today.day, split: settings.daysPerWeek, minutes: mins, exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length, log,
+  history.push({ date: new Date().toISOString(), day: today.day, dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: mins, timing: P.timingRec ? { plannedSec: P.timingRec.plannedSec, actualSec: P.timingRec.actualSec, sets: P.timingRec.sets, estSec: P.timingRec.estSec } : undefined, exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length, log,
     sets: Object.values(P.sets || {}).sort((a, b) => a.t - b.t).map(x => ({ id: x.id, block: x.block, round: x.round, weight: x.w, reps: x.r })) });
-  LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); shuffleN = 0; today = generate();
+  LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); localStorage.removeItem('gc_daypick'); dayPick = null; shuffleN = 0; today = generate();
 }
 
 /* ---------- exercise preview (pre-workout overview): big start/end images + details, never starts the workout ---------- */
@@ -694,7 +766,7 @@ function previewHTML(bi, ii) {
   const st = (k, v, sub) => `<div class="pvst"><small>${k}</small><b>${v}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
   return `<div class="pvsheet" id="pvSheet" role="dialog" aria-modal="true" aria-labelledby="pvTitle">
     <div class="pvgrab" aria-hidden="true"></div>
-    <div class="pvhead"><div><div class="pvblk">${esc(b.name)} · workout ${minText(totalSec(w))}${e.origId && e.origId !== e.id ? ` · swapped for ${esc(byId(e.origId).name)}` : ''}</div><h2 id="pvTitle">${esc(e.name)}</h2><div class="mut">${esc(e.muscles.join(', '))}</div></div>
+    <div class="pvhead"><div><div class="pvblk">${esc(b.name)} · workout ~${minText(estSec(w))}${e.origId && e.origId !== e.id ? ` · swapped for ${esc(byId(e.origId).name)}` : ''}</div><h2 id="pvTitle">${esc(e.name)}</h2><div class="mut">${esc(e.muscles.join(', '))}</div></div>
       <button type="button" class="pvx" id="pvClose" aria-label="Close preview">✕</button></div>
     ${imgs.length ? `<div class="pvimgs" id="pvImgs">${imgs.map((p, k) => `<figure><img src="${p}" alt="${esc(e.name)} – ${k ? 'end' : 'start'} position"><figcaption>${k === 0 ? 'Start' : k === imgs.length - 1 ? 'End' : 'Step ' + (k + 1)} position</figcaption></figure>`).join('')}</div>
       ${imgs.length > 1 ? `<div class="pvdots" id="pvDots">${imgs.map((_, k) => `<i class="${k ? '' : 'on'}"></i>`).join('')}<span class="mut">swipe</span></div>` : ''}` : ''}
@@ -738,27 +810,32 @@ function closePreview(now) {
 
 /* ---------- views ---------- */
 function renderToday() {
-  const w = today; const split = SPLITS[settings.daysPerWeek] || SPLITS[4];
+  const w = today; const split = SPLITS[settings.daysPerWeek] || SPLITS[4], cy = cycleState();
   const doneToday = history.some(h => dateKey(new Date(h.date)) === dateKey(new Date()));
   $('#title').textContent = 'Today'; $('#sub').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
   $('#tab-today').innerHTML = `
-   <div class="hero"><div class="s">Day ${w.dayIndex + 1} of ${split.length}${doneToday ? ' · ✅ trained today, this is up next' : ''}</div>
-     <div class="rot">${split.map((d, k) => `<span class="${k === w.dayIndex ? 'on' : ''}">${d.short || d.name}</span>`).join('<i>→</i>')}</div>
+   <div class="hero"><div class="s">Cycle: ${cy.done.length} of ${split.length} done${doneToday ? ' · ✅ trained today' : ''}</div>
+     <div class="rot" id="cycleRot">${split.map((d, k) => `<span class="${k === w.dayIndex ? 'on' : ''}${cy.done.includes(k) ? ' dn' : ''}">${cy.done.includes(k) ? '✓ ' : ''}${d.short || d.name}</span>`).join('<i>·</i>')}</div>
+     <div class="dpl">Choose today's workout</div>
+     <div class="dp" id="dayPick">${cy.remaining.map(k => `<button type="button" data-di="${k}" class="${k === w.dayIndex ? 'on' : ''}" aria-pressed="${k === w.dayIndex}">${esc(split[k].name)}${k === cy.next ? '<small>next in order</small>' : '<small>&nbsp;</small>'}</button>`).join('')}</div>
+     <div class="dpo"><button type="button" id="bOtherDay" class="lnk">Other day…</button><span id="otherDays" class="hidden">${split.map((d, k) => `<button type="button" data-di="${k}" class="sm${k === w.dayIndex ? ' on' : ''}">${cy.done.includes(k) ? '✓ ' : ''}${esc(d.name)}</button>`).join('')}</span></div>
      <div class="t">${w.day}</div><div class="s">${w.focus}</div><div class="s nextday">Next workout: <b>${w.nextDay}</b></div>
-     <span class="pill" id="estPill">⏱ ${minText(totalSec(w))}</span><span class="pill">${w.blocks.length} blocks</span><span class="pill">${settings.level}</span></div>
+     <span class="pill" id="estPill">⏱ ~${minText(estSec(w))}</span><span class="pill">${w.blocks.length} blocks</span><span class="pill">${settings.level}</span></div>
    <button class="pri" id="bStart">▶ Start workout</button>
    <div class="mut pvhint">Tap any exercise for a big preview</div>
    ${w.blocks.map(b => `<div class="card block"><div class="bt">${b.name} <span class="mut">· ${b.rounds} round${b.rounds > 1 ? 's' : ''}</span></div>
      ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex pv" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}<br><small>${e.targetReps ? e.targetReps + ' reps · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
    <div class="row" style="margin:10px 0 20px"><button id="bShuffle">🔀 Shuffle exercises</button><button id="bSkipDay">Skip to next day</button></div>`;
   $('#bStart').onclick = startWorkout;
+  $('#tab-today').querySelectorAll('#dayPick button, #otherDays button').forEach(b => b.onclick = () => { pickDay(+b.dataset.di); renderToday(); });
+  $('#bOtherDay').onclick = () => { $('#otherDays').classList.toggle('hidden'); };
   const tt = $('#tab-today'); // tap a row (not its Swap/Avoid/Demo controls) -> large preview
   tt.onclick = ev => { if (ev.target.closest('button,a,input,select')) return; const r = ev.target.closest('.ex.pv'); if (r) openPreview(+r.dataset.bi, +r.dataset.ii); };
   tt.onkeydown = ev => { const r = ev.target.closest && ev.target.closest('.ex.pv'); if (r && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openPreview(+r.dataset.bi, +r.dataset.ii); } };
   $('#tab-today').querySelectorAll('button.swap').forEach(b => longPress(b, () => { avoidAndSwap(+b.dataset.bi, +b.dataset.ii); renderToday(); }, () => { doSwap(+b.dataset.bi, +b.dataset.ii); renderToday(); }));
   $('#tab-today').querySelectorAll('button.avoid').forEach(b => b.onclick = () => { avoidOriginal(+b.dataset.bi, +b.dataset.ii); renderToday(); });
   $('#bShuffle').onclick = () => { shuffleN++; today = generate(); renderToday(); };
-  $('#bSkipDay').onclick = () => { history.push({ date: new Date().toISOString(), day: today.day + ' (skipped)', split: settings.daysPerWeek, minutes: 0, skipped: true, exerciseIds: [], log: [] }); LS.set('gc_history', history); today = generate(); renderToday(); };
+  $('#bSkipDay').onclick = () => { history.push({ date: new Date().toISOString(), day: today.day + ' (skipped)', dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: 0, skipped: true, exerciseIds: [], log: [] }); LS.set('gc_history', history); dayPick = null; localStorage.removeItem('gc_daypick'); today = generate(); renderToday(); };
 }
 function renderHistory() {
   $('#title').textContent = 'History';
@@ -803,7 +880,7 @@ function renderSettings() {
 </div>
     <h2>Equipment switches</h2><div class="card" id="eqToggles">
     <div class="chk"><input type="checkbox" id="sTrx" ${settings.trx ? 'checked' : ''}><span><b>TRX</b> <small class="mut">· ${nTrx} exercises · off = never programmed or offered as a swap</small></span></div>
-    <div class="chk"><input type="checkbox" id="sRower" ${settings.rower ? 'checked' : ''}><span><b>Rower</b> <small class="mut">· ${nRow} exercises · off while it's malfunctioning; warm-up uses step runs instead</small></span></div>
+    <div class="chk"><input type="checkbox" id="sRower" ${settings.rower ? 'checked' : ''}><span><b>Rower</b> <small class="mut">· ${nRow} exercises · off while it's malfunctioning; warm-up is bodyweight/band prep</small></span></div>
     <label>Kettlebells (lb, one number per bell)</label><input id="sKb" value="${settings.kettlebells.join(', ')}"><div class="mut" style="font-size:13px" id="kbTxt">You have ${kbTxt}. Single-bell moves use one bell; double moves need a pair (2 × 25).</div></div>
     <h2>Equipment available</h2><div class="card">${eq.map(x => `<div class="chk"><input type="checkbox" class="eq" value="${x}" ${settings.excluded.includes(x) ? '' : 'checked'}><span>${x}</span></div>`).join('')}</div>
     <h2>Avoided exercises</h2><div class="card" id="avoidList">${settings.avoided.length ? settings.avoided.map(id => `<div class="ex"><div style="flex:1">${(byId(id) || {}).name || id}<br><small>auto-replaced by ${((byId(id) || {}).alternates || []).filter(a => !settings.avoided.includes(a)).map(a => (byId(a) || {}).name).filter(Boolean).slice(0, 1).join('') || 'its backups'}</small></div><button class="unavoid" data-id="${id}">Un-avoid</button></div>`).join('') : '<div class="mut">None. Hold ⇄ Swap on an exercise to avoid it permanently.</div>'}</div>
@@ -836,6 +913,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, SPQ, say, speechNewStep, totalSec, remainSec, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, totalSec, remainSec, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });
