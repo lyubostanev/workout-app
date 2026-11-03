@@ -23,6 +23,7 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - "Watch demo" buttons link to third-party YouTube videos; those videos are not included or cached here.
 
 ### New
+- **Done ✓** on the work screen: finished early? Tap it to end the set and log weight/reps right away (⏭ skips without logging).
 - Each exercise screen shows its **History**: the last 3 sessions with dates and weight × reps per set.
 - Keeps the iPhone screen awake during a workout (Wake Lock API, with a muted inline-video fallback). Toggle: Settings › Keep screen awake (default on).
 - Tempo removed completely (no counter, beeps, tile or setting).

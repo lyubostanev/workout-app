@@ -468,6 +468,7 @@ function setLogHTML(pw) {
 }
 function slmText(pw) {
   const st = P.steps[P.i] || {}, saved = P.sets[setKey(pw)] && !P.sets[setKey(pw)].auto;
+  if (P.done && P.done.i === P.i - 1 && !saved) return 'Set done early ✓ · enter weight/reps, then Save & next' + (st.sw ? ' (± pauses the timer)' : '');
   if (st.sw) return P.paused ? (saved ? '✓ Saved · ' : '') + 'Timer paused while you log · Save goes on' : 'Tap ± to log (timer pauses) · or log it on the next rest';
   return saved ? '✓ Saved · rest keeps running' : 'Rest keeps running · Save skips the rest';
 }
@@ -493,7 +494,7 @@ function enterStep() {
   const s = P.steps[P.i]; if (!s) return finish();
   P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.cueSaid = 0; P.tk = '';
   if (s.type === 'work') { beep(1200, 350); say(s.ex.name); }
-  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)]) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next up, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? 'Set up for ' + s.nextBlock + '. ' + s.dur + ' seconds.' + (s.next ? ' First up, ' + s.next.ex.name : '') : 'Rest, ' + s.dur + ' seconds.' + (s.next ? ' Next up, ' + s.next.ex.name : '')); }
+  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next up, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? 'Set up for ' + s.nextBlock + '. ' + s.dur + ' seconds.' + (s.next ? ' First up, ' + s.next.ex.name : '') : 'Rest, ' + s.dur + ' seconds.' + (s.next ? ' Next up, ' + s.next.ex.name : '')); }
   else if (s.type === 'prep') say('Get ready. First up, ' + s.ex.name);
   render();
 }
@@ -532,7 +533,12 @@ function playerSwap(avoid) {
   if (s.type === 'work') { P.cueSaid = 0; say(ni.name); } else say('Next up, ' + ni.name);
   render();
 }
-function skip(d = 1) { P.i = Math.max(0, P.i + d); enterStep(); }
+// ⏭ Skip = move on WITHOUT logging (a skipped work set is not auto-recorded). Done ✓ = finished the set early -> log it now.
+function skip(d = 1) { const s = P.steps[P.i]; P.skipped = d > 0 && s && s.type === 'work' ? P.i : null; P.done = null; P.i = Math.max(0, P.i + d); enterStep(); }
+function doneEarly() {
+  const s = P.steps[P.i]; if (!s || s.type !== 'work') return;
+  unlockAudio(); P.done = { i: P.i, left: Math.round(P.left) }; P.skipped = null; P.paused = false; P.logHold = false; P.i++; enterStep();
+}
 function quit() { if (!confirm('End workout? Progress so far will not be saved.')) return; stopPlayer(); }
 function stopPlayer() {
   clearInterval(P.timer); $('#player').classList.add('hidden');
@@ -560,16 +566,17 @@ function render() {
     ${s.type === 'work' && (nowW.length || (sg && sgText(s.ex, sg))) ? `<div class="lastline">${nowW.length ? `<span>Today: ${nowW.join(', ')}</span>` : ''}${sg && sgText(s.ex, sg) ? `<span>Try ${sgText(s.ex, sg)}</span>` : ''}</div>` : ''}
     ${pw ? setLogHTML(pw) : ''}
     ${s.type === 'work' && s.ex.targetReps ? `<div class="target" id="target">${s.ex.targetReps} reps</div>` : ''}
+    ${s.type === 'work' ? `<button type="button" class="donebtn" id="bDone">Done ✓<small>${P.steps[P.i + 1] && logStepFor(P.i + 1) ? 'finished early · log this set now' : 'finished early · move on'}</small></button>` : ''}
     ${(() => { const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie && ie.image ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}${pw ? ' small' : ''}"><img id="pimg" src="${ie.image[0]}" data-f="${ie.image.join('|')}" alt="${ie.name}">${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
     ${(() => { const cs = s.type === 'work' ? cuesFor(s.ex, s.round) : (s.next && !pw ? cuesFor(s.next.ex, s.next.round).slice(0, 1) : []); return cs.length ? `<div class="cues${s.type === 'work' ? '' : ' dim'}">${s.type === 'work' ? '' : '<b>Next focus:</b> '}${cs.map(c => `<div>• ${c}</div>`).join('')}</div>` : ''; })()}
     <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="#d9e7f2" stroke-width="7" fill="none"/>
       <circle id="arc" cx="50" cy="50" r="45" stroke="${s.type === 'rest' ? '#1d4ed8' : '#0ea5e9'}" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="0"/></svg>
       <div class="n" id="num">${fmt(P.left)}</div></div>
     <div class="next">${s.next ? `${s.next.ex.image ? `<img class="thumb" src="${s.next.ex.image[1]}" alt="">` : ''}<div><div class="mut">Next</div><div style="font-weight:600;font-size:18px">${s.next.ex.name}</div><div class="mut">${s.next.ex.targetReps ? s.next.ex.targetReps + ' reps · ' : ''}${s.next.dur}s · ${s.next.ex.equipment.join(', ')}</div></div>` : '<div style="font-weight:600">Last one. Finish strong!</div>'}</div>
-    <div class="ctrl"><button id="bPrev">⏮</button><button id="bPause" class="pri" style="flex:2">${P.paused ? '▶ Resume' : '⏸ Pause'}</button><button id="bSkip">⏭</button></div>
+    <div class="ctrl"><button id="bPrev">⏮</button><button id="bPause" class="pri" style="flex:2">${P.paused ? '▶ Resume' : '⏸ Pause'}</button><button id="bSkip" title="Skip (no log)" aria-label="Skip without logging">⏭</button></div>
     <button id="bQuit" style="margin-top:4px;padding:8px;background:none;color:var(--mut);flex-shrink:0">End workout</button>`;
   $('#bPause').onclick = togglePause; if (pw) wireSetLog(pw);
-  const bd = $('#bDemo'); if (bd) bd.onclick = ev => { ev.preventDefault(); openDemo(bd.href); }; $('#bSkip').onclick = () => skip(1);
+  const bd = $('#bDemo'); if (bd) bd.onclick = ev => { ev.preventDefault(); openDemo(bd.href); }; $('#bSkip').onclick = () => skip(1); const bdn = $('#bDone'); if (bdn) bdn.onclick = doneEarly;
   const bs = $('#bSwap'); if (bs) longPress(bs, () => playerSwap(true), () => playerSwap(false));
   const ba = $('#bAvoid'); if (ba) ba.onclick = () => { const s = P.steps[P.i], tgt = s.type === 'work' ? s.ex : s.next && s.next.ex, sl = findSlot(tgt); if (sl) { avoidOriginal(...sl); render(); } }; $('#bPrev').onclick = () => skip(-1); $('#bQuit').onclick = quit;
   renderTime();
@@ -762,6 +769,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });
