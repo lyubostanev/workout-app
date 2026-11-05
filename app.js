@@ -427,9 +427,20 @@ function unlockAudio() {
     try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; SPQ.keep.push(u); speechSynthesis.speak(u); speechPrimed = true; } catch (e) {}
   }
 }
-function stopKeepAlive() { try { silentEl && silentEl.pause(); } catch (e) {} }
+/* v18: keep the iOS audio route warm for the whole workout so speech does not lose its first syllable while the
+   output spins up after silence. A near-silent (-66 dB) low tone runs continuously through WebAudio from Start until
+   the workout ends; it is never stopped/restarted per utterance. */
+const WARM = { gain: 0.0005, freq: 30, node: null, g: null };
+function warmAudio() {
+  const c = audioCtx(); if (!c) return; resumeAudio();
+  if (WARM.node) return; // already running: never restart
+  try { const o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = WARM.freq; g.gain.value = WARM.gain;
+    o.connect(g); g.connect(c.destination); o.start(); WARM.node = o; WARM.g = g; } catch (e) {}
+}
+function coolAudio() { try { WARM.node && WARM.node.stop(); WARM.g && WARM.g.disconnect(); } catch (e) {} WARM.node = null; WARM.g = null; }
+function stopKeepAlive() { try { silentEl && silentEl.pause(); } catch (e) {} coolAudio(); }
 const playerOpen = () => { const el = document.getElementById('player'); return !!el && !el.classList.contains('hidden'); };
-['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => { resumeAudio(); if (silentEl && silentEl.paused && playerOpen() && !speaking()) silentEl.play().catch(() => {}); }, { capture: true, passive: true }));
+['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => { resumeAudio(); if (playerOpen()) warmAudio(); if (silentEl && silentEl.paused && playerOpen() && !speaking()) silentEl.play().catch(() => {}); }, { capture: true, passive: true }));
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { resumeAudio(); if (playerOpen() && silentEl && !speaking()) silentEl.play().catch(() => {}); } });
 // ---- Keep the screen awake during a workout ----
 // Screen Wake Lock API first; if it's missing or refused (older iOS, some home-screen PWAs), fall back to a tiny
@@ -499,11 +510,13 @@ function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false
    until they finish (iOS garbage-collects them mid-sentence otherwise). */
 const SPQ = { q: [], cur: null, t0: 0, keep: [], heldBeep: null, beepUntil: 0, notBefore: 0, timer: null, log: [], cancels: 0 };
 const speaking = () => !!SPQ.cur;
+// Lead-in: a short leading pause spoken first so any clipped start is silence, plus a delay after resume().
+const SPEECH_LEAD = { text: ', ', resumeDelayMs: 200 };
 const speechCap = text => Math.min(10000, 400 + 90 * String(text).length);
 function say(text, opt = false) {
   const o = typeof opt === 'object' ? opt : { force: !!opt }, low = o.prio === 'low';
   if ((!settings.voice && !o.force) || !('speechSynthesis' in window) || !text) return;
-  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && SPQ.cur.text === text)) return; // no duplicates
+  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && SPQ.cur.raw === text)) return; // no duplicates
   if (low && (SPQ.cur || SPQ.q.length)) return; // busy: drop a low-priority prompt instead of stacking it
   SPQ.q = SPQ.q.filter(x => !x.low); // a real announcement supersedes queued cues
   SPQ.q.push({ text, low, step: P.i, at: Date.now() }); if (SPQ.q.length > 2) SPQ.q.splice(0, SPQ.q.length - 2);
@@ -519,13 +532,14 @@ function pumpSpeech() {
   if (it.low && (stepLeft() < 4 || it.step !== P.i || Date.now() - it.at > 4000)) return pumpSpeech(); // stale / countdown -> drop
   const text = it.text;
   try {
-    const u = new SpeechSynthesisUtterance(text); u.rate = 1.05; u.volume = 1; u.lang = 'en-US';
+    if (speechSynthesis.paused) { speechSynthesis.resume(); SPQ.q.unshift(it); SPQ.notBefore = Date.now() + SPEECH_LEAD.resumeDelayMs; return pumpSpeech(); } // never speak right after resume()
+    if (playerOpen()) warmAudio();
+    const u = new SpeechSynthesisUtterance(SPEECH_LEAD.text + text); u.raw = text; u.rate = 1.05; u.volume = 1; u.lang = 'en-US';
     const done = () => { if (SPQ.cur !== u) return; SPQ.cur = null; SPQ.keep = SPQ.keep.filter(x => x !== u); SPQ.log.push({ text, end: Date.now() }); afterSpeech(); };
     u.onend = done; u.onerror = done;
     SPQ.cur = u; SPQ.t0 = Date.now(); SPQ.keep.push(u); if (SPQ.keep.length > 6) SPQ.keep.shift();
-    if (speechSynthesis.paused) speechSynthesis.resume();
     speechSynthesis.speak(u);
-    const cap = speechCap(text);
+    const cap = speechCap(text) + 300;
     const wd = () => { if (SPQ.cur !== u) return; const el = Date.now() - SPQ.t0;
       if ((el > 400 && !speechSynthesis.speaking && !speechSynthesis.pending) || el > cap) done(); else setTimeout(wd, 200); };
     setTimeout(wd, 450);
@@ -564,6 +578,7 @@ function cuesFor(ex, round = 1) {
 }
 async function startWorkout() {
   unlockAudio(); // must run synchronously in the tap, before any await (iOS)
+  warmAudio();
   P.steps = buildSteps(today); P.i = 0; P.started = Date.now(); P.sets = {}; P.paused = false; P.cueOff = assignCueOffsets(P.steps);
   P.ovh = ovhPerSet(); P.est = estSec(today, P.ovh); P.tl = []; P.prevI = null; P.stepT0 = 0; P.maxI = 0; P.pausedMs = 0; P.pauseT = 0; P.timingSaved = false;
   $('#player').classList.remove('hidden');
@@ -577,14 +592,14 @@ function setLogHTML(pw) {
   return `<div class="setlog" id="setlog"><div class="slh"><b>Log set ${pw.round}/${pw.rounds}</b> · ${esc(e.name)}</div>
     <div class="stps"><div class="stp"><button type="button" data-d="w-1" aria-label="less weight">−</button><div class="v"><b id="lw">${v.w ? (e.kb && e.kb.mode === 'double' ? '2×' : '') + v.w : bw ? 'BW' : '—'}</b><small>${bw ? (v.w ? '+lb' : 'bodyweight') : 'lb'}</small></div><button type="button" data-d="w1" aria-label="more weight">+</button></div>
     <div class="stp"><button type="button" data-d="r-1" aria-label="fewer reps">−</button><div class="v"><b id="lr">${v.r || '—'}</b><small>reps</small></div><button type="button" data-d="r1" aria-label="more reps">+</button></div></div>
-    <button type="button" class="savebtn" id="bSaveSet">✓ Save &amp; next exercise</button>
+    <button type="button" class="savebtn" id="bSaveSet">✓ Save</button>
     <div class="mut slm" id="slm">${slmText(pw)}</div></div>`;
 }
 function slmText(pw) {
   const st = P.steps[P.i] || {}, saved = P.sets[setKey(pw)] && !P.sets[setKey(pw)].auto;
-  if (P.done && P.done.i === P.i - 1 && !saved) return 'Set done early ✓ · enter weight/reps, then Save & next' + (st.sw ? ' (± pauses the timer)' : '');
-  if (st.sw) return P.paused ? (saved ? '✓ Saved · ' : '') + 'Timer paused while you log · Save goes on' : 'Tap ± to log (timer pauses) · or log it on the next rest';
-  return saved ? '✓ Saved · rest keeps running' : 'Rest keeps running · Save skips the rest';
+  if (P.done && P.done.i === P.i - 1 && !saved) return 'Set done early ✓ · enter weight/reps, then Save' + (st.sw ? ' (± pauses the timer)' : '');
+  if (st.sw) return P.paused ? (saved ? '✓ Saved · ' : '') + 'Timer paused while you log · Save resumes it' : 'Tap ± to log (timer pauses) · or log it on the next rest';
+  return saved ? '✓ Saved · rest keeps running' : 'Rest keeps running · Save keeps it running · ⏭ skips';
 }
 function wireSetLog(pw) {
   const box = $('#setlog'); if (!box) return;
@@ -597,12 +612,18 @@ function wireSetLog(pw) {
   });
   const sv = $('#bSaveSet'); if (sv) sv.onclick = () => saveAndNext(pw);
 }
-// Save: store the set as shown and jump straight to the next exercise (skip the rest of this rest/transition).
+// v18 Save: store the set and collapse the log form. The rest/switch timer keeps running to its end (only ⏭ Skip cuts it
+// short). If the timer was held for logging during a 10 s switch, it resumes from where it was.
 function saveAndNext(pw) {
   const cur = P.sets[setKey(pw)] || setPrefill(pw); recordSet(pw, cur.w, cur.r, false); P.saved = (P.saved || 0) + 1;
-  unlockAudio(); P.paused = false; P.logHold = false; P.i++;
-  while (P.steps[P.i] && P.steps[P.i].type === 'rest') P.i++;
-  enterStep();
+  unlockAudio(); P.logClosed = P.i;
+  if (P.paused && P.logHold) { P.paused = false; P.end = Date.now() + P.left * 1000; if (P.pauseT) { P.pausedMs = (P.pausedMs || 0) + Date.now() - P.pauseT; P.pauseT = 0; } }
+  P.logHold = false;
+  render();
+}
+function savedLineHTML(pw) {
+  const v = P.sets[setKey(pw)]; if (!v) return '';
+  return `<div class="savedline" id="savedLine">✓ Saved ${esc(pw.ex.name)}: ${esc(setText(pw.ex, v))} <button type="button" class="lnk" id="bEditSet">edit</button></div>`;
 }
 /* Actual time per step (wall clock incl. pauses/logging) vs planned, recorded from v16 on (calibrates OVH). */
 function stampStep() {
@@ -685,7 +706,7 @@ function render() {
   const title = s.type === 'work' ? s.ex.name : s.type === 'rest' ? s.label : 'Get ready';
   const meta = s.type === 'work' ? `${s.block} · Round ${s.round}/${s.rounds}` : s.type === 'rest' && s.next ? `Up next: ${s.next.block} · Round ${s.next.round}/${s.next.rounds}` : s.block || '';
   const sg = s.type === 'work' && suggest(s.ex.id);
-  const pw = s.type === 'rest' ? logStepFor(P.i) : null;
+  const pwAny = s.type === 'rest' ? logStepFor(P.i) : null, pw = pwAny && P.logClosed !== P.i ? pwAny : null;
   const hist = s.type === 'work' ? recentHistory(s.ex, 3, P.started) : [];
   const nowW = s.type === 'work' ? Object.values(P.sets).filter(x => x.id === s.ex.id).sort((a, b) => a.t - b.t).map(x => setText(s.ex, x)) : [];
   const doneSteps = P.steps.slice(0, P.i).reduce((a, x) => a + x.dur, 0), total = P.steps.reduce((a, x) => a + x.dur, 0);
@@ -695,10 +716,10 @@ function render() {
     <div class="phase">${s.type === 'work' ? 'Work' : s.type === 'rest' ? (s.setup ? 'Set up' : s.sw ? 'Switch' : 'Rest') : 'Prepare'}${P.paused ? ' · Paused' : ''}</div>
     <div class="exname">${title}${s.setup ? `<span class="sutime" id="num2">${fmt(P.left)}</span>` : ''}</div>
     <div class="mut">${s.type === 'work' ? (s.ex.cue || s.ex.muscles.join(', ')) : s.setup ? (s.restPart ? `Rest ${s.restPart} s + set up ${s.setupPart} s` : `Set up ${s.setupPart} s`) : s.type === 'rest' && !s.transition && !pw ? `Done: ${esc(s.after)} · breathe, shake it out` : ''}</div>
+    ${pw ? setLogHTML(pw) : pwAny ? savedLineHTML(pwAny) : ''}
     ${s.setup ? setupHTML(s) : ''}
     ${histHTML(hist)}
     ${s.type === 'work' && (nowW.length || (sg && sgText(s.ex, sg))) ? `<div class="lastline">${nowW.length ? `<span>Today: ${nowW.join(', ')}</span>` : ''}${sg && sgText(s.ex, sg) ? `<span>Try ${sgText(s.ex, sg)}</span>` : ''}</div>` : ''}
-    ${pw ? setLogHTML(pw) : ''}
     ${s.type === 'work' && s.ex.targetReps ? `<div class="target" id="target">${s.ex.targetReps} reps</div>` : ''}
     ${s.type === 'work' ? `<button type="button" class="donebtn" id="bDone">Done ✓<small>${P.steps[P.i + 1] && logStepFor(P.i + 1) ? 'finished early · log this set now' : 'finished early · move on'}</small></button>` : ''}
     ${(() => { if (s.setup) return ''; const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie && ie.image ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}${pw ? ' small' : ''}"><img id="pimg" src="${ie.image[0]}" data-f="${ie.image.join('|')}" alt="${ie.name}">${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
@@ -710,6 +731,8 @@ function render() {
     <div class="ctrl"><button id="bPrev">⏮</button><button id="bPause" class="pri" style="flex:2">${P.paused ? '▶ Resume' : '⏸ Pause'}</button><button id="bSkip" title="Skip (no log)" aria-label="Skip without logging">⏭</button></div>
     <button id="bQuit" style="margin-top:4px;padding:8px;background:none;color:var(--mut);flex-shrink:0">End workout</button>`;
   $('#bPause').onclick = togglePause; if (pw) wireSetLog(pw);
+  const be = $('#bEditSet'); if (be) be.onclick = () => { P.logClosed = null; render(); };
+  if (pw && s.setup) { const lb = el.querySelector('.setlog, #setLog, form'); if (lb && lb.scrollIntoView && P.logShownI !== P.i) { P.logShownI = P.i; lb.scrollIntoView({ block: 'nearest' }); } }
   const bd = $('#bDemo'); if (bd) bd.onclick = ev => { ev.preventDefault(); openDemo(bd.href); }; $('#bSkip').onclick = () => skip(1); const bdn = $('#bDone'); if (bdn) bdn.onclick = doneEarly;
   el.querySelectorAll('.bpx').forEach(c => { const o = () => { if (+c.dataset.bi >= 0) openPreview(+c.dataset.bi, +c.dataset.ii); }; c.onclick = o; c.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); o(); } }; });
   const bs = $('#bSwap'); if (bs) longPress(bs, () => playerSwap(true), () => playerSwap(false));
@@ -924,6 +947,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, totalSec, remainSec, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });

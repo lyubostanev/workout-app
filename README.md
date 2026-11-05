@@ -37,3 +37,9 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 ### v15 timing + speech
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
+
+## v18
+- Clipped first syllables: a near-silent continuous WebAudio tone (gain 0.0005, 30 Hz) keeps the iOS audio route warm for the whole workout (started once, never restarted mid-speech, stopped with keep-alive). Every utterance is prefixed with a short lead-in (", "), and after speechSynthesis.resume() we wait 200 ms before speak (SPEECH_LEAD / WARM in app.js). v17 queue rules unchanged.
+- After the last exercise of a block, the weight/reps log renders ABOVE the next-block preview and is visible without scrolling.
+- "✓ Save" only saves the set: the rest/switch timer keeps running (resumes if logging paused it), the form collapses to a "✓ Saved … edit" line, and rest + next exercise stay visible. Only ⏭ Skip cuts rest short.
+- SW cache gymcoach-v18.
