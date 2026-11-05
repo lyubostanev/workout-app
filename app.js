@@ -415,9 +415,9 @@ function unlockAudio() {
   if (c) { try { resumeAudio(); const b = c.createBuffer(1, 1, 22050), src = c.createBufferSource(); src.buffer = b; src.connect(c.destination); src.start(0); } catch (e) {} }
   try {
     if (!silentEl) { silentEl = new Audio('audio/silence.wav'); silentEl.loop = true; silentEl.setAttribute('playsinline', ''); silentEl.preload = 'auto'; }
-    const pr = silentEl.play(); if (pr && pr.catch) pr.catch(() => {});
+    if (!speaking() && silentEl.paused) { const pr = silentEl.play(); if (pr && pr.catch) pr.catch(() => {}); } // never (re)start audio mid-sentence
   } catch (e) {}
-  BEEP_FILES.forEach(f => { // prime the fallback beep elements inside the gesture
+  if (!speaking()) BEEP_FILES.forEach(f => { // prime the fallback beep elements inside the gesture
     try {
       if (beepEls[f]) return; const el = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); el.preload = 'auto'; beepEls[f] = el;
       el.muted = true; const pr = el.play(); if (pr && pr.then) pr.then(() => { el.pause(); el.currentTime = 0; el.muted = false; }).catch(() => { el.muted = false; }); else el.muted = false;
@@ -430,7 +430,7 @@ function unlockAudio() {
 function stopKeepAlive() { try { silentEl && silentEl.pause(); } catch (e) {} }
 const playerOpen = () => { const el = document.getElementById('player'); return !!el && !el.classList.contains('hidden'); };
 ['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => { resumeAudio(); if (silentEl && silentEl.paused && playerOpen() && !speaking()) silentEl.play().catch(() => {}); }, { capture: true, passive: true }));
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { resumeAudio(); if (playerOpen() && silentEl) silentEl.play().catch(() => {}); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { resumeAudio(); if (playerOpen() && silentEl && !speaking()) silentEl.play().catch(() => {}); } });
 // ---- Keep the screen awake during a workout ----
 // Screen Wake Lock API first; if it's missing or refused (older iOS, some home-screen PWAs), fall back to a tiny
 // muted, looping, inline video (the NoSleep.js trick). The lock is dropped by the OS when the page is hidden, so it is
@@ -448,7 +448,8 @@ function videoWake() {
     wakeVid.src = NOSLEEP_MP4; document.body.appendChild(wakeVid);
   }
   WAKE.mode = 'video';
-  const pr = wakeVid.play(); if (pr && pr.catch) pr.catch(e => { WAKE.err = 'video:' + (e && e.name); });
+  if (!wakeVid.paused) return; // already running: never restart it (would interrupt speech on iOS)
+  wakeVid.muted = true; const pr = wakeVid.play(); if (pr && pr.catch) pr.catch(e => { WAKE.err = 'video:' + (e && e.name); });
 }
 function acquireWake() {
   if (!wakeWanted()) return;
@@ -466,14 +467,15 @@ function releaseWake() {
   WAKE.mode = 'off';
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && playerOpen()) acquireWake(); });
-['touchend', 'click'].forEach(t => document.addEventListener(t, () => { if (playerOpen() && WAKE.mode === 'video' && wakeVid && wakeVid.paused && wakeWanted()) { wakeVid.muted = true; wakeVid.play().catch(() => {}); } }, { capture: true, passive: true }));
+['touchend', 'click'].forEach(t => document.addEventListener(t, () => { if (playerOpen() && WAKE.mode === 'video' && wakeVid && wakeVid.paused && wakeWanted() && !speaking()) { wakeVid.muted = true; wakeVid.play().catch(() => {}); } }, { capture: true, passive: true }));
 function beepFile(freq) {
   const f = BEEP_FILES.reduce((a, b) => Math.abs(b - freq) < Math.abs(a - freq) ? b : a);
   try { let el = beepEls[f]; if (!el) { el = beepEls[f] = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); } el.muted = false; el.currentTime = 0; const pr = el.play(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {}
 }
 let lastBeepPath = '';
-function beep(freq = 880, ms = 120, vol = 0.25, force = false) {
+function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false) {
   if (!settings.beeps && !force) return;
+  if (speaking() && droppable) { lastBeepPath = 'dropped'; return; } // countdown tick during speech: skip it
   if (speaking()) { SPQ.heldBeep = { args: [freq, ms, vol, force], at: Date.now() }; lastBeepPath = 'held'; return; } // never over speech
   SPQ.beepUntil = Math.max(SPQ.beepUntil, Date.now() + ms + 40);
   const c = audioCtx();
@@ -488,24 +490,34 @@ function beep(freq = 880, ms = 120, vol = 0.25, force = false) {
   }
   resumeAudio(); beepFile(freq); lastBeepPath = 'html';
 }
-/* Speech queue (iOS cut-off fix). One utterance at a time; later say() calls wait their turn instead of cancel()-ing
-   the one in progress. Stale speech is cancelled only when a new step starts (speechNewStep) or on pause/stop.
-   Beeps never play over speech: they are held and played when the speech ends. Utterances are kept referenced until
-   they finish (iOS Safari garbage-collects them mid-sentence and fires no onend otherwise). */
-const SPQ = { q: [], cur: null, t0: 0, keep: [], heldBeep: null, beepUntil: 0, notBefore: 0, timer: null, log: [] };
+/* Speech queue (v17, iOS cut-off fix). ONE queue, one utterance at a time; nothing ever cancel()s a sentence that is
+   playing except ending the workout or an explicit ⏭ Skip. A new step only DROPS still-queued, not-yet-started prompts
+   (stale ones); low-priority prompts (form cues, "10 seconds") are dropped rather than queued behind others, and are not
+   started inside a step's final 4 s (countdown beeps). Beeps never play over speech: step beeps are held until it ends,
+   countdown beeps are skipped. Keep-alive audio / wake video are never (re)started while speaking. A per-utterance
+   watchdog (400 ms + 90 ms/char, cap 10 s) advances the queue if iOS never fires onend. Utterances stay referenced
+   until they finish (iOS garbage-collects them mid-sentence otherwise). */
+const SPQ = { q: [], cur: null, t0: 0, keep: [], heldBeep: null, beepUntil: 0, notBefore: 0, timer: null, log: [], cancels: 0 };
 const speaking = () => !!SPQ.cur;
-function say(text, force = false) {
-  if ((!settings.voice && !force) || !('speechSynthesis' in window) || !text) return;
-  if (SPQ.q[SPQ.q.length - 1] === text || (SPQ.cur && SPQ.cur.text === text && !SPQ.q.length)) return; // no duplicates
-  SPQ.q.push(text); if (SPQ.q.length > 4) SPQ.q.splice(0, SPQ.q.length - 4);
+const speechCap = text => Math.min(10000, 400 + 90 * String(text).length);
+function say(text, opt = false) {
+  const o = typeof opt === 'object' ? opt : { force: !!opt }, low = o.prio === 'low';
+  if ((!settings.voice && !o.force) || !('speechSynthesis' in window) || !text) return;
+  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && SPQ.cur.text === text)) return; // no duplicates
+  if (low && (SPQ.cur || SPQ.q.length)) return; // busy: drop a low-priority prompt instead of stacking it
+  SPQ.q = SPQ.q.filter(x => !x.low); // a real announcement supersedes queued cues
+  SPQ.q.push({ text, low, step: P.i, at: Date.now() }); if (SPQ.q.length > 2) SPQ.q.splice(0, SPQ.q.length - 2);
   pumpSpeech();
 }
+function stepLeft() { return playerOpen() && !P.paused && P.end ? (P.end - Date.now()) / 1000 : 99; }
 function pumpSpeech() {
   clearTimeout(SPQ.timer); SPQ.timer = null;
   if (SPQ.cur || !SPQ.q.length) return;
   const wait = Math.max(SPQ.beepUntil, SPQ.notBefore) - Date.now();
-  if (wait > 0) { SPQ.timer = setTimeout(pumpSpeech, wait + 10); return; } // let a beep (or a cancel) finish first
-  const text = SPQ.q.shift();
+  if (wait > 0) { SPQ.timer = setTimeout(pumpSpeech, wait + 10); return; } // let a beep finish first
+  const it = SPQ.q.shift();
+  if (it.low && (stepLeft() < 4 || it.step !== P.i || Date.now() - it.at > 4000)) return pumpSpeech(); // stale / countdown -> drop
+  const text = it.text;
   try {
     const u = new SpeechSynthesisUtterance(text); u.rate = 1.05; u.volume = 1; u.lang = 'en-US';
     const done = () => { if (SPQ.cur !== u) return; SPQ.cur = null; SPQ.keep = SPQ.keep.filter(x => x !== u); SPQ.log.push({ text, end: Date.now() }); afterSpeech(); };
@@ -513,27 +525,26 @@ function pumpSpeech() {
     SPQ.cur = u; SPQ.t0 = Date.now(); SPQ.keep.push(u); if (SPQ.keep.length > 6) SPQ.keep.shift();
     if (speechSynthesis.paused) speechSynthesis.resume();
     speechSynthesis.speak(u);
-    // Watchdog: iOS sometimes never fires onend. Treat it as ended once the engine is idle (or after a hard cap).
-    const cap = 4000 + text.length * 90;
+    const cap = speechCap(text);
     const wd = () => { if (SPQ.cur !== u) return; const el = Date.now() - SPQ.t0;
-      if ((el > 400 && !speechSynthesis.speaking && !speechSynthesis.pending) || el > cap) done(); else setTimeout(wd, 250); };
+      if ((el > 400 && !speechSynthesis.speaking && !speechSynthesis.pending) || el > cap) done(); else setTimeout(wd, 200); };
     setTimeout(wd, 450);
   } catch (e) { SPQ.cur = null; }
 }
 function afterSpeech() {
-  if (SPQ.heldBeep) { const b = SPQ.heldBeep; SPQ.heldBeep = null; if (Date.now() - b.at < 2500) { beep(...b.args); } }
-  if (playerOpen() && silentEl && silentEl.paused) silentEl.play().catch(() => {}); // keep-alive resumed only between utterances
+  if (SPQ.heldBeep) { const b = SPQ.heldBeep; SPQ.heldBeep = null; if (Date.now() - b.at < 1500) { beep(...b.args); } }
   pumpSpeech();
+  if (!speaking() && playerOpen() && silentEl && silentEl.paused) silentEl.play().catch(() => {}); // keep-alive only between utterances
 }
-// New step: drop anything still queued and stop the (now stale) sentence; the next say() waits a moment after cancel().
-function speechNewStep() {
+// New step: drop queued prompts that have not started yet. The sentence already playing is allowed to finish.
+function speechNewStep() { SPQ.q = []; SPQ.heldBeep = null; }
+// Hard stop: only for ending the workout or an explicit Skip.
+function speechStop() {
   SPQ.q = []; SPQ.heldBeep = null; clearTimeout(SPQ.timer); SPQ.timer = null;
   if (!('speechSynthesis' in window)) return;
-  const active = SPQ.cur || speechSynthesis.speaking || speechSynthesis.pending;
-  SPQ.cur = null;
-  if (active) { try { speechSynthesis.cancel(); } catch (e) {} SPQ.notBefore = Date.now() + 150; }
+  const active = SPQ.cur || speechSynthesis.speaking || speechSynthesis.pending; SPQ.cur = null;
+  if (active) { try { speechSynthesis.cancel(); SPQ.cancels++; } catch (e) {} SPQ.notBefore = Date.now() + 150; }
 }
-function speechStop() { speechNewStep(); }
 
 /* ---------- player ---------- */
 const P = { sets: {}, steps: [], i: 0, end: 0, left: 0, paused: false, timer: null, started: 0, lastBeep: -1, wake: null, halfSaid: false, cueOff: {}, cueSaid: 0, tk: '' };
@@ -617,7 +628,7 @@ function enterStep() {
   speechNewStep();
   P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.cueSaid = 0; P.tk = '';
   if (s.type === 'work') { beep(1200, 350); say(s.ex.name); }
-  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next up, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? 'Set up for ' + s.nextBlock + '. ' + s.dur + ' seconds.' + (s.next ? ' First up, ' + s.next.ex.name : '') : 'Rest, ' + s.dur + ' seconds.' + (s.next ? ' Next up, ' + s.next.ex.name : '')); }
+  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? 'Set up. ' + (s.next ? 'Next, ' + s.next.ex.name : '') : 'Rest.' + (s.next ? ' Next, ' + s.next.ex.name : '')); }
   else if (s.type === 'prep') say('Get ready. First up, ' + s.ex.name);
   render();
 }
@@ -626,14 +637,14 @@ function tick() {
   const s = P.steps[P.i]; if (!s) return;
   const left = Math.max(0, (P.end - Date.now()) / 1000); P.left = left;
   const sec = Math.ceil(left);
-  if (sec <= 3 && sec >= 1 && sec !== P.lastBeep) { P.lastBeep = sec; beep(880, 110); }
+  if (sec <= 3 && sec >= 1 && sec !== P.lastBeep) { P.lastBeep = sec; beep(880, 110, 0.25, false, true); }
   if (s.type === 'work' && s.ex.unilateral && !P.halfSaid && left <= s.dur / 2 && /switch/i.test(s.ex.cue)) { P.halfSaid = true; beep(1000, 150); say('Switch sides'); }
   if (s.type === 'work') { // speak a form cue a few seconds in, and a second one past the midpoint on longer sets
     const el = s.dur - left, cs = cuesFor(s.ex, s.round), sw = s.ex.unilateral && /switch/i.test(s.ex.cue);
-    if (P.cueSaid === 0 && cs[0] && el >= 4 && left > 4) { P.cueSaid = 1; say(cs[0]); }
-    else if (P.cueSaid === 1 && cs[1] && s.dur >= 30 && el >= s.dur / 2 + (sw ? 3 : 0) && left > 5) { P.cueSaid = 2; say(cs[1]); }
+    if (P.cueSaid === 0 && cs[0] && el >= 4 && left > 4) { P.cueSaid = 1; say(cs[0], { prio: 'low' }); }
+    else if (P.cueSaid === 1 && cs[1] && s.dur >= 30 && el >= s.dur / 2 + (sw ? 3 : 0) && left > 5) { P.cueSaid = 2; say(cs[1], { prio: 'low' }); }
   }
-  if (s.type === 'rest' && !s.transition && s.dur >= 20 && !P.halfSaid && left <= 10 && left > 9) { P.halfSaid = true; beep(700, 120); say('10 seconds' + (s.next ? '. Get ready for ' + s.next.ex.name : '')); }
+  if (s.type === 'rest' && !s.transition && s.dur >= 20 && !P.halfSaid && left <= 10 && left > 9) { P.halfSaid = true; beep(700, 120); say('10 seconds', { prio: 'low' }); }
   if (left <= 0) { P.i++; enterStep(); return; }
   renderTime();
 }
@@ -644,7 +655,7 @@ function togglePause() {
 }
 // Demo videos open in a new tab / the YouTube app; the workout timer is paused first so nothing runs on while watching.
 function openDemo(url) {
-  if (!P.paused) { P.paused = true; speechStop(); render(); }
+  if (!P.paused) { P.paused = true; speechNewStep(); render(); }
   window.open(url, '_blank', 'noopener');
 }
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -657,7 +668,7 @@ function playerSwap(avoid) {
   render();
 }
 // ⏭ Skip = move on WITHOUT logging (a skipped work set is not auto-recorded). Done ✓ = finished the set early -> log it now.
-function skip(d = 1) { const s = P.steps[P.i]; P.skipped = d > 0 && s && s.type === 'work' ? P.i : null; P.done = null; P.i = Math.max(0, P.i + d); enterStep(); }
+function skip(d = 1) { speechStop(); const s = P.steps[P.i]; P.skipped = d > 0 && s && s.type === 'work' ? P.i : null; P.done = null; P.i = Math.max(0, P.i + d); enterStep(); }
 function doneEarly() {
   const s = P.steps[P.i]; if (!s || s.type !== 'work') return;
   unlockAudio(); P.done = { i: P.i, left: Math.round(P.left) }; P.skipped = null; P.paused = false; P.logHold = false; P.i++; enterStep();
@@ -895,7 +906,7 @@ function renderSettings() {
     LS.set('gc_settings', settings); today = generate();
   };
   $('#tab-settings').querySelectorAll('select,input').forEach(i => i.onchange = save);
-  $('#bTestSound').onclick = () => { unlockAudio(); beep(880, 150, 0.3, true); setTimeout(() => beep(1320, 300, 0.3, true), 350); say('Sound check. Rest, 60 seconds. Next up, push-ups.', true);
+  $('#bTestSound').onclick = () => { unlockAudio(); beep(880, 150, 0.3, true); setTimeout(() => beep(1320, 300, 0.3, true), 350); say('Sound check. Rest. Next, push-ups.', true);
     setTimeout(() => { const n = $('#soundNote'); if (n) n.textContent = `Played a beep (${lastBeepPath === 'webaudio' ? 'Web Audio' : 'audio file'}) and a spoken phrase. Heard nothing? Turn off silent mode, raise the volume, and try again.`; }, 700); };
   $('#tab-settings').querySelectorAll('.unavoid').forEach(b => b.onclick = () => { settings.avoided = settings.avoided.filter(x => x !== b.dataset.id); LS.set('gc_settings', settings); today = generate(); renderSettings(); });
   $('#bReset').onclick = () => { if (confirm('Delete all workout history?')) { history = []; LS.set('gc_history', history); today = generate(); } };
@@ -913,6 +924,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, totalSec, remainSec, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, totalSec, remainSec, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });
