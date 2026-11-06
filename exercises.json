@@ -1911,7 +1911,7 @@
   ],
   "work": 40,
   "rest": 45,
-  "cue": "Alternate legs per set",
+  "cue": "Left side, then right — switch at halfway",
   "unilateral": true,
   "image": [
    "img/smith-split-squat-0.webp",
@@ -2112,7 +2112,7 @@
   ],
   "work": 40,
   "rest": 45,
-  "cue": "Alternate legs per set",
+  "cue": "Left side, then right — switch at halfway",
   "unilateral": true,
   "image": [
    "img/db-bulgarian-0.webp",
@@ -2154,8 +2154,8 @@
   ],
   "work": 40,
   "rest": 45,
-  "cue": "",
-  "unilateral": false,
+  "cue": "Left leg, then right — switch at halfway",
+  "unilateral": true,
   "image": [
    "img/db-reverse-lunge-0.webp",
    "img/db-reverse-lunge-1.webp"
@@ -2194,8 +2194,8 @@
   ],
   "work": 40,
   "rest": 45,
-  "cue": "Step at full height",
-  "unilateral": false,
+  "cue": "Left leg, then right — switch at halfway. Step at full height",
+  "unilateral": true,
   "image": [
    "img/db-step-up-0.webp",
    "img/db-step-up-1.webp"
@@ -2366,7 +2366,7 @@
   ],
   "work": 35,
   "rest": 30,
-  "cue": "Alternate legs per set",
+  "cue": "Left side, then right — switch at halfway",
   "unilateral": true,
   "image": [
    "img/cable-kickback-0.webp",
@@ -2405,8 +2405,8 @@
   ],
   "work": 35,
   "rest": 30,
-  "cue": "",
-  "unilateral": false,
+  "cue": "Left leg, then right — switch at halfway",
+  "unilateral": true,
   "image": [
    "img/cable-hip-abduction-0.webp",
    "img/cable-hip-abduction-1.webp"
@@ -2487,7 +2487,7 @@
   ],
   "work": 40,
   "rest": 45,
-  "cue": "Alternate legs per set",
+  "cue": "Left side, then right — switch at halfway",
   "unilateral": true,
   "image": [
    "img/sl-hip-thrust-0.webp",
@@ -2499,7 +2499,7 @@
    "Push through the heel of the working leg",
    "Ribs down, no lower-back arch",
    "Pause and squeeze at the top",
-   "Switch legs next set"
+   "Switch sides at halfway"
   ],
   "imageSource": "generated",
   "demoUrl": "https://www.youtube.com/watch?v=A3UDYfDdfxE",
@@ -2614,8 +2614,8 @@
   ],
   "work": 40,
   "rest": 40,
-  "cue": "",
-  "unilateral": false,
+  "cue": "Left leg, then right — switch at halfway",
+  "unilateral": true,
   "image": [
    "img/db-sl-rdl-0.webp",
    "img/db-sl-rdl-1.webp"
@@ -2656,8 +2656,8 @@
   ],
   "work": 35,
   "rest": 40,
-  "cue": "",
-  "unilateral": false,
+  "cue": "Left leg, then right — switch at halfway",
+  "unilateral": true,
   "image": [
    "img/trx-pistol-0.webp",
    "img/trx-pistol-1.webp"
@@ -3936,7 +3936,7 @@
   ],
   "work": 60,
   "rest": 0,
-  "cue": "Alternate sides",
+  "cue": "Left side, then right — switch at halfway",
   "unilateral": true,
   "image": [
    "img/worlds-greatest-0.webp",

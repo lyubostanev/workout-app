@@ -15,6 +15,9 @@ delete settings.tempo; // tempo feature removed entirely
 if (!Array.isArray(settings.avoided)) settings.avoided = [];
 if (!settings.restOverrides || typeof settings.restOverrides !== 'object') settings.restOverrides = {};
 if (!Array.isArray(settings.kettlebells) || !settings.kettlebells.length) settings.kettlebells = DEFAULTS.kettlebells.slice();
+// Round rest is 60 s. Older saves (and the old "core gets half, min 30" rule) left this at 30.
+if (!(+settings.restSec >= 60)) { settings.restSec = 60; LS.set('gc_settings', settings); }
+if (!(+settings.setupSec >= 15)) { settings.setupSec = 30; LS.set('gc_settings', settings); }
 let history = LS.get('gc_history', []);
 let LIB = [];
 let today = null;     // generated workout
@@ -172,7 +175,7 @@ function suggest(id) {
   return { last: l, weight: w || null, reps: e.reps ? r : null };
 }
 const wText = (e, w) => w ? (e.kb && e.kb.mode === 'double' ? `2×${w} lb` : `${w} lb`) : '';
-function sgText(e, sg) { if (!sg) return ''; return [wText(e, sg.weight), sg.reps ? sg.reps + ' reps' : ''].filter(Boolean).join(' × '); }
+function sgText(e, sg) { if (!sg) return ''; return [wText(e, sg.weight), sg.reps ? (perSide(e) ? sg.reps + ' / side' : sg.reps + ' reps') : ''].filter(Boolean).join(' × '); }
 function lastText(e, l) { return l ? [wText(e, Number(l.weight)), l.reps ? l.reps + ' reps' : ''].filter(Boolean).join(' × ') : ''; }
 /* ---------- time model (v16) ----------
    Work interval = ~10 s to get set (grab/unrack, get in position) + target reps x 5 s (x2 for each-side moves), 25-150 s.
@@ -181,9 +184,23 @@ function lastText(e, l) { return l ? [wText(e, Number(l.weight)), l.reps ? l.rep
    (gc_timing: wall-clock vs planned time per session and per step). The estimate shown everywhere and used to fit the
    chosen length = sum of all steps + OVH x lifting sets. */
 const SET_SETUP = 10, SEC_PER_REP = 5, OVH_DEFAULT = 15;
+// Both limbs in one interval: the unilateral flag (left then right). The old cue regex
+// (only "switch" / "each side") left "Alternate legs per set" and timed one-side moves
+// on a single-side clock, so the set ended before the second side.
+function perSide(e) { return !!(e && e.unilateral); }
+function sideCount(e) { return perSide(e) ? 2 : 1; }
 function withReps(x) {
-  if (!x.reps) return x; const sg = suggest(x.id); x.targetReps = (sg && sg.reps) || x.startReps || x.reps[0];
-  const sides = x.unilateral && /switch|each side/i.test(x.cue) ? 2 : 1;
+  const src = byId(x.id) || x;
+  if (!src.reps) {
+    if (perSide(src)) {
+      const lv = LEVEL[settings.level] || LEVEL.intermediate;
+      const base = Math.round((src.work || 30) * lv.w / 5) * 5;
+      x.work = Math.min(150, Math.max(30, Math.round(base * 2 / 5) * 5));
+    }
+    return x;
+  }
+  const sg = suggest(x.id); x.targetReps = (sg && sg.reps) || src.startReps || src.reps[0];
+  const sides = sideCount(src);
   x.work = Math.min(150, Math.max(25, Math.round((SET_SETUP + x.targetReps * SEC_PER_REP * sides) / 5) * 5));
   return x;
 }
@@ -195,18 +212,29 @@ function ovhPerSet() {
   return Math.round(Math.min(60, Math.max(5, v.reduce((a, b) => a + b, 0) / v.length)));
 }
 function estSec(w, ovh = ovhPerSet()) { const st = buildSteps(w); return st.reduce((a, x) => a + x.dur, 0) + ovh * st.filter(isLiftStep).length; }
-/* Rest after EVERY work set (also between the two exercises of a pair and between rounds).
-   Priority: per-exercise override (Library) > exercise data restSec > rule:
-   lifts (push/pull/legs) = max('Rest between rounds', the exercise's own minimum) ; core/conditioning = max(30, half of it).
-   Scaled by level (beginner longer, advanced shorter). Warm-up/cool-down moves only get a 10 s transition. */
+/* Rest after a finished round (both exercises of a pair done), and the rest portion before the
+   next group's setup. Priority: per-exercise override (Library) > exercise data restSec > rule.
+   Full "Rest between rounds" for every category (default 60). Core and conditioning used to take
+   half of that (min 30), so any pair that ended on abs/obliques or a finisher rested 30 s.
+   Beginner stretches it; it never drops under the round-rest setting. Warm-up/cool-down transitions
+   are set by the generator (10 s / 5 s), not this rule. */
 function restFor(e) {
   const ov = (settings.restOverrides || {})[e.id]; if (ov) return ov;
   if (e.restSec) return e.restSec;
   if (e.category === 'mobility') return 10;
-  const lv = LEVEL[settings.level] || LEVEL.intermediate, base = settings.restSec || 60, r5 = x => Math.round(x / 5) * 5;
-  if (['push', 'pull', 'legs'].includes(e.category)) return Math.max(30, r5(Math.max(base, e.rest) * lv.r));
-  return Math.max(20, r5(Math.max(30, base / 2, e.rest) * lv.r));
+  const lv = LEVEL[settings.level] || LEVEL.intermediate, base = Math.max(60, +settings.restSec || 60), r5 = x => Math.round(x / 5) * 5;
+  return Math.max(base, r5(Math.max(base, e.rest || 0) * lv.r));
 }
+// Same key = same Smith bar/bench setup, safe to superset. Different keys means moving
+// the stops or the bench between the two moves (Romanian deadlift vs calf raise).
+const SMITH_STATION = {
+  'smith-bench': 'bench-flat', 'smith-incline-bench': 'bench-incline', 'smith-ohp': 'bench-upright',
+  'smith-row': 'bar-row', 'smith-inverted-row': 'bar-inverted', 'smith-shrug': 'bar-hands',
+  'smith-squat': 'bar-shoulders', 'smith-split-squat': 'bar-shoulders',
+  'smith-rdl': 'bar-rdl', 'smith-calf-raise': 'bar-calf',
+};
+const smithStation = e => (e && SMITH_STATION[e.id]) || null;
+function smithConflict(a, b) { const x = smithStation(a), y = smithStation(b); return !!(x && y && x !== y); }
 function warmupFor(day) {
   if (day.warmup) return day.warmup;
   const cats = new Set(day.blocks.flat().map(c => c.split(':')[0]));
@@ -225,15 +253,45 @@ function generate() {
   // Fixed warm-up/cool-down picks fall back to their first usable alternate if avoided or missing equipment.
   const fixed = id => { const ok = x => okPool.find(e => e.id === x && !used.has(x)); const e = ok(id) || (byId(id)?.alternates || []).map(ok).find(Boolean); if (e) used.add(e.id); return e; };
   const recent = new Set((history.slice(-2).flatMap(h => h.exerciseIds || [])));
-  const pick = (slot, preferHeavy) => {
+  const rankSlot = (slot, preferHeavy, skip) => {
     const [cat, mus] = slot.split(':'); const want = mus ? mus.split('/') : [];
-    let c = pool.filter(e => e.category === cat && !used.has(e.id) && e.id !== 'row-steady');
-    if (!c.length) return null;
+    const c = pool.filter(e => e.category === cat && !used.has(e.id) && !skip.has(e.id) && e.id !== 'row-steady');
     const fit = e => !want.length ? 0 : want.includes((e.muscles || [])[0]) ? 3 : (e.muscles || []).some(m => want.includes(m)) ? 1.5 : 0;
     const score = e => fit(e) + R() + (recent.has(e.id) ? -0.5 : 0) + (preferHeavy && e.rest >= 60 ? 0.6 : 0);
-    c = c.map(e => [score(e), e]).sort((a, b) => b[0] - a[0]);
-    for (const [, e0] of c) { const e = sub(e0); if (!e) continue; used.add(e0.id); used.add(e.id); return e; }
-    return null;
+    return c.map(e => ({ e, score: score(e) })).sort((a, b) => b.score - a.score);
+  };
+  // Highest-scoring superset that does not put two different Smith setups in one block.
+  // A greedy "skip the conflicting partner" would drop the calf raise and keep the deadlift;
+  // searching the pair keeps a real hamstring with the calf raise instead.
+  const chooseItems = (pat, preferFirst) => {
+    const lists = pat.map((slot, i) => rankSlot(slot, preferFirst && i === 0, new Set()));
+    let best = null, bestScore = -Infinity;
+    const chosen = [];
+    const dfs = i => {
+      if (i === lists.length) {
+        const sc = chosen.reduce((a, c) => a + c.score, 0);
+        if (sc > bestScore) { bestScore = sc; best = chosen.map(c => ({ raw: c.e, item: c.item })); }
+        return;
+      }
+      for (const row of lists[i]) {
+        if (chosen.some(c => c.e.id === row.e.id)) continue;
+        const item = sub(row.e); if (!item) continue;
+        if (chosen.some(c => c.item.id === item.id || smithConflict(c.item, item))) continue;
+        chosen.push({ e: row.e, item, score: row.score }); dfs(i + 1); chosen.pop();
+      }
+    };
+    dfs(0);
+    if (!best) {
+      const items = [];
+      for (let i = 0; i < pat.length; i++) {
+        const row = rankSlot(pat[i], preferFirst && i === 0, new Set(items.map(e => e.id))).find(r => sub(r.e));
+        if (!row) continue;
+        const item = sub(row.e); used.add(row.e.id); used.add(item.id); items.push(item);
+      }
+      return items;
+    }
+    best.forEach(c => { used.add(c.raw.id); used.add(c.item.id); });
+    return best.map(c => c.item);
   };
   const scale = e => withReps({ ...e, work: Math.round(e.work * lv.w / 5) * 5, rest: restFor(e) });
   const budget = settings.minutes * 60;
@@ -243,13 +301,13 @@ function generate() {
   if (settings.warmup) {
     // Day-specific prep + a short dynamic-stretch segment (gentle on lower back, right shoulder, left elbow, knees).
     const wt = settings.minutes <= 30 ? 25 : 30;
-    const wu = warmupFor(day).map(fixed).filter(Boolean).map(e => ({ ...e, work: e.unilateral ? Math.round(wt * 1.6 / 5) * 5 : wt, rest: 10 }));
+    const wu = warmupFor(day).map(fixed).filter(Boolean).map(e => ({ ...e, work: perSide(e) ? Math.round(wt * 2 / 5) * 5 : wt, rest: 10 }));
     if (wu.length) { out.blocks.push({ name: 'Warm-up', rounds: 1, items: wu, kind: 'warmup' }); t += wu.reduce((s, e) => s + e.work + e.rest, 0); }
   }
-  const cdItems = settings.cooldown ? (day.cooldown || ['foam-roll-legs', 'ball-chest-stretch']).map(fixed).filter(Boolean).map(e => ({ ...e, work: 60, rest: 5 })) : [];
+  const cdItems = settings.cooldown ? (day.cooldown || ['foam-roll-legs', 'ball-chest-stretch']).map(fixed).filter(Boolean).map(e => ({ ...e, work: perSide(e) ? 120 : 60, rest: 5 })) : [];
   const cdTime = cdItems.reduce((s, e) => s + e.work + e.rest, 0);
   // Short conditioning finisher (2 rounds) reserved up front so main work fills the rest of the budget.
-  const finItems = day.finisher ? day.finisher.map(c => pick(c, false)).filter(Boolean).map(scale) : [];
+  const finItems = day.finisher ? chooseItems(day.finisher, false).map(scale) : [];
   const finRounds = 2;
   // Fill main blocks using the real step timeline (warm-up + blocks + finisher + cool-down) so the session lands near the target.
   const finBlock = finItems.length ? { name: 'Finisher', rounds: finRounds, items: finItems, kind: 'finisher' } : null;
@@ -262,7 +320,7 @@ function generate() {
   let bi = 0;
   while (bi < 10) {
     const pat = day.blocks[bi % day.blocks.length];
-    const items = pat.map((c, k) => pick(c, bi < 2 && k === 0)).filter(Boolean).map(scale);
+    const items = chooseItems(pat, bi < 2).map(scale);
     if (!items.length) break;
     const isFinisher = !day.finisher && pat.every(c => /^(conditioning|core)/.test(c));
     let rounds = isFinisher ? Math.max(2, lv.rounds) : lv.rounds;
@@ -300,7 +358,8 @@ function slotCandidates(w, bi, ii) {
   const cur = w.blocks[bi].items[ii], orig = byId(cur.origId || cur.id);
   const used = new Set(w.blocks.flatMap((b, x) => b.items.filter((e, y) => !(x === bi && y === ii)).map(e => e.id)));
   const avail = new Set(available().map(e => e.id));
-  return [orig.id, ...(orig.alternates || [])].filter(id => avail.has(id) && !settings.avoided.includes(id) && !used.has(id));
+  const partners = w.blocks[bi].items.filter((_, y) => y !== ii);
+  return [orig.id, ...(orig.alternates || [])].filter(id => avail.has(id) && !settings.avoided.includes(id) && !used.has(id) && !partners.some(p => smithConflict(p, byId(id))));
 }
 function nextAlternate(w, bi, ii) {
   const cur = w.blocks[bi].items[ii], c = slotCandidates(w, bi, ii);
@@ -532,17 +591,23 @@ function pumpSpeech() {
   if (it.low && (stepLeft() < 4 || it.step !== P.i || Date.now() - it.at > 4000)) return pumpSpeech(); // stale / countdown -> drop
   const text = it.text;
   try {
-    if (speechSynthesis.paused) { speechSynthesis.resume(); SPQ.q.unshift(it); SPQ.notBefore = Date.now() + SPEECH_LEAD.resumeDelayMs; return pumpSpeech(); } // never speak right after resume()
+    // iOS leaves speechSynthesis.paused true when the queue is empty (including after the
+    // unlock utterance and after cancel()). resume() does not clear that flag, and v18
+    // refused to speak until paused was false — so every announcement stayed queued and
+    // nothing was spoken. Speak directly. Do not call resume() first: on iOS that drops
+    // the utterance that follows it.
     if (playerOpen()) warmAudio();
     const u = new SpeechSynthesisUtterance(SPEECH_LEAD.text + text); u.raw = text; u.rate = 1.05; u.volume = 1; u.lang = 'en-US';
     const done = () => { if (SPQ.cur !== u) return; SPQ.cur = null; SPQ.keep = SPQ.keep.filter(x => x !== u); SPQ.log.push({ text, end: Date.now() }); afterSpeech(); };
     u.onend = done; u.onerror = done;
-    SPQ.cur = u; SPQ.t0 = Date.now(); SPQ.keep.push(u); if (SPQ.keep.length > 6) SPQ.keep.shift();
+    SPQ.cur = u; SPQ.t0 = Date.now(); SPQ.keep.push(u); if (SPQ.keep.length > 8) SPQ.keep.shift();
     speechSynthesis.speak(u);
     const cap = speechCap(text) + 300;
-    const wd = () => { if (SPQ.cur !== u) return; const el = Date.now() - SPQ.t0;
-      if ((el > 400 && !speechSynthesis.speaking && !speechSynthesis.pending) || el > cap) done(); else setTimeout(wd, 200); };
-    setTimeout(wd, 450);
+    // Keep the utterance referenced until it actually ends or the full cap. Treating
+    // !speaking && !pending at ~400 ms as "finished" drops the only JS reference while
+    // iOS is still starting, and iOS then garbage-collects the utterance before it plays.
+    const wd = () => { if (SPQ.cur !== u) return; if (Date.now() - SPQ.t0 > cap) done(); else setTimeout(wd, 250); };
+    setTimeout(wd, 250);
   } catch (e) { SPQ.cur = null; }
 }
 function afterSpeech() {
@@ -648,8 +713,9 @@ function enterStep() {
   const s = P.steps[P.i]; if (!s) return finish(); if ($('#pv')) closePreview(true);
   speechNewStep();
   P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.cueSaid = 0; P.tk = '';
-  if (s.type === 'work') { beep(1200, 350); say(s.ex.name); }
-  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? 'Set up. ' + (s.next ? 'Next, ' + s.next.ex.name : '') : 'Rest.' + (s.next ? ' Next, ' + s.next.ex.name : '')); }
+  P.setupSaid = !(s.setup && s.restPart); // a combined rest+setup step announces "Set up" when the prep window starts
+  if (s.type === 'work') { beep(1200, 350); say(perSide(s.ex) ? s.ex.name + '. Both sides.' : s.ex.name); }
+  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? (s.restPart ? 'Rest.' + (s.next ? ' Next group, ' + s.next.ex.name : '') : 'Set up. ' + (s.next ? 'Next, ' + s.next.ex.name : '')) : 'Rest.' + (s.next ? ' Next, ' + s.next.ex.name : '')); }
   else if (s.type === 'prep') say('Get ready. First up, ' + s.ex.name);
   render();
 }
@@ -659,9 +725,10 @@ function tick() {
   const left = Math.max(0, (P.end - Date.now()) / 1000); P.left = left;
   const sec = Math.ceil(left);
   if (sec <= 3 && sec >= 1 && sec !== P.lastBeep) { P.lastBeep = sec; beep(880, 110, 0.25, false, true); }
-  if (s.type === 'work' && s.ex.unilateral && !P.halfSaid && left <= s.dur / 2 && /switch/i.test(s.ex.cue)) { P.halfSaid = true; beep(1000, 150); say('Switch sides'); }
+  if (s.type === 'work' && perSide(s.ex) && !P.halfSaid && left <= s.dur / 2) { P.halfSaid = true; beep(1000, 150); say('Switch sides'); }
+  if (s.setup && s.restPart && !P.setupSaid && left <= s.setupPart) { P.setupSaid = true; beep(700, 140); say(s.next ? 'Set up. Next, ' + s.next.ex.name : 'Set up.'); }
   if (s.type === 'work') { // speak a form cue a few seconds in, and a second one past the midpoint on longer sets
-    const el = s.dur - left, cs = cuesFor(s.ex, s.round), sw = s.ex.unilateral && /switch/i.test(s.ex.cue);
+    const el = s.dur - left, cs = cuesFor(s.ex, s.round), sw = perSide(s.ex);
     if (P.cueSaid === 0 && cs[0] && el >= 4 && left > 4) { P.cueSaid = 1; say(cs[0], { prio: 'low' }); }
     else if (P.cueSaid === 1 && cs[1] && s.dur >= 30 && el >= s.dur / 2 + (sw ? 3 : 0) && left > 5) { P.cueSaid = 2; say(cs[1], { prio: 'low' }); }
   }
@@ -700,10 +767,16 @@ function stopPlayer() {
   releaseWake(); speechStop(); stopKeepAlive();
 }
 const fmt = s => { s = Math.ceil(s); return s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') : String(s); };
+const repsLabel = e => !e || !e.targetReps ? '' : (perSide(e) ? e.targetReps + ' / side' : e.targetReps + ' reps');
+// Combined between-group step is rest first, then a distinct setupPart-second prep window.
+const setupNow = s => !!(s && s.setup && (!s.restPart || P.left <= (s.setupPart || 0) + 0.05));
 function render() {
   const s = P.steps[P.i]; const el = $('#player'); if (!s) return;
   el.className = (s.type === 'work' ? 'work' : s.type === 'rest' ? 'rest' : '') + (s.setup ? ' setup' : '');
-  const title = s.type === 'work' ? s.ex.name : s.type === 'rest' ? s.label : 'Get ready';
+  const nowSetup = setupNow(s);
+  const title = s.type === 'work' ? s.ex.name : s.type !== 'rest' ? 'Get ready' : nowSetup ? 'Set up · next group' : (s.setup && s.restPart ? 'Rest · next group' : s.label);
+  const phaseName = (s.type === 'work' ? 'Work' : s.type !== 'rest' ? 'Prepare' : nowSetup ? 'Set up' : s.sw ? 'Switch' : 'Rest') + (P.paused ? ' · Paused' : '');
+  const phaseSub = s.type === 'work' ? (s.ex.cue || s.ex.muscles.join(', ')) : nowSetup ? `Set up ${s.setupPart} s · get the next group ready` : (s.setup && s.restPart ? `Rest ${s.restPart} s, then ${s.setupPart} s to set up` : (s.type === 'rest' && !s.transition && !(logStepFor(P.i) && P.logClosed !== P.i) ? `Done: ${esc(s.after)} · breathe, shake it out` : ''));
   const meta = s.type === 'work' ? `${s.block} · Round ${s.round}/${s.rounds}` : s.type === 'rest' && s.next ? `Up next: ${s.next.block} · Round ${s.next.round}/${s.next.rounds}` : s.block || '';
   const sg = s.type === 'work' && suggest(s.ex.id);
   const pwAny = s.type === 'rest' ? logStepFor(P.i) : null, pw = pwAny && P.logClosed !== P.i ? pwAny : null;
@@ -713,21 +786,21 @@ function render() {
   el.innerHTML = `
     <div class="row" style="flex:0"><div class="mut">${meta}</div><div class="mut" style="text-align:right">${P.i + 1}/${P.steps.length} · <span id="remT">${minText(remainSec())}</span> left<br><small>of ~${minText(P.est || estSec(today))}</small></div></div>
     <div class="bar"><i style="width:${(100 * doneSteps / total).toFixed(1)}%"></i></div>
-    <div class="phase">${s.type === 'work' ? 'Work' : s.type === 'rest' ? (s.setup ? 'Set up' : s.sw ? 'Switch' : 'Rest') : 'Prepare'}${P.paused ? ' · Paused' : ''}</div>
-    <div class="exname">${title}${s.setup ? `<span class="sutime" id="num2">${fmt(P.left)}</span>` : ''}</div>
-    <div class="mut">${s.type === 'work' ? (s.ex.cue || s.ex.muscles.join(', ')) : s.setup ? (s.restPart ? `Rest ${s.restPart} s + set up ${s.setupPart} s` : `Set up ${s.setupPart} s`) : s.type === 'rest' && !s.transition && !pw ? `Done: ${esc(s.after)} · breathe, shake it out` : ''}</div>
+    <div class="phase" id="phase">${phaseName}</div>
+    <div class="exname"><span id="exTitleText">${title}</span>${s.setup ? `<span class="sutime" id="num2">${fmt(P.left)}</span>` : ''}</div>
+    <div class="mut" id="phaseSub">${phaseSub}</div>
     ${pw ? setLogHTML(pw) : pwAny ? savedLineHTML(pwAny) : ''}
     ${s.setup ? setupHTML(s) : ''}
     ${histHTML(hist)}
     ${s.type === 'work' && (nowW.length || (sg && sgText(s.ex, sg))) ? `<div class="lastline">${nowW.length ? `<span>Today: ${nowW.join(', ')}</span>` : ''}${sg && sgText(s.ex, sg) ? `<span>Try ${sgText(s.ex, sg)}</span>` : ''}</div>` : ''}
-    ${s.type === 'work' && s.ex.targetReps ? `<div class="target" id="target">${s.ex.targetReps} reps</div>` : ''}
+    ${s.type === 'work' && s.ex.targetReps ? `<div class="target" id="target">${repsLabel(s.ex)}</div>` : ''}
     ${s.type === 'work' ? `<button type="button" class="donebtn" id="bDone">Done ✓<small>${P.steps[P.i + 1] && logStepFor(P.i + 1) ? 'finished early · log this set now' : 'finished early · move on'}</small></button>` : ''}
     ${(() => { if (s.setup) return ''; const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie && ie.image ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}${pw ? ' small' : ''}"><img id="pimg" src="${ie.image[0]}" data-f="${ie.image.join('|')}" alt="${ie.name}">${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
     ${(() => { if (s.setup) return ''; const cs = s.type === 'work' ? cuesFor(s.ex, s.round) : (s.next && !pw ? cuesFor(s.next.ex, s.next.round).slice(0, 1) : []); return cs.length ? `<div class="cues${s.type === 'work' ? '' : ' dim'}">${s.type === 'work' ? '' : '<b>Next focus:</b> '}${cs.map(c => `<div>• ${c}</div>`).join('')}</div>` : ''; })()}
     <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="#d9e7f2" stroke-width="7" fill="none"/>
       <circle id="arc" cx="50" cy="50" r="45" stroke="${s.type === 'rest' ? '#1d4ed8' : '#0ea5e9'}" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="0"/></svg>
       <div class="n" id="num">${fmt(P.left)}</div></div>
-    ${s.setup ? '' : `<div class="next">${s.next ? `${s.next.ex.image ? `<img class="thumb" src="${s.next.ex.image[1]}" alt="">` : ''}<div><div class="mut">Next</div><div style="font-weight:600;font-size:18px">${s.next.ex.name}</div><div class="mut">${s.next.ex.targetReps ? s.next.ex.targetReps + ' reps · ' : ''}${s.next.dur}s · ${s.next.ex.equipment.join(', ')}</div></div>` : '<div style="font-weight:600">Last one. Finish strong!</div>'}</div>`}
+    ${s.setup ? '' : `<div class="next">${s.next ? `${s.next.ex.image ? `<img class="thumb" src="${s.next.ex.image[1]}" alt="">` : ''}<div><div class="mut">Next</div><div style="font-weight:600;font-size:18px">${s.next.ex.name}</div><div class="mut">${repsLabel(s.next.ex) ? repsLabel(s.next.ex) + ' · ' : ''}${s.next.dur}s · ${s.next.ex.equipment.join(', ')}</div></div>` : '<div style="font-weight:600">Last one. Finish strong!</div>'}</div>`}
     <div class="ctrl"><button id="bPrev">⏮</button><button id="bPause" class="pri" style="flex:2">${P.paused ? '▶ Resume' : '⏸ Pause'}</button><button id="bSkip" title="Skip (no log)" aria-label="Skip without logging">⏭</button></div>
     <button id="bQuit" style="margin-top:4px;padding:8px;background:none;color:var(--mut);flex-shrink:0">End workout</button>`;
   $('#bPause').onclick = togglePause; if (pw) wireSetLog(pw);
@@ -746,7 +819,7 @@ function setupHTML(s) {
   const rounds = (b && b.rounds) || s.nextRounds, warm = b && (b.kind === 'warmup' || b.kind === 'cooldown');
   const eq = [...new Set(items.flatMap(e => e.equipment || []))];
   const card = (e, ii) => { const im = e.image || [], last = recentHistory(e, 1, P.started)[0], sg = !warm && suggest(e.id), sgt = sg && sgText(e, sg);
-    const tgt = `${rounds} × ${e.targetReps ? e.targetReps + ' reps' : fmt(e.work) + (e.work < 60 ? ' s' : '')}`;
+    const tgt = `${rounds} × ${e.targetReps ? repsLabel(e) : fmt(e.work) + (e.work < 60 ? ' s' : '')}`;
     return `<div class="bpx" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">
       <div class="bpn"><span class="bpk">${String.fromCharCode(65 + ii)}</span>${esc(e.name)}<i aria-hidden="true">ⓘ</i></div>
       ${im.length ? `<div class="bpimgs">${[im[0], im[im.length - 1]].filter((x, k, a) => k === 0 || x !== a[0]).map((p, k) => `<figure><img src="${p}" alt="${esc(e.name)} ${k ? 'end' : 'start'}"><figcaption>${k ? 'End' : 'Start'}</figcaption></figure>`).join('')}</div>` : ''}
@@ -761,6 +834,12 @@ function remainSec() { const rest = P.steps.slice(P.i + 1), cur = P.steps[P.i]; 
 function renderTime() {
   const s = P.steps[P.i]; if (!s) return;
   const n = $('#num'), a = $('#arc'), n2 = $('#num2'), rt = $('#remT'); if (rt) rt.textContent = minText(remainSec()); if (n) n.textContent = fmt(P.left); if (n2) n2.textContent = fmt(P.left);
+  if (s.setup) {
+    const now = setupNow(s), ph = $('#phase'), tt = $('#exTitleText'), sub = $('#phaseSub');
+    if (ph) ph.textContent = (now ? 'Set up' : 'Rest') + (P.paused ? ' · Paused' : '');
+    if (tt) tt.textContent = now ? 'Set up · next group' : (s.restPart ? 'Rest · next group' : 'Set up · next group');
+    if (sub) sub.textContent = now ? `Set up ${s.setupPart} s · get the next group ready` : (s.restPart ? `Rest ${s.restPart} s, then ${s.setupPart} s to set up` : `Set up ${s.setupPart} s · get the next group ready`);
+  }
   if (a) a.setAttribute('stroke-dashoffset', (282.7 * (1 - P.left / s.dur)).toFixed(1));
   const im = $('#pimg'); // alternate start/end frames every ~1.2s while working
   if (im && !P.paused) { const f = im.dataset.f.split('|'), k = s.type === 'work' ? Math.floor((s.dur - P.left) / 1.2) % f.length : 0; if (!im.src.endsWith(f[k])) im.src = f[k]; }
@@ -793,7 +872,7 @@ function previewHTML(bi, ii) {
   const w = today, b = w.blocks[bi], e = b.items[ii], warm = b.kind === 'warmup' || b.kind === 'cooldown';
   const sg = suggest(e.id), hist = recentHistory(e, 3);
   const bk = nextAlternate(w, bi, ii), bkName = bk ? byId(bk).name : '';
-  const vol = `${b.rounds} × ${e.targetReps ? e.targetReps + ' reps' : fmt(e.work) + (e.work < 60 ? ' s' : '')}`;
+  const vol = `${b.rounds} × ${e.targetReps ? repsLabel(e) : fmt(e.work) + (e.work < 60 ? ' s' : '')}`;
   const volSub = e.targetReps ? (e.reps ? `range ${e.reps[0]}–${e.reps[1]}` : '') : 'timed';
   const rest = warm ? '10 s' : e.rest + ' s', restSub = warm ? 'transition' : b.items.length > 1 ? (ii < b.items.length - 1 ? `after the round · ${clampSwitch()} s switch to next` : 'after the round (both done)') : 'after each round';
   const imgs = e.image || [];
@@ -858,7 +937,7 @@ function renderToday() {
    <button class="pri" id="bStart">▶ Start workout</button>
    <div class="mut pvhint">Tap any exercise for a big preview</div>
    ${w.blocks.map(b => `<div class="card block"><div class="bt">${b.name} <span class="mut">· ${b.rounds} round${b.rounds > 1 ? 's' : ''}</span></div>
-     ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex pv" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}<br><small>${e.targetReps ? e.targetReps + ' reps · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
+     ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex pv" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}<br><small>${repsLabel(e) ? repsLabel(e) + ' · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
    <div class="row" style="margin:10px 0 20px"><button id="bShuffle">🔀 Shuffle exercises</button><button id="bSkipDay">Skip to next day</button></div>`;
   $('#bStart').onclick = startWorkout;
   $('#tab-today').querySelectorAll('#dayPick button, #otherDays button').forEach(b => b.onclick = () => { pickDay(+b.dataset.di); renderToday(); });
@@ -901,7 +980,7 @@ function renderSettings() {
     <label>Days per week</label><select id="sDays">${[3, 4, 5].map(d => `<option ${d == settings.daysPerWeek ? 'selected' : ''}>${d}</option>`).join('')}</select>
     <label>Session length (minutes)</label><select id="sMin">${[30, 45, 60].map(d => `<option ${d == settings.minutes ? 'selected' : ''}>${d}</option>`).join('')}</select>
     <label>Switch time within pair (A → B)</label><select id="sSwitch">${[5, 10, 15, 20, 30].map(d => `<option value="${d}" ${d == clampSwitch() ? 'selected' : ''}>${d} s</option>`).join('')}</select>
-    <label>Rest between rounds (after both exercises; lifts; core/conditioning get half, min 30 s)</label><select id="sRest">${[30, 45, 60, 75, 90, 120].map(d => `<option value="${d}" ${d == settings.restSec ? 'selected' : ''}>${d} s</option>`).join('')}</select>
+    <label>Rest between rounds (after both exercises of a pair; then the setup time below)</label><select id="sRest">${[60, 75, 90, 120].map(d => `<option value="${d}" ${d == settings.restSec ? 'selected' : ''}>${d} s</option>`).join('')}</select>
     <label>Setup time between groups (added to the rest)</label><select id="sSetup">${[15, 30, 45, 60, 75, 90].map(d => `<option value="${d}" ${d == clampSetup() ? 'selected' : ''}>+${d} s</option>`).join('')}</select>
     <label>Level</label><select id="sLvl">${Object.keys(LEVEL).map(l => `<option ${l === settings.level ? 'selected' : ''}>${l}</option>`).join('')}</select>
     <div class="chk"><input type="checkbox" id="sBeep" ${settings.beeps ? 'checked' : ''}><span>Beeps (3-2-1 countdown)</span></div>
@@ -947,6 +1026,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, smithConflict, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });

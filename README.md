@@ -38,6 +38,14 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
 
+## v19
+- Spoken cues play again on iPhone. iOS leaves `speechSynthesis.paused` true on an empty queue, and v18 waited for that flag to clear (calling `resume()`, which does not clear it) before `speak()` — so warm-up lines, set names, and rest/switch prompts were queued and never spoken. The queue now speaks directly and keeps each utterance referenced until it finishes, so the line is not dropped while iOS is still starting.
+- Left/right exercises (unilateral, including “alternate legs”, single-leg RDL, hip abduction, lunges, step-ups) get a full rep interval per side, with a “Switch sides” cue at halfway.
+- Rest after both exercises of a pair is 60 seconds for every category. Core and conditioning used to take half (30 s) whenever the pair ended on them.
+- Between groups: that 60 s rest, then a distinct 30 s set-up window (spoken and labeled) for the next block.
+- Supersets no longer pair two Smith moves that need different bar or bench settings (Romanian deadlift + calf raise). Same setup (squat + split squat) can still share a block.
+- SW cache gymcoach-v19.
+
 ## v18
 - Clipped first syllables: a near-silent continuous WebAudio tone (gain 0.0005, 30 Hz) keeps the iOS audio route warm for the whole workout (started once, never restarted mid-speech, stopped with keep-alive). Every utterance is prefixed with a short lead-in (", "), and after speechSynthesis.resume() we wait 200 ms before speak (SPEECH_LEAD / WARM in app.js). v17 queue rules unchanged.
 - After the last exercise of a block, the weight/reps log renders ABOVE the next-block preview and is visible without scrolling.
