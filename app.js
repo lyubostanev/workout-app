@@ -444,7 +444,24 @@ function slotCandidates(w, bi, ii) {
   const used = new Set(w.blocks.flatMap((b, x) => b.items.filter((e, y) => !(x === bi && y === ii)).map(e => e.id)));
   const avail = new Set(available().map(e => e.id));
   const partners = w.blocks[bi].items.filter((_, y) => y !== ii);
-  return [orig.id, ...(orig.alternates || [])].filter(id => avail.has(id) && !settings.avoided.includes(id) && !used.has(id) && !partners.some(p => pairConflict(p, byId(id))));
+  const pass = id => { const e = byId(id); return !!(e && avail.has(id) && !settings.avoided.includes(id) && !used.has(id) && id !== 'row-steady' && !partners.some(p => pairConflict(p, e))); };
+  const base = [];
+  const push = id => { if (id && !base.includes(id) && (id === cur.id || pass(id))) base.push(id); };
+  push(cur.id); push(orig.id); (orig.alternates || []).forEach(push);
+  const extra = extraForSlot(orig, base, used, partners, avail);
+  if (extra) base.push(extra);
+  return base;
+}
+// One more replacement than the curated backups: same category and muscle role, still free of
+// station conflicts and a second max-effort finisher.
+function extraForSlot(orig, have, used, partners, avail) {
+  if (!orig) return null;
+  const primary = (orig.muscles || [])[0];
+  const pool = available().filter(e => avail.has(e.id) && !have.includes(e.id) && !used.has(e.id) && !settings.avoided.includes(e.id) && e.id !== 'row-steady' && e.category === orig.category && !partners.some(p => pairConflict(p, e)));
+  const role = e => (e.muscles || [])[0] === primary ? 2 : (e.muscles || []).some(m => (orig.muscles || []).includes(m)) ? 1 : 0;
+  pool.sort((a, b) => role(b) - role(a) || a.name.localeCompare(b.name));
+  const fit = pool.find(e => role(e) > 0) || pool[0];
+  return fit ? fit.id : null;
 }
 function nextAlternate(w, bi, ii) {
   const cur = w.blocks[bi].items[ii], c = slotCandidates(w, bi, ii);
@@ -470,9 +487,11 @@ function findSlot(item, w = today) {
   for (let bi = 0; bi < w.blocks.length; bi++) { const ii = w.blocks[bi].items.indexOf(item); if (ii >= 0) return [bi, ii]; }
   return null;
 }
-function doSwap(bi, ii, reason = 'swap') {
-  const w = today, cur = w.blocks[bi].items[ii], id = nextAlternate(w, bi, ii);
-  if (!id) { toast('No other backup available for ' + cur.name); return null; }
+function doSwap(bi, ii, reason = 'swap', forceId) {
+  const w = today, cur = w.blocks[bi].items[ii];
+  const allowed = slotCandidates(w, bi, ii);
+  const id = forceId && allowed.includes(forceId) && forceId !== cur.id ? forceId : (forceId ? null : nextAlternate(w, bi, ii));
+  if (!id) { if (!forceId) toast('No other backup available for ' + cur.name); return null; }
   const ni = makeItem(cur, id); w.blocks[bi].items[ii] = ni;
   w.swaps.push({ block: w.blocks[bi].name, from: cur.id, to: id, original: ni.origId, reason, at: new Date().toISOString() });
   persistSwaps(w);
@@ -888,9 +907,46 @@ const demoLink = (e, cls, label) => e.demoUrl ? `<a class="demo ${cls}" href="${
 // Player swap targets the exercise on screen: the current one during work, the upcoming one during get-ready/rest.
 function playerSwap(avoid) {
   const s = P.steps[P.i]; const tgt = s && (s.type === 'work' ? s.ex : s.next && s.next.ex); const slot = tgt && findSlot(tgt); if (!slot) return;
-  const ni = avoid ? avoidAndSwap(...slot) : doSwap(...slot); if (!ni) return;
+  if (!avoid) { openSwap(...slot); return; }
+  const ni = avoidAndSwap(...slot); if (!ni) return;
   if (s.type === 'work') { P.cueSaid = 0; say(ni.name); } else say('Next up, ' + ni.name);
   render();
+}
+function afterSwap(ni) {
+  if (!ni) return;
+  if (playerOpen()) {
+    const s = P.steps[P.i];
+    if (s && s.type === 'work' && s.ex && s.ex.id === ni.id) { P.cueSaid = 0; say(ni.name); }
+    else if (s && s.type !== 'work') say('Next up, ' + ni.name);
+    render();
+  } else renderToday();
+}
+function openSwap(bi, ii) {
+  closeSwap(true);
+  const w = today, cur = w.blocks[bi] && w.blocks[bi].items[ii]; if (!cur) return;
+  const orig = byId(cur.origId || cur.id);
+  const ids = slotCandidates(w, bi, ii);
+  const curated = new Set([orig.id, ...(orig.alternates || [])]);
+  const ov = document.createElement('div'); ov.id = 'swapov';
+  ov.innerHTML = `<div class="pvsheet" id="swapSheet" role="dialog" aria-modal="true" aria-labelledby="swapTitle">
+    <div class="pvgrab" aria-hidden="true"></div>
+    <div class="pvhead"><div><div class="pvblk">${esc(w.blocks[bi].name)}</div><h2 id="swapTitle">Swap exercise</h2><div class="mut">Same slot · no setup clash</div></div>
+      <button type="button" class="pvx" id="swapClose" aria-label="Close swap">✕</button></div>
+    <div class="swaplist">${ids.map(id => { const e = byId(id), on = id === cur.id, extra = !curated.has(id);
+      return `<button type="button" class="swapopt${on ? ' on' : ''}" data-id="${id}"><img src="${(e.image || [])[0] || ''}" alt="">
+        <span><b>${esc(e.name)}</b><small>${on ? 'Current' : extra ? 'Also fits this slot' : 'Backup'}${e.equipment ? ' · ' + esc(e.equipment.join(', ')) : ''}</small></span></button>`; }).join('')}</div>
+  </div>`;
+  document.body.appendChild(ov); requestAnimationFrame(() => ov.classList.add('on'));
+  $('#swapClose').onclick = () => closeSwap();
+  ov.addEventListener('click', ev => { if (ev.target === ov) closeSwap(); });
+  ov.querySelectorAll('.swapopt').forEach(b => b.onclick = () => { const id = b.dataset.id; closeSwap(true); if (id === cur.id) return; afterSwap(doSwap(bi, ii, 'swap', id)); });
+  document.addEventListener('keydown', swapKey);
+}
+function swapKey(ev) { if (ev.key === 'Escape') closeSwap(); }
+function closeSwap(now) {
+  const ov = $('#swapov'); document.removeEventListener('keydown', swapKey); if (!ov) return;
+  if (now) { ov.remove(); return; }
+  ov.classList.remove('on'); setTimeout(() => ov.remove(), 220);
 }
 // ⏭ Skip = move on WITHOUT logging (a skipped work set is not auto-recorded). Done ✓ = finished the set early -> log it now.
 function skip(d = 1) { speechStop(); const s = P.steps[P.i]; P.skipped = d > 0 && s && s.type === 'work' ? P.i : null; P.done = null; P.i = Math.max(0, P.i + d); enterStep(); }
@@ -948,7 +1004,8 @@ function render() {
   const be = $('#bEditSet'); if (be) be.onclick = () => { P.logClosed = null; render(); };
   if (pw && s.setup) { const lb = el.querySelector('.setlog, #setLog, form'); if (lb && lb.scrollIntoView && P.logShownI !== P.i) { P.logShownI = P.i; lb.scrollIntoView({ block: 'nearest' }); } }
   const bd = $('#bDemo'); if (bd) bd.onclick = ev => { ev.preventDefault(); openDemo(bd.href); }; $('#bSkip').onclick = () => skip(1); const bdn = $('#bDone'); if (bdn) bdn.onclick = doneEarly;
-  el.querySelectorAll('.bpx').forEach(c => { const o = () => { if (+c.dataset.bi >= 0) openPreview(+c.dataset.bi, +c.dataset.ii); }; c.onclick = o; c.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); o(); } }; });
+  el.querySelectorAll('.bpx').forEach(c => { const o = () => { if (+c.dataset.bi >= 0) openPreview(+c.dataset.bi, +c.dataset.ii); }; c.onclick = ev => { if (ev.target.closest('.bpswap')) return; o(); }; c.onkeydown = ev => { if (ev.target.closest('.bpswap')) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); o(); } }; });
+  el.querySelectorAll('.bpswap').forEach(b => longPress(b, () => { const ni = avoidAndSwap(+b.dataset.bi, +b.dataset.ii); if (ni) { closeSwap(true); render(); } }, () => openSwap(+b.dataset.bi, +b.dataset.ii)));
   const bs = $('#bSwap'); if (bs) longPress(bs, () => playerSwap(true), () => playerSwap(false));
   const ba = $('#bAvoid'); if (ba) ba.onclick = () => { const s = P.steps[P.i], tgt = s.type === 'work' ? s.ex : s.next && s.next.ex, sl = findSlot(tgt); if (sl) { avoidOriginal(...sl); render(); } }; $('#bPrev').onclick = () => skip(-1); $('#bQuit').onclick = quit;
   renderTime();
@@ -967,7 +1024,8 @@ function setupHTML(s) {
       <div class="bprow"><small>Target</small><b class="bptgt">${tgt}</b></div>
       <div class="bprow"><small>Last time</small>${last ? `<b class="bplast">${last.txt}</b><span class="bpd">${last.date}</span>` : '<b class="bplast none">No history yet</b>'}</div>
       ${sgt ? `<div class="bprow"><small>Today</small><b class="bptry">try ${sgt}</b></div>` : ''}
-      <div class="bpeq">${esc((e.equipment || []).join(', ') || 'no equipment')}</div></div>`; };
+      <div class="bpeq">${esc((e.equipment || []).join(', ') || 'no equipment')}</div>
+      ${bi >= 0 && !warm ? `<button type="button" class="bpswap" data-bi="${bi}" data-ii="${ii}">⇄ Swap</button>` : ''}</div>`; };
   return `<div class="setupcard bp" id="setupCard"><div class="hh">Next: ${esc(s.nextBlock)} · ${rounds} rounds${items.length > 1 ? ' · superset' : ''}</div>
     <div class="bpl">${items.map(card).join('')}</div>${eq.length ? `<div class="sueq">Set up: ${esc(eq.join(', '))}</div>` : ''}</div>`;
 }
@@ -1105,7 +1163,7 @@ function renderToday() {
   const tt = $('#tab-today'); // tap a row (not its Swap/Avoid/Demo controls) -> large preview
   tt.onclick = ev => { if (ev.target.closest('button,a,input,select')) return; const r = ev.target.closest('.ex.pv'); if (r) openPreview(+r.dataset.bi, +r.dataset.ii); };
   tt.onkeydown = ev => { const r = ev.target.closest && ev.target.closest('.ex.pv'); if (r && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openPreview(+r.dataset.bi, +r.dataset.ii); } };
-  $('#tab-today').querySelectorAll('button.swap').forEach(b => longPress(b, () => { avoidAndSwap(+b.dataset.bi, +b.dataset.ii); renderToday(); }, () => { doSwap(+b.dataset.bi, +b.dataset.ii); renderToday(); }));
+  $('#tab-today').querySelectorAll('button.swap').forEach(b => longPress(b, () => { avoidAndSwap(+b.dataset.bi, +b.dataset.ii); renderToday(); }, () => openSwap(+b.dataset.bi, +b.dataset.ii)));
   $('#tab-today').querySelectorAll('button.avoid').forEach(b => b.onclick = () => { avoidOriginal(+b.dataset.bi, +b.dataset.ii); renderToday(); });
   $('#bShuffle').onclick = () => { shuffleN++; today = generate(); renderToday(); };
   $('#bSkipDay').onclick = () => { history.push({ date: new Date().toISOString(), day: today.day + ' (skipped)', dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: 0, skipped: true, exerciseIds: [], log: [] }); LS.set('gc_history', history); dayPick = null; localStorage.removeItem('gc_daypick'); today = generate(); renderToday(); };
@@ -1186,6 +1244,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, switchesSides, highEnergy, pairConflict, dayIndexFromHistory, recordCompletion, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, switchesSides, highEnergy, pairConflict, dayIndexFromHistory, recordCompletion, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, openSwap, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });

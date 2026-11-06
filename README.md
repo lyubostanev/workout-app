@@ -38,6 +38,11 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
 
+## v23
+- The block preview (the screen before each pair) has **⇄ Swap** on each exercise. Tap opens the same chooser used mid-workout; hold still avoids it.
+- That chooser lists the usual backups plus one more exercise that fits the slot (same role, no station clash, no second max-effort finisher).
+- SW cache gymcoach-v23.
+
 ## v22
 - Between every block, including after the warm-up: 60 s rest then at least 30 s setup, and never under 90 s total. The warm-up used to hand off after only the 30 s setup.
 - Rest after a round inside a block is 60 s. A heavier exercise’s own rest (75 s) or a 30 s library override no longer changes that minute.

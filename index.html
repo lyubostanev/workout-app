@@ -121,6 +121,18 @@ html.pvopen,html.pvopen body{overflow:hidden}
 .setupcard.bp .hh{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accT);margin:0 2px 6px}
 .bpl{display:flex;flex-direction:column;gap:8px}
 .bpx{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:8px 10px;cursor:pointer}
+.bpswap{display:block;width:100%;margin-top:8px;padding:10px 12px;border-radius:12px;background:#e6effc;color:var(--rest);font-weight:800;font-size:16px}
+#swapov{position:fixed;inset:0;z-index:80;background:rgba(12,45,72,0);display:flex;align-items:flex-end;justify-content:center;transition:background .2s}
+#swapov.on{background:rgba(12,45,72,.5)}
+#swapov .pvsheet{transform:translateY(100%)}
+#swapov.on .pvsheet{transform:none}
+.swaplist{margin:8px 0 4px}
+.swapopt{display:flex;gap:10px;align-items:center;width:100%;text-align:left;margin:0 0 8px;padding:8px;background:var(--card2);border-radius:14px}
+.swapopt.on{outline:2px solid var(--acc2);background:#fff}
+.swapopt img{width:56px;height:56px;object-fit:cover;border-radius:10px;background:#eaf2f8;flex:0 0 56px}
+.swapopt span{display:flex;flex-direction:column;min-width:0}
+.swapopt b{font-size:16px}
+.swapopt small{color:var(--mut);font-size:12px;font-weight:600}
 .bpx:active{transform:scale(.99)}
 .bpn{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:800;line-height:1.2;margin-bottom:6px}
 .bpn i{margin-left:auto;font-style:normal;color:var(--mut);font-size:18px}
