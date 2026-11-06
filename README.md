@@ -38,6 +38,11 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
 
+## v25
+- Speech is one chain started inside the Start tap. Later names and form cues are spoken from the previous line's end, not from the workout timer (iOS ignores those). A paused hold keeps that chain alive between lines. resume() is never called in the same turn as speak() — that dropped the utterance and is why v24 still only said the first name. The silence loop, beep files, and wake video stay off while voice is on, because an `<audio>`/`<video>` element pauses speech for the rest of the session. Beeps play after the words.
+- Main blocks reshuffle each new session of that day. The old draw was smaller than the "best muscle + heavier exercise" bonus, and it barely noticed the previous Push once Pull and Legs had been logged, so Block B came back the same. Repeats lose to another exercise that fits the slot, and the block order rotates. Pairing rules are unchanged. Warm-up and cool-down stay the fixed prep lists.
+- SW cache gymcoach-v25.
+
 ## v24
 - Narration was only the first exercise name. iOS leaves `speechSynthesis.paused` true after that line; later `speak()` calls queued and never started, and nothing called `resume()` afterwards. Each line is now spoken first and then `resume()` releases it, including the second and third exercises.
 - Form cues were marked low priority and discarded while the name was still talking, and the app remembered them as already said. They are queued behind the name and spoken in full. Beeps wait until the words finish instead of cutting them off.
