@@ -149,16 +149,34 @@ function recordSet(st, w, r, auto) {
 }
 function stepWeight(e, w, d) {
   w = Number(w) || 0;
-  if (e.kb) { const o = kbOptions(e); if (!o.length) return w; if (!w) return o[0]; const i = o.indexOf(snapKB(e, w)); return o[Math.max(0, Math.min(o.length - 1, i + d))]; }
+  if (e.kb) return stepKB(e, w, d);
   const step = isBW(e) ? 5 : (w + (d > 0 ? 0 : -0.01)) < 25 ? 2.5 : 5;
   return Math.max(0, Math.round((w + d * step) * 10) / 10) || null;
 }
-/* Kettlebells: only the bells you own. single = any bell; double = a weight you have two of (2 x 25). */
-function kbOptions(e) {
+/* Kettlebells you listed in Settings. single = any bell; double = a weight you have two of (2 × 25).
+   Suggestions start here. The log stepper is NOT limited to this list. */
+function kbOwned(e) {
   const c = {}; (settings.kettlebells || []).forEach(w => { c[w] = (c[w] || 0) + 1; });
-  return Object.keys(c).map(Number).filter(w => e.kb.mode !== 'double' || c[w] >= 2).sort((a, b) => a - b);
+  return Object.keys(c).map(Number).filter(w => !e || !e.kb || e.kb.mode !== 'double' || c[w] >= 2).sort((a, b) => a - b);
 }
-function snapKB(e, w) { const o = kbOptions(e); return o.length ? o.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a) : w; }
+// Logger stops. The owned list used to be the ceiling, so a 50 lb suitcase carry could not be
+// entered when Settings only listed 25 and 35. Past the last rung, + keeps adding 10 lb.
+const KB_RUNGS = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120];
+function kbOptions(e) {
+  return [...new Set([...KB_RUNGS, ...kbOwned(e)])].filter(w => w > 0).sort((a, b) => a - b);
+}
+function stepKB(e, w, d) {
+  const o = kbOptions(e); if (!o.length) return w || null;
+  if (!w) return d < 0 ? o[0] : (kbOwned(e)[0] || o[0]);
+  const exact = o.findIndex(x => Math.abs(x - w) < 0.1);
+  if (exact >= 0) {
+    if (d > 0 && exact === o.length - 1) return Math.round((w + 10) * 10) / 10;
+    return o[Math.max(0, exact + (d > 0 ? 1 : -1))];
+  }
+  if (d > 0) return o.find(x => x > w + 0.1) || Math.round((w + 10) * 10) / 10;
+  return [...o].reverse().find(x => x < w - 0.1) || o[0];
+}
+function snapKB(e, w) { const o = kbOwned(e); return o.length ? o.reduce((a, b) => Math.abs(b - w) < Math.abs(a - w) ? b : a) : w; }
 /* Double progression with lighter loads: add reps inside the exercise's range first; at the top of the range
    (and logged Easy) the load goes up one small step (KB: next bell you own) and reps reset to the bottom.
    Hard = drop reps (or load at the bottom of the range). Returns {weight, reps, last} or null. */
@@ -167,11 +185,11 @@ function suggest(id) {
   const [lo, hi] = e.reps || [0, 0]; const rstep = hi - lo > 4 ? 2 : 1; const start = e.startReps || lo;
   if (!l) { if (!e.kb && !e.reps) return null; return { last: null, weight: e.kb ? snapKB(e, e.kb.start) : null, reps: e.reps ? start : null }; }
   let w = Number(l.weight) || 0, r = Number(l.reps) || (e.reps ? start : 0);
-  const up = () => { if (e.kb) { const o = kbOptions(e), nx = o.find(x => x > w); if (nx) { w = nx; return true; } return false; } if (!w) return false; w += w >= 25 ? 5 : 2.5; return true; };
-  const down = () => { if (e.kb) { const o = kbOptions(e), pv = [...o].reverse().find(x => x < w); if (pv) w = pv; return; } if (w) w = Math.max(0, w - (w > 25 ? 5 : 2.5)); };
+  // Owned bells only for the automatic bump. A weight he logged above that list (50 lb suitcase) stays.
+  const up = () => { if (e.kb) { const nx = kbOwned(e).find(x => x > w + 0.1); if (nx) { w = nx; return true; } return false; } if (!w) return false; w += w >= 25 ? 5 : 2.5; return true; };
+  const down = () => { if (e.kb) { const pv = [...kbOptions(e)].reverse().find(x => x < w - 0.1); if (pv) w = pv; return; } if (w) w = Math.max(0, w - (w > 25 ? 5 : 2.5)); };
   if (l.feel === 'easy') { if (e.reps && r + rstep <= hi) r += rstep; else if (up()) r = e.reps ? lo : r; else if (e.reps) r = Math.min(hi, r + rstep); }
   else if (l.feel === 'hard') { if (e.reps && r - rstep >= Math.min(lo, start)) r -= rstep; else down(); }
-  if (e.kb && w) w = snapKB(e, w);
   return { last: l, weight: w || null, reps: e.reps ? r : null };
 }
 const wText = (e, w) => w ? (e.kb && e.kb.mode === 'double' ? `2×${w} lb` : `${w} lb`) : '';
@@ -225,16 +243,54 @@ function restFor(e) {
   const lv = LEVEL[settings.level] || LEVEL.intermediate, base = Math.max(60, +settings.restSec || 60), r5 = x => Math.round(x / 5) * 5;
   return Math.max(base, r5(Math.max(base, e.rest || 0) * lv.r));
 }
-// Same key = same Smith bar/bench setup, safe to superset. Different keys means moving
-// the stops or the bench between the two moves (Romanian deadlift vs calf raise).
-const SMITH_STATION = {
-  'smith-bench': 'bench-flat', 'smith-incline-bench': 'bench-incline', 'smith-ohp': 'bench-upright',
-  'smith-row': 'bar-row', 'smith-inverted-row': 'bar-inverted', 'smith-shrug': 'bar-hands',
-  'smith-squat': 'bar-shoulders', 'smith-split-squat': 'bar-shoulders',
-  'smith-rdl': 'bar-rdl', 'smith-calf-raise': 'bar-calf',
+// One token per station setup. Same station + same token = no reconfiguration, safe to superset.
+// Same station + different token = move the pin, pulley, bench angle, strap length, or step height
+// between the two moves (Smith RDL vs calf raise was the example; cables, benches, BOSU, TRX, the step too).
+// Two dumbbell or kettlebell moves do not conflict: there is no station to reconfigure.
+const STATION = {
+  'smith-bench': ['smith:flat', 'bench:flat'],
+  'smith-incline-bench': ['smith:incline', 'bench:incline'],
+  'smith-ohp': ['smith:upright', 'bench:upright'],
+  'smith-row': ['smith:row'],
+  'smith-inverted-row': ['smith:inverted'],
+  'smith-shrug': ['smith:shrug'],
+  'smith-squat': ['smith:shoulders'],
+  'smith-split-squat': ['smith:shoulders'],
+  'smith-rdl': ['smith:rdl'],
+  'smith-calf-raise': ['smith:calf', 'step:low'],
+  'db-bench': ['bench:flat'], 'db-fly': ['bench:flat'], 'db-row': ['bench:flat'],
+  'db-incline-press': ['bench:incline'], 'db-incline-fly': ['bench:incline'],
+  'db-chest-supported-row': ['bench:incline'], 'db-rear-delt-fly': ['bench:incline'],
+  'db-shoulder-press': ['bench:upright'], 'db-arnold-press': ['bench:upright'],
+  'db-bulgarian': ['bench:foot'],
+  'db-hip-thrust': ['bench:hip'], 'sl-hip-thrust': ['bench:hip'],
+  'decline-situp': ['bench:decline'],
+  'cable-fly': ['cable:high-d'], 'cable-woodchop': ['cable:high-d'],
+  'cable-low-high-fly': ['cable:low-d'], 'cable-front-raise': ['cable:low-d'], 'cable-lateral-raise': ['cable:low-d'],
+  'cable-tricep-pushdown': ['cable:high-rope'], 'cable-crunch': ['cable:high-rope'],
+  'cable-overhead-tricep': ['cable:low-rope'], 'cable-pull-through': ['cable:low-rope'],
+  'cable-face-pull': ['cable:mid-rope'],
+  'lat-pulldown': ['cable:high-latbar'],
+  'cable-straight-arm-pd': ['cable:high-bar'],
+  'cable-curl': ['cable:low-bar'], 'cable-shrug': ['cable:low-bar'],
+  'seated-cable-row': ['cable:low-v'],
+  'cable-rear-delt-fly': ['cable:mid-d-crossed'],
+  'pallof-press': ['cable:mid-d'],
+  'cable-kickback': ['cable:low-ankle'], 'cable-hip-abduction': ['cable:low-ankle'],
+  'db-step-up': ['step:full'], 'step-runs': ['step:full'],
+  'negative-pullup': ['step:aid'],
+  'bosu-pushup': ['bosu:flat-up'], 'bosu-plank': ['bosu:dome-up'],
+  'trx-row': ['trx:hands-row'], 'trx-fallout': ['trx:hands-long'],
+  'trx-pistol': ['trx:hands-stand'], 'trx-jump-squat': ['trx:hands-stand'],
+  'trx-ham-curl': ['trx:feet'],
 };
-const smithStation = e => (e && SMITH_STATION[e.id]) || null;
-function smithConflict(a, b) { const x = smithStation(a), y = smithStation(b); return !!(x && y && x !== y); }
+const stationKeys = e => (e && STATION[e.id]) || [];
+function stationConflict(a, b) {
+  const A = stationKeys(a), B = stationKeys(b);
+  for (const x of A) for (const y of B) if (x.split(':')[0] === y.split(':')[0] && x !== y) return true;
+  return false;
+}
+function smithConflict(a, b) { return stationConflict(a, b); }
 function warmupFor(day) {
   if (day.warmup) return day.warmup;
   const cats = new Set(day.blocks.flat().map(c => c.split(':')[0]));
@@ -260,9 +316,9 @@ function generate() {
     const score = e => fit(e) + R() + (recent.has(e.id) ? -0.5 : 0) + (preferHeavy && e.rest >= 60 ? 0.6 : 0);
     return c.map(e => ({ e, score: score(e) })).sort((a, b) => b.score - a.score);
   };
-  // Highest-scoring superset that does not put two different Smith setups in one block.
-  // A greedy "skip the conflicting partner" would drop the calf raise and keep the deadlift;
-  // searching the pair keeps a real hamstring with the calf raise instead.
+  // Highest-scoring superset that does not pair two different setups of the same station
+  // (Smith stops, cable pulley/attachment, bench angle, BOSU side, TRX length, step height).
+  // Searching the pair keeps a real hamstring with the calf raise instead of dropping the calf.
   const chooseItems = (pat, preferFirst) => {
     const lists = pat.map((slot, i) => rankSlot(slot, preferFirst && i === 0, new Set()));
     let best = null, bestScore = -Infinity;
@@ -276,7 +332,7 @@ function generate() {
       for (const row of lists[i]) {
         if (chosen.some(c => c.e.id === row.e.id)) continue;
         const item = sub(row.e); if (!item) continue;
-        if (chosen.some(c => c.item.id === item.id || smithConflict(c.item, item))) continue;
+        if (chosen.some(c => c.item.id === item.id || stationConflict(c.item, item))) continue;
         chosen.push({ e: row.e, item, score: row.score }); dfs(i + 1); chosen.pop();
       }
     };
@@ -359,7 +415,7 @@ function slotCandidates(w, bi, ii) {
   const used = new Set(w.blocks.flatMap((b, x) => b.items.filter((e, y) => !(x === bi && y === ii)).map(e => e.id)));
   const avail = new Set(available().map(e => e.id));
   const partners = w.blocks[bi].items.filter((_, y) => y !== ii);
-  return [orig.id, ...(orig.alternates || [])].filter(id => avail.has(id) && !settings.avoided.includes(id) && !used.has(id) && !partners.some(p => smithConflict(p, byId(id))));
+  return [orig.id, ...(orig.alternates || [])].filter(id => avail.has(id) && !settings.avoided.includes(id) && !used.has(id) && !partners.some(p => stationConflict(p, byId(id))));
 }
 function nextAlternate(w, bi, ii) {
   const cur = w.blocks[bi].items[ii], c = slotCandidates(w, bi, ii);
@@ -994,7 +1050,7 @@ function renderSettings() {
     <h2>Equipment switches</h2><div class="card" id="eqToggles">
     <div class="chk"><input type="checkbox" id="sTrx" ${settings.trx ? 'checked' : ''}><span><b>TRX</b> <small class="mut">· ${nTrx} exercises · off = never programmed or offered as a swap</small></span></div>
     <div class="chk"><input type="checkbox" id="sRower" ${settings.rower ? 'checked' : ''}><span><b>Rower</b> <small class="mut">· ${nRow} exercises · off while it's malfunctioning; warm-up is bodyweight/band prep</small></span></div>
-    <label>Kettlebells (lb, one number per bell)</label><input id="sKb" value="${settings.kettlebells.join(', ')}"><div class="mut" style="font-size:13px" id="kbTxt">You have ${kbTxt}. Single-bell moves use one bell; double moves need a pair (2 × 25).</div></div>
+    <label>Kettlebells (lb, one number per bell)</label><input id="sKb" value="${settings.kettlebells.join(', ')}"><div class="mut" style="font-size:13px" id="kbTxt">You have ${kbTxt}. Suggestions start from these. The set log still goes up past them (a 50 lb bell, and heavier).</div></div>
     <h2>Equipment available</h2><div class="card">${eq.map(x => `<div class="chk"><input type="checkbox" class="eq" value="${x}" ${settings.excluded.includes(x) ? '' : 'checked'}><span>${x}</span></div>`).join('')}</div>
     <h2>Avoided exercises</h2><div class="card" id="avoidList">${settings.avoided.length ? settings.avoided.map(id => `<div class="ex"><div style="flex:1">${(byId(id) || {}).name || id}<br><small>auto-replaced by ${((byId(id) || {}).alternates || []).filter(a => !settings.avoided.includes(a)).map(a => (byId(a) || {}).name).filter(Boolean).slice(0, 1).join('') || 'its backups'}</small></div><button class="unavoid" data-id="${id}">Un-avoid</button></div>`).join('') : '<div class="mut">None. Hold ⇄ Swap on an exercise to avoid it permanently.</div>'}</div>
     <button id="bReset" style="width:100%;margin:10px 0 20px">Clear history</button>`;
@@ -1026,6 +1082,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, smithConflict, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, smithConflict, stationConflict, stepWeight, kbOptions, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });
