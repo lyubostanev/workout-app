@@ -1054,7 +1054,95 @@ function doneEarly() {
   const s = P.steps[P.i]; if (!s || s.type !== 'work') return;
   unlockAudio(); P.done = { i: P.i, left: Math.round(P.left) }; P.skipped = null; P.paused = false; P.logHold = false; P.i++; enterStep();
 }
-function quit() { if (!confirm('End workout? Sets so far are not saved (the time it took is kept to improve the time estimate).')) return; stampStep(); recordTiming('quit'); stopPlayer(); today = generate(); renderToday(); }
+// Sets he actually confirmed (the +/- log). Auto-filled rest defaults are kept only when nothing was confirmed.
+function sessionSets(confirmed) {
+  const all = Object.values(P.sets || {}).filter(x => x && (x.w || x.r)).sort((a, b) => a.t - b.t);
+  if (!confirmed) return all;
+  const exp = all.filter(x => !x.auto);
+  return exp.length ? exp : all;
+}
+function partialExerciseIds() {
+  const ids = [], seen = new Set();
+  const add = id => { if (id && !seen.has(id)) { seen.add(id); ids.push(id); } };
+  sessionSets(true).forEach(x => add(x.id));
+  (P.steps || []).slice(0, P.i + 1).forEach(s => {
+    if (s.type === 'work' && s.kind !== 'warmup' && s.kind !== 'cooldown') add(s.ex && s.ex.id);
+  });
+  return ids;
+}
+function dropSessionLogs() {
+  const sid = P.started; if (!sid) return;
+  Object.keys(setLog).forEach(id => {
+    setLog[id] = (setLog[id] || []).filter(x => x.s !== sid);
+    if (!setLog[id].length) delete setLog[id];
+  });
+  LS.set('gc_setlog', setLog);
+}
+// End workout in the middle: Save keeps the work and counts the day. Discard is a test run.
+function quit() { openEndChoice(); }
+function openEndChoice() {
+  if (!playerOpen() || $('#endov')) return;
+  P.endAsk = { wasPaused: !!P.paused };
+  if (!P.paused) { P.paused = true; P.pauseT = Date.now(); }
+  const n = Object.values(P.sets || {}).filter(x => x && !x.auto && (x.w || x.r)).length, day = today ? today.day : 'This day';
+  const ov = document.createElement('div'); ov.id = 'endov';
+  ov.innerHTML = `<div class="pvsheet" id="endSheet" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="pvgrab" aria-hidden="true"></div>
+    <div class="pvhead"><div><h2 id="endTitle">End workout?</h2><div class="mut">${esc(day)} · partway through</div></div>
+      <button type="button" class="pvx" id="endClose" aria-label="Keep going">✕</button></div>
+    <div class="endacts">
+      <button type="button" class="pri" id="endSave">Save</button>
+      <div class="mut">You worked out and ran out of time. Keeps ${n ? n + ' logged set' + (n === 1 ? '' : 's') : 'what you logged'} and marks ${esc(day)} done for this cycle.</div>
+      <button type="button" id="endDiscard">Discard</button>
+      <div class="mut">You were just testing. Throws this session away. ${esc(day)} stays up next, and these weights are not kept.</div>
+      <button type="button" id="endBack">Keep going</button>
+    </div></div>`;
+  document.body.appendChild(ov); requestAnimationFrame(() => ov.classList.add('on'));
+  $('#endSave').onclick = () => savePartial();
+  $('#endDiscard').onclick = () => discardSession();
+  $('#endBack').onclick = () => closeEndChoice();
+  $('#endClose').onclick = () => closeEndChoice();
+  ov.addEventListener('click', ev => { if (ev.target === ov) closeEndChoice(); });
+  document.addEventListener('keydown', endKey);
+}
+function endKey(ev) { if (ev.key === 'Escape') closeEndChoice(); }
+function closeEndChoice(now) {
+  const ov = $('#endov'); document.removeEventListener('keydown', endKey);
+  const ask = P.endAsk; P.endAsk = null;
+  if (ask && !ask.wasPaused && playerOpen()) {
+    P.paused = false; P.end = Date.now() + (P.left || 0) * 1000;
+    if (P.pauseT) { P.pausedMs = (P.pausedMs || 0) + Date.now() - P.pauseT; P.pauseT = 0; }
+  }
+  if (!ov) { if (playerOpen()) render(); return; }
+  if (now) { ov.remove(); if (playerOpen()) render(); return; }
+  ov.classList.remove('on'); setTimeout(() => { ov.remove(); if (playerOpen()) render(); }, 220);
+}
+function savePartial() {
+  const ov = $('#endov'); if (ov) { document.removeEventListener('keydown', endKey); ov.remove(); }
+  P.endAsk = null;
+  if (!P.started || history.some(h => h.s === P.started)) { stopPlayer(); today = generate(); renderToday(); return; }
+  stampStep();
+  const timing = recordTiming('quit'); P.timingRec = timing;
+  const mins = Math.max(1, Math.round((Date.now() - P.started) / 60000));
+  const sets = sessionSets(true).map(x => ({ id: x.id, block: x.block, round: x.round, weight: x.w, reps: x.r }));
+  const last = {}; sets.forEach(x => { last[x.id] = x; });
+  const log = Object.values(last).map(x => ({ id: x.id, weight: x.weight || '', reps: x.reps || '', feel: 'good' }));
+  history.push({ date: new Date().toISOString(), day: today.day, dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: mins, s: P.started, finished: false, partial: true,
+    timing: timing ? { plannedSec: timing.plannedSec, actualSec: timing.actualSec, sets: timing.sets, estSec: timing.estSec } : undefined,
+    exerciseIds: partialExerciseIds(), swaps: netSwaps(), swapTaps: (today.swaps || []).length, log, sets });
+  LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); localStorage.removeItem('gc_daypick'); dayPick = null; shuffleN = 0;
+  const dayName = today.day;
+  stopPlayer(); today = generate(); renderToday();
+  toast(dayName + ' saved. It counts for this cycle.');
+}
+function discardSession() {
+  const ov = $('#endov'); if (ov) { document.removeEventListener('keydown', endKey); ov.remove(); }
+  P.endAsk = null;
+  dropSessionLogs();
+  P.sets = {};
+  stopPlayer(); today = generate(); renderToday();
+  toast('Discarded. This day is still up next.');
+}
 function stopPlayer() {
   clearInterval(P.timer); $('#player').classList.add('hidden');
   releaseWake(); speechStop(); stopKeepAlive();
@@ -1273,7 +1361,7 @@ function renderHistory() {
   const real = history.filter(h => !h.skipped);
   const wk = real.filter(h => Date.now() - new Date(h.date) < 7 * 864e5).length;
   $('#sub').textContent = `${real.length} workouts · ${wk} this week · ${real.reduce((a, h) => a + h.minutes, 0)} min total`;
-  $('#tab-history').innerHTML = real.length ? real.slice().reverse().map(h => `<div class="card"><div style="font-weight:600">${h.day}</div>
+  $('#tab-history').innerHTML = real.length ? real.slice().reverse().map(h => `<div class="card"><div style="font-weight:600">${h.day}${h.partial ? ' · partial' : ''}</div>
     <div class="mut">${new Date(h.date).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} · ${h.minutes} min</div>
     ${(h.swaps || []).length ? `<div class="mut" style="font-size:13px;margin:4px 0">${h.swaps.map(x => `${x.reason === 'avoid' ? '🚫' : '⇄'} ${(byId(x.from) || {}).name || x.from} → ${(byId(x.to) || {}).name || x.to}`).join('<br>')}</div>` : ''}
     ${(h.log || []).filter(l => l.weight || l.reps).map(l => { const e = byId(l.id) || { id: l.id, equipment: [] }; const ss = (h.sets || []).filter(x => x.id === l.id); return `<div class="ex"><div>${e.name || l.id}${ss.length ? `<br><small class="mut">${ss.map(x => setText(e, { w: x.weight, r: x.reps })).join(' · ')}</small>` : ''}</div><div class="mut">${lastText(e, l)} · ${l.feel}</div></div>`; }).join('')}</div>`).join('')
@@ -1344,6 +1432,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, enterStep, tick, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, switchesSides, highEnergy, pairConflict, dayIndexFromHistory, recordCompletion, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, openSwap, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, enterStep, tick, quit, savePartial, discardSession, openEndChoice, finish, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, switchesSides, highEnergy, pairConflict, dayIndexFromHistory, recordCompletion, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, openSwap, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });

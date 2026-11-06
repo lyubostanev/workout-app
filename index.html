@@ -122,10 +122,13 @@ html.pvopen,html.pvopen body{overflow:hidden}
 .bpl{display:flex;flex-direction:column;gap:8px}
 .bpx{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:8px 10px;cursor:pointer}
 .bpswap{display:block;width:100%;margin-top:8px;padding:10px 12px;border-radius:12px;background:#e6effc;color:var(--rest);font-weight:800;font-size:16px}
-#swapov{position:fixed;inset:0;z-index:80;background:rgba(12,45,72,0);display:flex;align-items:flex-end;justify-content:center;transition:background .2s}
-#swapov.on{background:rgba(12,45,72,.5)}
-#swapov .pvsheet{transform:translateY(100%)}
-#swapov.on .pvsheet{transform:none}
+#swapov,#endov{position:fixed;inset:0;z-index:80;background:rgba(12,45,72,0);display:flex;align-items:flex-end;justify-content:center;transition:background .2s}
+#endov{z-index:90}
+#swapov.on,#endov.on{background:rgba(12,45,72,.5)}
+#swapov .pvsheet,#endov .pvsheet{transform:translateY(100%)}
+#swapov.on .pvsheet,#endov.on .pvsheet{transform:none}
+.endacts{display:flex;flex-direction:column;gap:8px;margin:14px 0 6px}
+.endacts .mut{margin:-2px 2px 6px;font-size:13px}
 .swaplist{margin:8px 0 4px}
 .swapopt{display:flex;gap:10px;align-items:center;width:100%;text-align:left;margin:0 0 8px;padding:8px;background:var(--card2);border-radius:14px}
 .swapopt.on{outline:2px solid var(--acc2);background:#fff}
