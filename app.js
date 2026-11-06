@@ -297,7 +297,7 @@ const STATION = {
   'cable-rear-delt-fly': ['cable:mid-d-crossed'],
   'pallof-press': ['cable:mid-d'],
   'cable-kickback': ['cable:low-ankle'], 'cable-hip-abduction': ['cable:low-ankle'],
-  'db-step-up': ['step:full'], 'step-runs': ['step:full'],
+  'db-step-up': ['step:full'],
   'negative-pullup': ['step:aid'],
   'bosu-pushup': ['bosu:flat-up'], 'bosu-plank': ['bosu:dome-up'],
   'trx-row': ['trx:hands-row'], 'trx-fallout': ['trx:hands-long'],
