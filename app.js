@@ -598,7 +598,8 @@ function unlockAudio() {
     } catch (e) {}
   });
   if (!speechPrimed && 'speechSynthesis' in window) {
-    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; SPQ.keep.push(u); speechSynthesis.speak(u); speechPrimed = true; } catch (e) {}
+    // Volume 0 can stick on iOS and mute later lines. A normal-volume lead-in only unlocks the engine.
+    try { const u = new SpeechSynthesisUtterance(', '); u.volume = 1; SPQ.keep.push(u); speechSynthesis.speak(u); speechPrimed = true; } catch (e) {}
   }
 }
 /* v18: keep the iOS audio route warm for the whole workout so speech does not lose its first syllable while the
@@ -663,7 +664,7 @@ function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false
   // Countdown ticks are skipped during speech. Other beeps wait, but that wait expires after 1.5 s,
   // so a halfway side-switch beep was silent whenever a form cue was still talking. overSpeech plays now.
   if (!overSpeech && speaking() && droppable) { lastBeepPath = 'dropped'; return; }
-  if (!overSpeech && speaking()) { SPQ.heldBeep = { args: [freq, ms, vol, force], at: Date.now() }; lastBeepPath = 'held'; return; }
+  if (!overSpeech && speaking()) { SPQ.heldBeep = { args: [freq, ms, vol, force, false, overSpeech], at: Date.now() }; lastBeepPath = 'held'; return; }
   SPQ.beepUntil = Math.max(SPQ.beepUntil, Date.now() + ms + 40);
   const c = audioCtx();
   if (c && c.state === 'running') {
@@ -691,12 +692,14 @@ const SPEECH_LEAD = { text: ', ', resumeDelayMs: 200 };
 const speechCap = text => Math.min(10000, 400 + 90 * String(text).length);
 function say(text, opt = false) {
   const o = typeof opt === 'object' ? opt : { force: !!opt }, low = o.prio === 'low';
-  if ((!settings.voice && !o.force) || !('speechSynthesis' in window) || !text) return;
-  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && SPQ.cur.raw === text)) return; // no duplicates
-  if (low && (SPQ.cur || SPQ.q.length)) return; // busy: drop a low-priority prompt instead of stacking it
-  SPQ.q = SPQ.q.filter(x => !x.low); // a real announcement supersedes queued cues
-  SPQ.q.push({ text, low, step: P.i, at: Date.now() }); if (SPQ.q.length > 2) SPQ.q.splice(0, SPQ.q.length - 2);
+  if ((!settings.voice && !o.force) || !('speechSynthesis' in window) || !text) return false;
+  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && SPQ.cur.raw === text)) return false; // no duplicates
+  // Form cues used to be dropped here whenever the exercise name was still speaking, and cueSaid
+  // was set anyway, so the pointer was never tried again. Queue them behind the name instead.
+  SPQ.q.push({ text, low, step: P.i, at: Date.now() });
+  if (SPQ.q.length > 5) { const drop = SPQ.q.findIndex(x => x.low); if (drop >= 0) SPQ.q.splice(drop, 1); else SPQ.q.shift(); }
   pumpSpeech();
+  return true;
 }
 function stepLeft() { return playerOpen() && !P.paused && P.end ? (P.end - Date.now()) / 1000 : 99; }
 function pumpSpeech() {
@@ -705,30 +708,32 @@ function pumpSpeech() {
   const wait = Math.max(SPQ.beepUntil, SPQ.notBefore) - Date.now();
   if (wait > 0) { SPQ.timer = setTimeout(pumpSpeech, wait + 10); return; } // let a beep finish first
   const it = SPQ.q.shift();
-  if (it.low && (stepLeft() < 4 || it.step !== P.i || Date.now() - it.at > 4000)) return pumpSpeech(); // stale / countdown -> drop
+  if (it.low && it.step !== P.i) return pumpSpeech(); // step changed before a "10 seconds" line started
   const text = it.text;
   try {
-    // iOS leaves speechSynthesis.paused true when the queue is empty (including after the
-    // unlock utterance and after cancel()). resume() does not clear that flag, and v18
-    // refused to speak until paused was false — so every announcement stayed queued and
-    // nothing was spoken. Speak directly. Do not call resume() first: on iOS that drops
-    // the utterance that follows it.
+    // iOS leaves speechSynthesis.paused true after an utterance ends. speak() while paused
+    // queues the line and never starts it — so everything after the first name was silent.
+    // v18 resumed BEFORE speak() and then refused to speak while paused stayed true.
+    // Order that works: speak() first (queues the line), then resume() to release it.
     if (playerOpen()) warmAudio();
     const u = new SpeechSynthesisUtterance(SPEECH_LEAD.text + text); u.raw = text; u.rate = 1.05; u.volume = 1; u.lang = 'en-US';
     const done = () => { if (SPQ.cur !== u) return; SPQ.cur = null; SPQ.keep = SPQ.keep.filter(x => x !== u); SPQ.log.push({ text, end: Date.now() }); afterSpeech(); };
+    u.onstart = () => { u.started = true; };
     u.onend = done; u.onerror = done;
     SPQ.cur = u; SPQ.t0 = Date.now(); SPQ.keep.push(u); if (SPQ.keep.length > 8) SPQ.keep.shift();
     speechSynthesis.speak(u);
+    if (speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (e) {} }
     const cap = speechCap(text) + 300;
-    // Keep the utterance referenced until it actually ends or the full cap. Treating
-    // !speaking && !pending at ~400 ms as "finished" drops the only JS reference while
-    // iOS is still starting, and iOS then garbage-collects the utterance before it plays.
-    const wd = () => { if (SPQ.cur !== u) return; if (Date.now() - SPQ.t0 > cap) done(); else setTimeout(wd, 250); };
+    const wd = () => {
+      if (SPQ.cur !== u) return;
+      if (!u.started && speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (e) {} }
+      if (Date.now() - SPQ.t0 > cap) done(); else setTimeout(wd, 250);
+    };
     setTimeout(wd, 250);
   } catch (e) { SPQ.cur = null; }
 }
 function afterSpeech() {
-  if (SPQ.heldBeep) { const b = SPQ.heldBeep; SPQ.heldBeep = null; if (Date.now() - b.at < 1500) { beep(...b.args); } }
+  if (SPQ.heldBeep) { const b = SPQ.heldBeep; SPQ.heldBeep = null; beep(...b.args); } // play after the words, don't drop it
   pumpSpeech();
   if (!speaking() && playerOpen() && silentEl && silentEl.paused) silentEl.play().catch(() => {}); // keep-alive only between utterances
 }
@@ -880,13 +885,13 @@ function tick() {
   const sec = Math.ceil(left);
   if (sec <= 3 && sec >= 1 && sec !== P.lastBeep) { P.lastBeep = sec; beep(880, 110, 0.25, false, true); }
   if (s.type === 'work' && switchesSides(s.ex) && !P.sideSaid && (s.dur - left) >= s.dur / 2) {
-    P.sideSaid = true; beep(1000, 160, 0.35, false, false, true); say('Switch sides');
+    P.sideSaid = true; beep(1000, 160, 0.35); say('Switch sides'); // beep waits until the words finish
   }
   if (s.setup && s.restPart && !P.setupSaid && left <= s.setupPart) { P.setupSaid = true; beep(700, 140); say(s.next ? 'Set up. Next, ' + s.next.ex.name : 'Set up.'); }
   if (s.type === 'work') { // speak a form cue a few seconds in, and a second one past the midpoint on longer sets
     const el = s.dur - left, cs = cuesFor(s.ex, s.round), sw = perSide(s.ex);
-    if (P.cueSaid === 0 && cs[0] && el >= 4 && left > 4) { P.cueSaid = 1; say(cs[0], { prio: 'low' }); }
-    else if (P.cueSaid === 1 && cs[1] && s.dur >= 30 && el >= s.dur / 2 + (sw ? 3 : 0) && left > 5) { P.cueSaid = 2; say(cs[1], { prio: 'low' }); }
+    if (P.cueSaid === 0 && cs[0] && el >= 4 && left > 4) { if (say(cs[0])) P.cueSaid = 1; }
+    else if (P.cueSaid === 1 && cs[1] && s.dur >= 30 && el >= s.dur / 2 + (sw ? 3 : 0) && left > 5) { if (say(cs[1])) P.cueSaid = 2; }
   }
   if (s.type === 'rest' && !s.transition && s.dur >= 20 && !P.halfSaid && left <= 10 && left > 9) { P.halfSaid = true; beep(700, 120); say('10 seconds', { prio: 'low' }); }
   if (left <= 0) { P.i++; enterStep(); return; }
