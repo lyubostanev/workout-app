@@ -38,7 +38,7 @@ const SPLITS = {
       blocks: [['pull:lats','pull:rear delts'],['pull:mid back','pull:biceps'],['pull:lats','pull:traps'],['pull:upper back/rear delts','pull:biceps']],
       finisher: ['conditioning','conditioning'], cooldown: ['foam-roll-tspine','cat-cow'],
       warmup: ['cat-cow','wu-band-pulldown','wu-scap-pull','wu-band-pull-apart','st-childs-pose','st-biceps'] },
-    { name: 'Legs & Core', focus: 'Quads · Hams · Glutes · Calves · Glute med · Abs/obliques',
+    { name: 'Legs & Core', short: 'Legs', focus: 'Quads · Hams · Glutes · Calves · Glute med · Abs/obliques',
       blocks: [['legs:quads','core:abs'],['legs:hamstrings','legs:calves'],['legs:glutes','core:obliques'],['legs:glute med','core:lower abs/core/abs']],
       finisher: ['conditioning','conditioning'], cooldown: ['foam-roll-legs','cat-cow'],
       warmup: ['wu-hip-circles','wu-leg-swings','wu-glute-bridge','dead-bug','st-hip-flexor','st-hamstring','wu-bw-squat'] },
@@ -74,14 +74,26 @@ function available() { return LIB.filter(e => !switchedOff(e) && !settings.exclu
 // Generation pool: equipment you have, minus exercises you've marked "avoid" (injury).
 function genPool() { return available().filter(e => !settings.avoided.includes(e.id)); }
 const byId = id => LIB.find(e => e.id === id);
+/* Which split day a history row is. Matches dayIndex, the full name, the short label ("Legs"),
+   and older rows that said "Legs" for "Legs & Core". A named row that matches nothing is ignored
+   so it cannot be counted as a different day and leave Legs "up next". */
+function dayIndexFromHistory(h, split) {
+  const n = split.length;
+  if (Number.isInteger(h.dayIndex) && h.dayIndex >= 0 && h.dayIndex < n) return h.dayIndex;
+  const nm = String(h.day || '').replace(/ \(skipped\)$/, '').trim();
+  if (!nm) return -1;
+  let i = split.findIndex(d => d.name === nm || d.short === nm);
+  if (i < 0) i = split.findIndex(d => (d.short && nm.toLowerCase() === d.short.toLowerCase()) || d.name.toLowerCase() === nm.toLowerCase());
+  if (i < 0 && /^legs\b/i.test(nm)) i = split.findIndex(d => /^legs\b/i.test(d.name) || d.short === 'Legs');
+  return i;
+}
 /* Training cycle: each day of the split once, in any order. Derived from history (day name / dayIndex; old entries
    without a day count as "next in order"). When every day is done the cycle resets. */
 function cycleState() {
   const split = SPLITS[settings.daysPerWeek] || SPLITS[4], n = split.length; let done = [], last = -1;
-  history.filter(h => h.split === settings.daysPerWeek).forEach(h => {
-    const nm = String(h.day || '').replace(/ \(skipped\)$/, '');
-    let i = Number.isInteger(h.dayIndex) && h.dayIndex < n ? h.dayIndex : split.findIndex(d => d.name === nm);
-    if (i < 0) i = (last + 1) % n;
+  history.filter(h => h.split == null || h.split === settings.daysPerWeek).forEach(h => {
+    let i = dayIndexFromHistory(h, split);
+    if (i < 0) { if (String(h.day || '').trim()) return; i = (last + 1) % n; }
     if (!done.includes(i)) done.push(i); last = i;
     if (done.length >= n) done = [];
   });
@@ -207,6 +219,14 @@ const SET_SETUP = 10, SEC_PER_REP = 5, OVH_DEFAULT = 15;
 // on a single-side clock, so the set ended before the second side.
 function perSide(e) { return !!(e && e.unilateral); }
 function sideCount(e) { return perSide(e) ? 2 : 1; }
+// Halfway "switch sides" cue: the unilateral flag, plus any move whose name or cues say
+// each side / left-then-right / switch side (renegade row says "then switch" only in the form cues).
+function switchesSides(e) {
+  if (!e) return false;
+  if (e.unilateral) return true;
+  const t = `${e.name || ''} ${e.cue || ''} ${(e.formCues || []).join(' ')}`;
+  return /each side|switch side|switch hand|switch sides|left (leg|side|arm)|per side|single[- ](leg|arm)|one-arm|split squat|then switch|other side|other leg|other arm/i.test(t);
+}
 function withReps(x) {
   const src = byId(x.id) || x;
   if (!src.reps) {
@@ -291,6 +311,15 @@ function stationConflict(a, b) {
   return false;
 }
 function smithConflict(a, b) { return stationConflict(a, b); }
+// Full-body / hard-effort finishers. Burpee + thruster (and the other max efforts in that pool)
+// are too much in one superset; pair one of them with a lighter conditioner instead.
+const HIGH_ENERGY = new Set(['burpee', 'kb-thruster', 'row-sprint', 'mountain-climber', 'trx-jump-squat']);
+function highEnergy(e) {
+  if (!e) return false;
+  if (HIGH_ENERGY.has(e.id)) return true;
+  return e.category === 'conditioning' && (e.muscles || []).includes('full body');
+}
+function pairConflict(a, b) { return stationConflict(a, b) || (highEnergy(a) && highEnergy(b)); }
 function warmupFor(day) {
   if (day.warmup) return day.warmup;
   const cats = new Set(day.blocks.flat().map(c => c.split(':')[0]));
@@ -332,7 +361,7 @@ function generate() {
       for (const row of lists[i]) {
         if (chosen.some(c => c.e.id === row.e.id)) continue;
         const item = sub(row.e); if (!item) continue;
-        if (chosen.some(c => c.item.id === item.id || stationConflict(c.item, item))) continue;
+        if (chosen.some(c => c.item.id === item.id || pairConflict(c.item, item))) continue;
         chosen.push({ e: row.e, item, score: row.score }); dfs(i + 1); chosen.pop();
       }
     };
@@ -415,7 +444,7 @@ function slotCandidates(w, bi, ii) {
   const used = new Set(w.blocks.flatMap((b, x) => b.items.filter((e, y) => !(x === bi && y === ii)).map(e => e.id)));
   const avail = new Set(available().map(e => e.id));
   const partners = w.blocks[bi].items.filter((_, y) => y !== ii);
-  return [orig.id, ...(orig.alternates || [])].filter(id => avail.has(id) && !settings.avoided.includes(id) && !used.has(id) && !partners.some(p => stationConflict(p, byId(id))));
+  return [orig.id, ...(orig.alternates || [])].filter(id => avail.has(id) && !settings.avoided.includes(id) && !used.has(id) && !partners.some(p => pairConflict(p, byId(id))));
 }
 function nextAlternate(w, bi, ii) {
   const cur = w.blocks[bi].items[ii], c = slotCandidates(w, bi, ii);
@@ -484,6 +513,17 @@ function toast(msg) {
 }
 const clampSwitch = () => Math.min(30, Math.max(5, +settings.switchSec || 10));
 const clampSetup = () => Math.min(90, Math.max(15, +settings.setupSec || 30));
+// Inside a block, the rest after both exercises of a round is one minute. Not the exercise's own
+// rest (30 on core, 75 on a heavy squat) and not a library override — those were the 30 s exceptions.
+const ROUND_REST = 60;
+// Between blocks: 60 s rest + setup (at least 30 s). Never under 90 s, including warm-up → first block.
+const BLOCK_GAP = 90;
+function blockGap() {
+  const setupPart = Math.max(30, clampSetup());
+  let restPart = ROUND_REST;
+  if (restPart + setupPart < BLOCK_GAP) restPart += BLOCK_GAP - (restPart + setupPart);
+  return { restPart, setupPart, dur: restPart + setupPart };
+}
 /* Flatten blocks into timed steps */
 function buildSteps(w) {
   const steps = [{ type: 'prep', dur: 10, ex: w.blocks[0].items[0], label: 'Get ready' }];
@@ -497,13 +537,13 @@ function buildSteps(w) {
         const warm = b.kind === 'warmup' || b.kind === 'cooldown';
         const nb = w.blocks[bi + 1];
         if (lastOfBlock && !nb) return; // end of workout
-        if (lastOfBlock) { // into the next group (also warm-up -> first group): set-up time, not the 10 s hop
-          const su = clampSetup(), rp = warm ? 0 : e.rest;
-          steps.push({ type: 'rest', dur: rp + su, restPart: rp, setupPart: su, setup: true, block: b.name, after: e.name,
+        if (lastOfBlock) { // every block boundary, including warm-up → first group: at least 90 s (60 rest + setup)
+          const gap = blockGap();
+          steps.push({ type: 'rest', dur: gap.dur, restPart: gap.restPart, setupPart: gap.setupPart, setup: true, block: b.name, after: e.name,
             nextBlock: nb.name, nextRounds: nb.rounds, nextItems: nb.items, label: 'Set up · next group' });
         } else if (warm) steps.push({ type: 'rest', dur: 10, block: b.name, transition: true, after: e.name, label: 'Transition' });
         else if (!lastInRound) steps.push({ type: 'rest', dur: clampSwitch(), block: b.name, sw: true, after: e.name, label: 'Switch · next exercise' });
-        else steps.push({ type: 'rest', dur: e.rest, block: b.name, after: e.name, label: 'Rest · next round' });
+        else steps.push({ type: 'rest', dur: ROUND_REST, block: b.name, after: e.name, label: 'Rest · next round' });
       });
     }
   });
@@ -599,10 +639,12 @@ function beepFile(freq) {
   try { let el = beepEls[f]; if (!el) { el = beepEls[f] = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); } el.muted = false; el.currentTime = 0; const pr = el.play(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {}
 }
 let lastBeepPath = '';
-function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false) {
+function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false, overSpeech = false) {
   if (!settings.beeps && !force) return;
-  if (speaking() && droppable) { lastBeepPath = 'dropped'; return; } // countdown tick during speech: skip it
-  if (speaking()) { SPQ.heldBeep = { args: [freq, ms, vol, force], at: Date.now() }; lastBeepPath = 'held'; return; } // never over speech
+  // Countdown ticks are skipped during speech. Other beeps wait, but that wait expires after 1.5 s,
+  // so a halfway side-switch beep was silent whenever a form cue was still talking. overSpeech plays now.
+  if (!overSpeech && speaking() && droppable) { lastBeepPath = 'dropped'; return; }
+  if (!overSpeech && speaking()) { SPQ.heldBeep = { args: [freq, ms, vol, force], at: Date.now() }; lastBeepPath = 'held'; return; }
   SPQ.beepUntil = Math.max(SPQ.beepUntil, Date.now() + ms + 40);
   const c = audioCtx();
   if (c && c.state === 'running') {
@@ -804,7 +846,7 @@ function enterStep() {
   stampStep();
   const s = P.steps[P.i]; if (!s) return finish(); if ($('#pv')) closePreview(true);
   speechNewStep();
-  P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.cueSaid = 0; P.tk = '';
+  P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.sideSaid = false; P.cueSaid = 0; P.tk = '';
   P.setupSaid = !(s.setup && s.restPart); // a combined rest+setup step announces "Set up" when the prep window starts
   P.logPrev = false;
   if (s.type === 'work') { beep(1200, 350); say(perSide(s.ex) ? s.ex.name + '. Both sides.' : s.ex.name); }
@@ -818,7 +860,9 @@ function tick() {
   const left = Math.max(0, (P.end - Date.now()) / 1000); P.left = left;
   const sec = Math.ceil(left);
   if (sec <= 3 && sec >= 1 && sec !== P.lastBeep) { P.lastBeep = sec; beep(880, 110, 0.25, false, true); }
-  if (s.type === 'work' && perSide(s.ex) && !P.halfSaid && left <= s.dur / 2) { P.halfSaid = true; beep(1000, 150); say('Switch sides'); }
+  if (s.type === 'work' && switchesSides(s.ex) && !P.sideSaid && (s.dur - left) >= s.dur / 2) {
+    P.sideSaid = true; beep(1000, 160, 0.35, false, false, true); say('Switch sides');
+  }
   if (s.setup && s.restPart && !P.setupSaid && left <= s.setupPart) { P.setupSaid = true; beep(700, 140); say(s.next ? 'Set up. Next, ' + s.next.ex.name : 'Set up.'); }
   if (s.type === 'work') { // speak a form cue a few seconds in, and a second one past the midpoint on longer sets
     const el = s.dur - left, cs = cuesFor(s.ex, s.round), sw = perSide(s.ex);
@@ -941,14 +985,30 @@ function renderTime() {
   const im = $('#pimg'); // alternate start/end frames every ~1.2s while working
   if (im && !P.paused) { const f = im.dataset.f.split('|'), k = s.type === 'work' ? Math.floor((s.dur - P.left) / 1.2) % f.length : 0; if (!im.src.endsWith(f[k])) im.src = f[k]; }
 }
+// The day counts as soon as the player finishes — not only after "Save session".
+// Otherwise closing the app on the done screen leaves dayPick on Legs and the home
+// card still offers Legs. Save later fills in weights on this same row.
+function recordCompletion(mins) {
+  if (!P.started || history.some(h => h.s === P.started && !h.skipped)) return;
+  const sets = Object.values(P.sets || {}).sort((a, b) => a.t - b.t).map(x => ({ id: x.id, block: x.block, round: x.round, weight: x.w, reps: x.r }));
+  history.push({ date: new Date().toISOString(), day: today.day, dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: mins, s: P.started, finished: true,
+    timing: P.timingRec ? { plannedSec: P.timingRec.plannedSec, actualSec: P.timingRec.actualSec, sets: P.timingRec.sets, estSec: P.timingRec.estSec } : undefined,
+    exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length, log: [], sets });
+  LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); localStorage.removeItem('gc_daypick'); dayPick = null; shuffleN = 0;
+  P.doneDay = today.day; P.doneIndex = today.dayIndex;
+  P.doneSnap = { day: today.day, dayIndex: today.dayIndex, exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length };
+  today = generate();
+}
 function finish() {
   const timing = recordTiming('finish'); P.timingRec = timing;
-  stopPlayer(); beep(1320, 500); say('Workout complete. Great job!');
   const mins = Math.round((Date.now() - P.started) / 60000);
+  const dayName = today.day;
   const lifts = today.blocks.filter(b => b.kind === 'main').flatMap(b => b.items);
+  recordCompletion(mins);
+  stopPlayer(); beep(1320, 500); say('Workout complete. Great job!');
   const tab = $('#tab-today');
   tab.onclick = null; tab.onkeydown = null; closePreview(true);
-  tab.innerHTML = `<div class="hero"><div class="t">Done! 🎉</div><div class="s">${today.day} · ${mins} min</div></div>
+  tab.innerHTML = `<div class="hero"><div class="t">Done! 🎉</div><div class="s">${dayName} · ${mins} min</div></div>
    <div class="card"><h2 style="margin-top:0">Log your weights</h2><div class="mut">Used for next time's suggestions.</div>
    ${lifts.map(e => { const sg = suggest(e.id), ss = Object.values(P.sets).filter(x => x.id === e.id).sort((a, b) => a.t - b.t), ls = ss[ss.length - 1]; return `<div class="logrow" data-id="${e.id}"><div>${e.name}${e.reps ? `<br><small class="mut">${e.reps[0]}–${e.reps[1]} reps</small>` : ''}${ss.length ? `<br><small class="mut">Sets: ${ss.map(x => setText(e, x)).join(', ')}</small>` : ''}</div>
      <input type="number" class="w" inputmode="decimal" placeholder="${e.kb && e.kb.mode === 'double' ? 'lb/bell' : isBW(e) ? 'BW' : 'lb'}" value="${ls ? (ls.w || '') : sg && sg.weight ? sg.weight : ''}">${e.reps ? `<input type="number" class="r" inputmode="numeric" placeholder="reps" value="${(ls && ls.r) || e.targetReps || (sg && sg.reps) || ''}">` : ''}<select><option value="good">OK</option><option value="easy">Easy</option><option value="hard">Hard</option></select></div>`; }).join('')}
@@ -959,8 +1019,11 @@ function finish() {
   };
 }
 function saveSession(mins, log) {
-  history.push({ date: new Date().toISOString(), day: today.day, dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: mins, timing: P.timingRec ? { plannedSec: P.timingRec.plannedSec, actualSec: P.timingRec.actualSec, sets: P.timingRec.sets, estSec: P.timingRec.estSec } : undefined, exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length, log,
-    sets: Object.values(P.sets || {}).sort((a, b) => a.t - b.t).map(x => ({ id: x.id, block: x.block, round: x.round, weight: x.w, reps: x.r })) });
+  const sets = Object.values(P.sets || {}).sort((a, b) => a.t - b.t).map(x => ({ id: x.id, block: x.block, round: x.round, weight: x.w, reps: x.r }));
+  const timing = P.timingRec ? { plannedSec: P.timingRec.plannedSec, actualSec: P.timingRec.actualSec, sets: P.timingRec.sets, estSec: P.timingRec.estSec } : undefined;
+  const ex = history.find(h => h.s === P.started && !h.skipped);
+  if (ex) { ex.minutes = mins; ex.log = log; ex.sets = sets; if (timing) ex.timing = timing; }
+  else { const snap = P.doneSnap || { day: today.day, dayIndex: today.dayIndex, exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length }; history.push({ date: new Date().toISOString(), day: snap.day, dayIndex: snap.dayIndex, split: settings.daysPerWeek, minutes: mins, s: P.started, finished: true, timing, exerciseIds: snap.exerciseIds, swaps: snap.swaps, swapTaps: snap.swapTaps, log, sets }); }
   LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); localStorage.removeItem('gc_daypick'); dayPick = null; shuffleN = 0; today = generate();
 }
 
@@ -1123,6 +1186,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, switchesSides, highEnergy, pairConflict, dayIndexFromHistory, recordCompletion, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });
