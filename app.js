@@ -708,13 +708,43 @@ async function startWorkout() {
   clearInterval(P.timer); P.timer = setInterval(tick, 200);
 }
 function logStepFor(i) { const s = P.steps[i], pw = P.steps[i - 1]; if (!s || s.type !== 'rest' || !pw || pw.type !== 'work') return null; const b = today.blocks.find(b => b.name === pw.block); return b && loggable(pw.ex, b.kind) ? pw : null; }
-function setLogHTML(pw) {
+// First loggable exercise of this round, once the short switch after it has passed.
+// The switch itself already shows that log, so it is not offered there.
+function prevWork(i = P.i) {
+  const s = P.steps[i]; if (!s) return null;
+  let block = s.block, round = s.round, kind = s.kind;
+  if (s.type !== 'work') {
+    const pw = P.steps[i - 1]; if (!pw || pw.type !== 'work') return null;
+    block = pw.block; round = pw.round; kind = pw.kind;
+  }
+  if (kind === 'warmup' || kind === 'cooldown') return null;
+  let first = null;
+  for (let k = 0; k < i; k++) {
+    const st = P.steps[k];
+    if (st.type === 'work' && st.block === block && st.round === round) { first = st; break; }
+  }
+  if (!first) return null;
+  const logging = s.type === 'rest' ? logStepFor(i) : s.type === 'work' ? s : null;
+  if (logging && setKey(logging) === setKey(first)) return null;
+  const b = today.blocks.find(x => x.name === first.block);
+  return b && loggable(first.ex, b.kind) ? first : null;
+}
+function setLogHTML(pw, opt = {}) {
+  const id = opt.id || 'setlog';
   const v = P.sets[setKey(pw)] || setPrefill(pw), e = pw.ex, bw = isBW(e);
-  return `<div class="setlog" id="setlog"><div class="slh"><b>Log set ${pw.round}/${pw.rounds}</b> · ${esc(e.name)}</div>
-    <div class="stps"><div class="stp"><button type="button" data-d="w-1" aria-label="less weight">−</button><div class="v"><b id="lw">${v.w ? (e.kb && e.kb.mode === 'double' ? '2×' : '') + v.w : bw ? 'BW' : '—'}</b><small>${bw ? (v.w ? '+lb' : 'bodyweight') : 'lb'}</small></div><button type="button" data-d="w1" aria-label="more weight">+</button></div>
-    <div class="stp"><button type="button" data-d="r-1" aria-label="fewer reps">−</button><div class="v"><b id="lr">${v.r || '—'}</b><small>reps</small></div><button type="button" data-d="r1" aria-label="more reps">+</button></div></div>
-    <button type="button" class="savebtn" id="bSaveSet">✓ Save</button>
-    <div class="mut slm" id="slm">${slmText(pw)}</div></div>`;
+  const note = opt.prev ? ((P.steps[P.i] && P.steps[P.i].type === 'work') ? 'This exercise keeps going · Save stays here' : 'Rest keeps running · Save stays on this screen') : slmText(pw);
+  return `<div class="setlog" id="${id}"><div class="slh"><b>${opt.head || `Log set ${pw.round}/${pw.rounds}`}</b> · ${esc(e.name)}</div>
+    <div class="stps"><div class="stp"><button type="button" data-d="w-1" aria-label="less weight">−</button><div class="v"><b>${v.w ? (e.kb && e.kb.mode === 'double' ? '2×' : '') + v.w : bw ? 'BW' : '—'}</b><small>${bw ? (v.w ? '+lb' : 'bodyweight') : 'lb'}</small></div><button type="button" data-d="w1" aria-label="more weight">+</button></div>
+    <div class="stp"><button type="button" data-d="r-1" aria-label="fewer reps">−</button><div class="v"><b>${v.r || '—'}</b><small>reps</small></div><button type="button" data-d="r1" aria-label="more reps">+</button></div></div>
+    <button type="button" class="savebtn" data-save="1">${opt.save || '✓ Save'}</button>
+    <div class="mut slm">${note}</div></div>`;
+}
+function prevLogBlock(st) {
+  if (!st) return '';
+  if (P.logPrev) return setLogHTML(st, { id: 'setlogPrev', head: 'Log previous', save: '✓ Save previous', prev: true })
+    + `<button type="button" class="logprev sub" id="bLogPrevBack">Back to this exercise</button>`;
+  const v = P.sets[setKey(st)], saved = v && !v.auto;
+  return `<button type="button" class="logprev" id="bLogPrev"><b>${saved ? 'Edit previous' : 'Log previous'}</b><small>${esc(st.ex.name)}${saved ? ' · ' + esc(setText(st.ex, v)) : ''} · ${saved ? 'tap to change' : 'missed it on the switch · this round keeps going'}</small></button>`;
 }
 function slmText(pw) {
   const st = P.steps[P.i] || {}, saved = P.sets[setKey(pw)] && !P.sets[setKey(pw)].auto;
@@ -722,16 +752,16 @@ function slmText(pw) {
   if (st.sw) return P.paused ? (saved ? '✓ Saved · ' : '') + 'Timer paused while you log · Save resumes it' : 'Tap ± to log (timer pauses) · or log it on the next rest';
   return saved ? '✓ Saved · rest keeps running' : 'Rest keeps running · Save keeps it running · ⏭ skips';
 }
-function wireSetLog(pw) {
-  const box = $('#setlog'); if (!box) return;
+function wireSetLog(pw, opt = {}) {
+  const box = document.getElementById(opt.id || 'setlog'); if (!box) return;
   box.querySelectorAll('button[data-d]').forEach(b => b.onclick = () => {
     const cur = P.sets[setKey(pw)] || setPrefill(pw); let w = cur.w, r = cur.r; const d = b.dataset.d;
     if (d[0] === 'w') w = stepWeight(pw.ex, w, +d.slice(1)); else r = Math.max(0, (Number(r) || 0) + +d.slice(1)) || null;
     recordSet(pw, w, r, false);
-    const st = P.steps[P.i]; if (st && st.sw && !P.paused) { P.paused = true; P.logHold = true; render(); return; } // 10 s switch: don't rush the logging
-    box.outerHTML = setLogHTML(pw); wireSetLog(pw);
+    const st = P.steps[P.i]; if (!opt.prev && st && st.sw && !P.paused) { P.paused = true; P.logHold = true; render(); return; } // 10 s switch: don't rush the logging
+    box.outerHTML = setLogHTML(pw, opt); wireSetLog(pw, opt);
   });
-  const sv = $('#bSaveSet'); if (sv) sv.onclick = () => saveAndNext(pw);
+  const sv = box.querySelector('[data-save]'); if (sv) sv.onclick = () => opt.prev ? savePrevious(pw) : saveAndNext(pw);
 }
 // v18 Save: store the set and collapse the log form. The rest/switch timer keeps running to its end (only ⏭ Skip cuts it
 // short). If the timer was held for logging during a 10 s switch, it resumes from where it was.
@@ -740,6 +770,12 @@ function saveAndNext(pw) {
   unlockAudio(); P.logClosed = P.i;
   if (P.paused && P.logHold) { P.paused = false; P.end = Date.now() + P.left * 1000; if (P.pauseT) { P.pausedMs = (P.pausedMs || 0) + Date.now() - P.pauseT; P.pauseT = 0; } }
   P.logHold = false;
+  render();
+}
+// Save the first exercise of this round without leaving the current step or moving the timer.
+function savePrevious(pw) {
+  const cur = P.sets[setKey(pw)] || setPrefill(pw); recordSet(pw, cur.w, cur.r, false); P.saved = (P.saved || 0) + 1;
+  unlockAudio(); P.logPrev = false;
   render();
 }
 function savedLineHTML(pw) {
@@ -770,6 +806,7 @@ function enterStep() {
   speechNewStep();
   P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.cueSaid = 0; P.tk = '';
   P.setupSaid = !(s.setup && s.restPart); // a combined rest+setup step announces "Set up" when the prep window starts
+  P.logPrev = false;
   if (s.type === 'work') { beep(1200, 350); say(perSide(s.ex) ? s.ex.name + '. Both sides.' : s.ex.name); }
   else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? (s.restPart ? 'Rest.' + (s.next ? ' Next group, ' + s.next.ex.name : '') : 'Set up. ' + (s.next ? 'Next, ' + s.next.ex.name : '')) : 'Rest.' + (s.next ? ' Next, ' + s.next.ex.name : '')); }
   else if (s.type === 'prep') say('Get ready. First up, ' + s.ex.name);
@@ -845,6 +882,7 @@ function render() {
     <div class="phase" id="phase">${phaseName}</div>
     <div class="exname"><span id="exTitleText">${title}</span>${s.setup ? `<span class="sutime" id="num2">${fmt(P.left)}</span>` : ''}</div>
     <div class="mut" id="phaseSub">${phaseSub}</div>
+    ${prevLogBlock(prevWork())}
     ${pw ? setLogHTML(pw) : pwAny ? savedLineHTML(pwAny) : ''}
     ${s.setup ? setupHTML(s) : ''}
     ${histHTML(hist)}
@@ -860,6 +898,9 @@ function render() {
     <div class="ctrl"><button id="bPrev">⏮</button><button id="bPause" class="pri" style="flex:2">${P.paused ? '▶ Resume' : '⏸ Pause'}</button><button id="bSkip" title="Skip (no log)" aria-label="Skip without logging">⏭</button></div>
     <button id="bQuit" style="margin-top:4px;padding:8px;background:none;color:var(--mut);flex-shrink:0">End workout</button>`;
   $('#bPause').onclick = togglePause; if (pw) wireSetLog(pw);
+  const prev = prevWork(), bp = $('#bLogPrev'); if (bp) bp.onclick = () => { unlockAudio(); P.logPrev = true; render(); };
+  const bb = $('#bLogPrevBack'); if (bb) bb.onclick = () => { P.logPrev = false; render(); };
+  if (P.logPrev && prev) wireSetLog(prev, { id: 'setlogPrev', head: 'Log previous', save: '✓ Save previous', prev: true });
   const be = $('#bEditSet'); if (be) be.onclick = () => { P.logClosed = null; render(); };
   if (pw && s.setup) { const lb = el.querySelector('.setlog, #setLog, form'); if (lb && lb.scrollIntoView && P.logShownI !== P.i) { P.logShownI = P.i; lb.scrollIntoView({ block: 'nearest' }); } }
   const bd = $('#bDemo'); if (bd) bd.onclick = ev => { ev.preventDefault(); openDemo(bd.href); }; $('#bSkip').onclick = () => skip(1); const bdn = $('#bDone'); if (bdn) bdn.onclick = doneEarly;
@@ -1082,6 +1123,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, smithConflict, stationConflict, stepWeight, kbOptions, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });

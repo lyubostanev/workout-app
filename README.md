@@ -38,6 +38,10 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
 
+## v21
+- Missed the first exercise during the 10 s switch? **Log previous** (on the second exercise, and on the rest after it) opens that set’s weight and reps. Saving stays on the current screen; the round timer does not rewind.
+- SW cache gymcoach-v21.
+
 ## v20
 - Kettlebell logging is no longer capped at the bells listed in Settings (25 and 35). The + button walks a normal bell ladder through 50 lb and on, with no ceiling, so a 50 lb suitcase carry (and heavier dumbbell or kettlebell work) can be saved. A weight he actually logged is not snapped back down to 35.
 - Supersets skip any pair that shares a station but needs a different setup: Smith stops, cable pulley height or attachment, bench angle, BOSU side, TRX strap length, step height. Same setup (flat bench press + flat fly, low-pulley D-handle raises, squat + split squat) can still share a block.
