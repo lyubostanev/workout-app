@@ -1,4 +1,4 @@
-const CACHE = 'gymcoach-v24';
+const CACHE = 'gymcoach-v25';
 const ASSETS = ['./', './index.html', './app.js', './exercises.json', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-192-maskable.png', './icons/icon-512-maskable.png',
   './audio/silence.wav', ...[420, 500, 700, 880, 1000, 1200, 1320].map(f => `./audio/beep${f}.wav`)];

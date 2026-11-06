@@ -329,7 +329,15 @@ function warmupFor(day) {
 function generate() {
   const split = SPLITS[settings.daysPerWeek] || SPLITS[4];
   const di = nextDayIndex(); const day = split[di];
-  const R = rng(dateKey(new Date()) + '|' + di + '|' + shuffleN + '|' + settings.daysPerWeek);
+  // Same calendar day used to reproduce the same blocks: the random draw is only 0–1,
+  // smaller than "primary muscle" (3) or the heavy-exercise bonus (0.6), and the old
+  // −0.5 recent hit only saw the last two sessions of any day — so the previous Push
+  // was already buried under Pull and Legs. Count this day's own sessions, penalize
+  // those lifts when another on-role option exists, and rotate which patterns lead.
+  const prior = history.filter(h => !h.skipped && dayIndexFromHistory(h, split) === di);
+  const turn = prior.length;
+  const again = new Set(prior.slice(-2).flatMap(h => h.exerciseIds || []));
+  const R = rng([dateKey(new Date()), di, shuffleN, turn, settings.daysPerWeek].join('|'));
   const lv = LEVEL[settings.level] || LEVEL.intermediate;
   const pool = available(), okPool = genPool(); const used = new Set();
   // An avoided exercise is never programmed: its slot automatically gets its first usable backup instead
@@ -337,12 +345,17 @@ function generate() {
   const sub = e => { if (!settings.avoided.includes(e.id)) return e; const a = (e.alternates || []).map(x => okPool.find(p => p.id === x && !used.has(x))).find(Boolean); return a ? { ...a, autoFor: e.id } : null; };
   // Fixed warm-up/cool-down picks fall back to their first usable alternate if avoided or missing equipment.
   const fixed = id => { const ok = x => okPool.find(e => e.id === x && !used.has(x)); const e = ok(id) || (byId(id)?.alternates || []).map(ok).find(Boolean); if (e) used.add(e.id); return e; };
-  const recent = new Set((history.slice(-2).flatMap(h => h.exerciseIds || [])));
   const rankSlot = (slot, preferHeavy, skip) => {
     const [cat, mus] = slot.split(':'); const want = mus ? mus.split('/') : [];
     const c = pool.filter(e => e.category === cat && !used.has(e.id) && !skip.has(e.id) && e.id !== 'row-steady');
     const fit = e => !want.length ? 0 : want.includes((e.muscles || [])[0]) ? 3 : (e.muscles || []).some(m => want.includes(m)) ? 1.5 : 0;
-    const score = e => fit(e) + R() + (recent.has(e.id) ? -0.5 : 0) + (preferHeavy && e.rest >= 60 ? 0.6 : 0);
+    const score = e => {
+      const f = fit(e);
+      // 2.6 is larger than the random draw plus the heavy bonus, so a repeat loses to a
+      // fresh exercise with the same muscle fit. The only calf raise (no other fit-3) stays.
+      const alt = again.has(e.id) && c.some(o => o !== e && fit(o) >= f);
+      return f + R() + (preferHeavy && e.rest >= 60 ? 0.6 : 0) - (alt ? 2.6 : 0);
+    };
     return c.map(e => ({ e, score: score(e) })).sort((a, b) => b.score - a.score);
   };
   // Highest-scoring superset that does not pair two different setups of the same station
@@ -404,7 +417,7 @@ function generate() {
   const hi = budget, lo = budget - 240, all = () => [...out.blocks, fin, cdBlock];
   let bi = 0;
   while (bi < 10) {
-    const pat = day.blocks[bi % day.blocks.length];
+    const pat = day.blocks[(bi + turn) % day.blocks.length];
     const items = chooseItems(pat, bi < 2).map(scale);
     if (!items.length) break;
     const isFinisher = !day.finisher && pat.every(c => /^(conditioning|core)/.test(c));
@@ -425,7 +438,7 @@ function generate() {
   if (fin && total(all()) > hi) { fin.items.forEach(e => used.delete(e.id)); fin = null; } // drop the finisher before cramming
   if (fin) out.blocks.push(fin);
   if (cdBlock) out.blocks.push(cdBlock);
-  out.key = [dateKey(new Date()), di, shuffleN, settings.daysPerWeek, settings.minutes, settings.level, settings.restSec, settings.switchSec, settings.setupSec].join('|');
+  out.key = [dateKey(new Date()), di, shuffleN, turn, settings.daysPerWeek, settings.minutes, settings.level, settings.restSec, settings.switchSec, settings.setupSec].join('|');
   applySwaps(out);
   out.stepSec = totalSec(out); out.totalSec = estSec(out); out.estMin = Math.round(out.totalSec / 60);
   return out;
@@ -577,7 +590,7 @@ function buildSteps(w) {
    <audio playsinline> element during workouts puts iOS in "playback" mode; and pre-rendered <audio> beep files are
    used whenever the AudioContext isn't running. */
 const AC = window.AudioContext || window.webkitAudioContext;
-let actx = null, silentEl = null, speechPrimed = false;
+let actx = null, silentEl = null;
 const BEEP_FILES = [420, 500, 700, 880, 1000, 1200, 1320];
 const beepEls = {};
 const audioCtx = () => { if (!actx && AC) { try { actx = new AC(); } catch (e) { actx = null; } } return actx; };
@@ -589,18 +602,16 @@ function unlockAudio() {
   if (c) { try { resumeAudio(); const b = c.createBuffer(1, 1, 22050), src = c.createBufferSource(); src.buffer = b; src.connect(c.destination); src.start(0); } catch (e) {} }
   try {
     if (!silentEl) { silentEl = new Audio('audio/silence.wav'); silentEl.loop = true; silentEl.setAttribute('playsinline', ''); silentEl.preload = 'auto'; }
-    if (!speaking() && silentEl.paused) { const pr = silentEl.play(); if (pr && pr.catch) pr.catch(() => {}); } // never (re)start audio mid-sentence
+    // Playing this loop pauses speechSynthesis on iOS and leaves it paused, so later names never start.
+    if (!settings.voice && !speaking() && silentEl.paused) { const pr = silentEl.play(); if (pr && pr.catch) pr.catch(() => {}); }
   } catch (e) {}
-  if (!speaking()) BEEP_FILES.forEach(f => { // prime the fallback beep elements inside the gesture
+  if (!settings.voice && !speaking()) BEEP_FILES.forEach(f => { // prime the fallback beep elements inside the gesture
     try {
       if (beepEls[f]) return; const el = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); el.preload = 'auto'; beepEls[f] = el;
       el.muted = true; const pr = el.play(); if (pr && pr.then) pr.then(() => { el.pause(); el.currentTime = 0; el.muted = false; }).catch(() => { el.muted = false; }); else el.muted = false;
     } catch (e) {}
   });
-  if (!speechPrimed && 'speechSynthesis' in window) {
-    // Volume 0 can stick on iOS and mute later lines. A normal-volume lead-in only unlocks the engine.
-    try { const u = new SpeechSynthesisUtterance(', '); u.volume = 1; SPQ.keep.push(u); speechSynthesis.speak(u); speechPrimed = true; } catch (e) {}
-  }
+  if ('speechSynthesis' in window) { try { speechSynthesis.getVoices(); } catch (e) {} } // load the list inside the tap; no extra utterance (it raced the first line)
 }
 /* v18: keep the iOS audio route warm for the whole workout so speech does not lose its first syllable while the
    output spins up after silence. A near-silent (-66 dB) low tone runs continuously through WebAudio from Start until
@@ -615,8 +626,8 @@ function warmAudio() {
 function coolAudio() { try { WARM.node && WARM.node.stop(); WARM.g && WARM.g.disconnect(); } catch (e) {} WARM.node = null; WARM.g = null; }
 function stopKeepAlive() { try { silentEl && silentEl.pause(); } catch (e) {} coolAudio(); }
 const playerOpen = () => { const el = document.getElementById('player'); return !!el && !el.classList.contains('hidden'); };
-['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => { resumeAudio(); if (playerOpen()) warmAudio(); if (silentEl && silentEl.paused && playerOpen() && !speaking()) silentEl.play().catch(() => {}); }, { capture: true, passive: true }));
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { resumeAudio(); if (playerOpen() && silentEl && !speaking()) silentEl.play().catch(() => {}); } });
+['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => { resumeAudio(); if (playerOpen()) warmAudio(); if (!settings.voice && silentEl && silentEl.paused && playerOpen() && !speaking()) silentEl.play().catch(() => {}); }, { capture: true, passive: true }));
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { resumeAudio(); if (!settings.voice && playerOpen() && silentEl && !speaking()) silentEl.play().catch(() => {}); } });
 // ---- Keep the screen awake during a workout ----
 // Screen Wake Lock API first; if it's missing or refused (older iOS, some home-screen PWAs), fall back to a tiny
 // muted, looping, inline video (the NoSleep.js trick). The lock is dropped by the OS when the page is hidden, so it is
@@ -626,6 +637,7 @@ const WAKE = { mode: 'off', err: null };
 let wakeVid = null;
 const wakeWanted = () => settings.keepAwake !== false && playerOpen();
 function videoWake() {
+  if (settings.voice) return; // a playing <video> pauses speechSynthesis for the rest of the session on iOS
   if (!wakeVid) {
     wakeVid = document.createElement('video');
     wakeVid.setAttribute('playsinline', ''); wakeVid.setAttribute('webkit-playsinline', ''); wakeVid.setAttribute('muted', '');
@@ -640,12 +652,12 @@ function videoWake() {
 function acquireWake() {
   if (!wakeWanted()) return;
   if (P.wake && !P.wake.released) return;            // already held
-  if (!('wakeLock' in navigator) || !navigator.wakeLock) { videoWake(); return; } // synchronous: stays inside the tap on iOS
+  if (!('wakeLock' in navigator) || !navigator.wakeLock) { if (!settings.voice) videoWake(); return; } // synchronous: stays inside the tap on iOS
   navigator.wakeLock.request('screen').then(l => {
     if (!wakeWanted()) { l.release().catch(() => {}); return; }
     P.wake = l; WAKE.mode = 'wakelock'; WAKE.err = null; if (wakeVid) wakeVid.pause();
     l.addEventListener('release', () => { if (P.wake === l) { P.wake = null; if (WAKE.mode === 'wakelock') WAKE.mode = 'released'; } });
-  }).catch(e => { WAKE.err = e && e.name; videoWake(); });
+  }).catch(e => { WAKE.err = e && e.name; if (!settings.voice) videoWake(); });
 }
 function releaseWake() {
   const l = P.wake; P.wake = null; try { l && l.release().catch(() => {}); } catch (e) {}
@@ -653,7 +665,7 @@ function releaseWake() {
   WAKE.mode = 'off';
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && playerOpen()) acquireWake(); });
-['touchend', 'click'].forEach(t => document.addEventListener(t, () => { if (playerOpen() && WAKE.mode === 'video' && wakeVid && wakeVid.paused && wakeWanted() && !speaking()) { wakeVid.muted = true; wakeVid.play().catch(() => {}); } }, { capture: true, passive: true }));
+['touchend', 'click'].forEach(t => document.addEventListener(t, () => { if (settings.voice || !playerOpen() || WAKE.mode !== 'video' || !wakeVid || !wakeVid.paused || !wakeWanted() || speaking()) return; wakeVid.muted = true; wakeVid.play().catch(() => {}); }, { capture: true, passive: true }));
 function beepFile(freq) {
   const f = BEEP_FILES.reduce((a, b) => Math.abs(b - freq) < Math.abs(a - freq) ? b : a);
   try { let el = beepEls[f]; if (!el) { el = beepEls[f] = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); } el.muted = false; el.currentTime = 0; const pr = el.play(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {}
@@ -661,10 +673,10 @@ function beepFile(freq) {
 let lastBeepPath = '';
 function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false, overSpeech = false) {
   if (!settings.beeps && !force) return;
-  // Countdown ticks are skipped during speech. Other beeps wait, but that wait expires after 1.5 s,
-  // so a halfway side-switch beep was silent whenever a form cue was still talking. overSpeech plays now.
-  if (!overSpeech && speaking() && droppable) { lastBeepPath = 'dropped'; return; }
-  if (!overSpeech && speaking()) { SPQ.heldBeep = { args: [freq, ms, vol, force, false, overSpeech], at: Date.now() }; lastBeepPath = 'held'; return; }
+  // Countdown ticks are skipped while words are queued or playing. Other beeps wait
+  // and play after the line (they are not dropped on a timer, and they do not play over it).
+  if (!overSpeech && speechPending() && droppable) { lastBeepPath = 'dropped'; return; }
+  if (!overSpeech && speechPending()) { SPQ.heldBeep = { args: [freq, ms, vol, force, false, overSpeech], at: Date.now() }; lastBeepPath = 'held'; return; }
   SPQ.beepUntil = Math.max(SPQ.beepUntil, Date.now() + ms + 40);
   const c = audioCtx();
   if (c && c.state === 'running') {
@@ -676,76 +688,156 @@ function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false
       return;
     } catch (e) {}
   }
+  if (settings.voice && playerOpen()) { lastBeepPath = 'skipped-html'; return; } // an <audio> beep pauses speech for the rest of the workout
   resumeAudio(); beepFile(freq); lastBeepPath = 'html';
 }
-/* Speech queue (v17, iOS cut-off fix). ONE queue, one utterance at a time; nothing ever cancel()s a sentence that is
-   playing except ending the workout or an explicit ⏭ Skip. A new step only DROPS still-queued, not-yet-started prompts
-   (stale ones); low-priority prompts (form cues, "10 seconds") are dropped rather than queued behind others, and are not
-   started inside a step's final 4 s (countdown beeps). Beeps never play over speech: step beeps are held until it ends,
-   countdown beeps are skipped. Keep-alive audio / wake video are never (re)started while speaking. A per-utterance
-   watchdog (400 ms + 90 ms/char, cap 10 s) advances the queue if iOS never fires onend. Utterances stay referenced
-   until they finish (iOS garbage-collects them mid-sentence otherwise). */
-const SPQ = { q: [], cur: null, t0: 0, keep: [], heldBeep: null, beepUntil: 0, notBefore: 0, timer: null, log: [], cancels: 0 };
+/* Speech (v25). One chain, one utterance at a time.
+   On iOS Safari a speak() from the workout timer is ignored (no onstart) unless it runs
+   inside the Start tap or inside onend of an utterance that itself started there.
+   After a line ends, paused stays true and the next speak() sits in the queue forever.
+   resume() in the SAME turn as speak() drops that utterance — v24 did exactly that, so
+   names after the first one stayed silent. An <audio> element (silence loop, beep file,
+   wake video) also pauses the engine and leaves it paused.
+   The Start tap speaks the first line directly. Every later line is spoken from the
+   previous onend. Between lines a paused one-word hold keeps the chain alive and is
+   not heard. resume() is only scheduled on a later turn, to release a hold or a line
+   iOS queued while paused. Beeps play after the words. Utterances stay referenced so
+   iOS does not collect them mid-sentence. */
+const SPQ = { q: [], cur: null, t0: 0, keep: [], heldBeep: null, beepUntil: 0, notBefore: 0, timer: null, log: [], cancels: 0, gestureUntil: 0, voice: null };
 const speaking = () => !!SPQ.cur;
-// Lead-in: a short leading pause spoken first so any clipped start is silence, plus a delay after resume().
-const SPEECH_LEAD = { text: ', ', resumeDelayMs: 200 };
-const speechCap = text => Math.min(10000, 400 + 90 * String(text).length);
+const audible = () => !!(SPQ.cur && !SPQ.cur.hold);
+const speechPending = () => audible() || SPQ.q.some(x => !x.low);
+const SPEECH_LEAD = { text: ', ', resumeDelayMs: 0 };
+const speechCap = text => Math.min(12000, 800 + 90 * String(text).length);
+function pickVoice() {
+  try {
+    const vs = ('speechSynthesis' in window) ? (speechSynthesis.getVoices() || []) : [];
+    SPQ.voice = vs.find(v => v.localService && /^en/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null;
+  } catch (e) { SPQ.voice = null; }
+  return SPQ.voice;
+}
+if ('speechSynthesis' in window) { try { speechSynthesis.getVoices(); speechSynthesis.addEventListener('voiceschanged', pickVoice); } catch (e) {} }
+function quietMedia() {
+  try { if (silentEl && !silentEl.paused) silentEl.pause(); } catch (e) {}
+  try { if (wakeVid && !wakeVid.paused) wakeVid.pause(); } catch (e) {}
+  try { Object.values(beepEls).forEach(el => { if (el && !el.paused) el.pause(); }); } catch (e) {}
+}
 function say(text, opt = false) {
   const o = typeof opt === 'object' ? opt : { force: !!opt }, low = o.prio === 'low';
   if ((!settings.voice && !o.force) || !('speechSynthesis' in window) || !text) return false;
-  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && SPQ.cur.raw === text)) return false; // no duplicates
-  // Form cues used to be dropped here whenever the exercise name was still speaking, and cueSaid
-  // was set anyway, so the pointer was never tried again. Queue them behind the name instead.
-  SPQ.q.push({ text, low, step: P.i, at: Date.now() });
-  if (SPQ.q.length > 5) { const drop = SPQ.q.findIndex(x => x.low); if (drop >= 0) SPQ.q.splice(drop, 1); else SPQ.q.shift(); }
-  pumpSpeech();
+  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && !SPQ.cur.hold && SPQ.cur.raw === text)) return false;
+  SPQ.q.push({ text, low, step: P.i, at: Date.now(), tries: o.tries || 0 });
+  if (SPQ.q.length > 6) { const drop = SPQ.q.findIndex(x => x.low); if (drop >= 0) SPQ.q.splice(drop, 1); else SPQ.q.shift(); }
+  if (SPQ.cur && SPQ.cur.hold) releaseHold();
+  else if (!SPQ.cur) pumpSpeech();
   return true;
 }
-function stepLeft() { return playerOpen() && !P.paused && P.end ? (P.end - Date.now()) / 1000 : 99; }
+function releaseHold() {
+  const u = SPQ.cur;
+  if (!u || !u.hold) return;
+  u.releaseAsked = true;
+  if (!u.parked) return; // onstart parks first, then releases on a later turn than speak()
+  setTimeout(() => {
+    if (SPQ.cur !== u) return;
+    try { speechSynthesis.resume(); } catch (e) {}
+    // If resume never finishes the hold, cancel it. onerror/onend is still inside the
+    // speech callback, so the queued name or cue is spoken on that chain — not from a timer.
+    setTimeout(() => {
+      if (SPQ.cur !== u || !SPQ.q.length) return;
+      try { speechSynthesis.cancel(); } catch (e) {}
+      setTimeout(() => { if (SPQ.cur === u) finishUtterance(u); }, 180);
+    }, 500);
+  }, 0);
+}
 function pumpSpeech() {
   clearTimeout(SPQ.timer); SPQ.timer = null;
   if (SPQ.cur || !SPQ.q.length) return;
-  const wait = Math.max(SPQ.beepUntil, SPQ.notBefore) - Date.now();
-  if (wait > 0) { SPQ.timer = setTimeout(pumpSpeech, wait + 10); return; } // let a beep finish first
+  const wait = SPQ.notBefore - Date.now();
+  if (wait > 0 && Date.now() > (SPQ.gestureUntil || 0)) { SPQ.timer = setTimeout(pumpSpeech, wait + 5); return; }
   const it = SPQ.q.shift();
-  if (it.low && it.step !== P.i) return pumpSpeech(); // step changed before a "10 seconds" line started
-  const text = it.text;
+  if (it.low && it.step !== P.i) return pumpSpeech();
+  speakNow(it.text, false, it.tries || 0);
+}
+function speakNow(text, hold, tries) {
+  if (!('speechSynthesis' in window)) return;
+  quietMedia();
+  let u;
   try {
-    // iOS leaves speechSynthesis.paused true after an utterance ends. speak() while paused
-    // queues the line and never starts it — so everything after the first name was silent.
-    // v18 resumed BEFORE speak() and then refused to speak while paused stayed true.
-    // Order that works: speak() first (queues the line), then resume() to release it.
-    if (playerOpen()) warmAudio();
-    const u = new SpeechSynthesisUtterance(SPEECH_LEAD.text + text); u.raw = text; u.rate = 1.05; u.volume = 1; u.lang = 'en-US';
-    const done = () => { if (SPQ.cur !== u) return; SPQ.cur = null; SPQ.keep = SPQ.keep.filter(x => x !== u); SPQ.log.push({ text, end: Date.now() }); afterSpeech(); };
-    u.onstart = () => { u.started = true; };
-    u.onend = done; u.onerror = done;
+    u = new SpeechSynthesisUtterance(hold ? ' ' : (SPEECH_LEAD.text + text));
+    u.raw = hold ? '' : text; u.hold = !!hold; u.tries = tries || 0; u.rate = hold ? 1.5 : 1.02; u.volume = 1; u.lang = 'en-US';
+    try { const v = pickVoice(); if (v) u.voice = v; } catch (e) {}
+    u.onstart = () => {
+      u.started = true;
+      if (!u.hold) return;
+      try { speechSynthesis.pause(); } catch (e) {}
+      u.parked = true; u.parkedAt = Date.now();
+      if (u.releaseAsked || SPQ.q.length) releaseHold();
+    };
+    u.onend = () => finishUtterance(u);
+    u.onerror = () => finishUtterance(u);
     SPQ.cur = u; SPQ.t0 = Date.now(); SPQ.keep.push(u); if (SPQ.keep.length > 8) SPQ.keep.shift();
     speechSynthesis.speak(u);
-    if (speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (e) {} }
-    const cap = speechCap(text) + 300;
-    const wd = () => {
-      if (SPQ.cur !== u) return;
-      if (!u.started && speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (e) {} }
-      if (Date.now() - SPQ.t0 > cap) done(); else setTimeout(wd, 250);
-    };
+    // Later turn only. resume() before this function returns drops the utterance on iOS.
+    setTimeout(() => { if (SPQ.cur === u && !u.started && speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (e) {} } }, 0);
+    armWatch(u);
+  } catch (e) { if (u && SPQ.cur === u) SPQ.cur = null; }
+}
+function armWatch(u) {
+  const cap = u.hold ? 2000 : speechCap(u.raw || '') + 600;
+  const wd = () => {
+    if (SPQ.cur !== u) return;
+    if (u.hold && u.parked && !u.releaseAsked && !SPQ.q.length) return;
+    if (!u.started && speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (e) {} }
+    if (!u.started && Date.now() - SPQ.t0 > 700) {
+      const text = u.raw, tries = (u.tries || 0) + 1;
+      SPQ.cur = null;
+      try { speechSynthesis.cancel(); SPQ.cancels++; } catch (e) {}
+      if (text && tries <= 2) SPQ.q.unshift({ text, low: false, step: P.i, at: Date.now(), tries });
+      SPQ.notBefore = 0;
+      setTimeout(() => { if (!SPQ.cur) pumpSpeech(); }, 0);
+      return;
+    }
+    if (!u.hold && u.started && Date.now() - SPQ.t0 > cap) { finishUtterance(u); return; }
     setTimeout(wd, 250);
-  } catch (e) { SPQ.cur = null; }
+  };
+  setTimeout(wd, 280);
 }
-function afterSpeech() {
-  if (SPQ.heldBeep) { const b = SPQ.heldBeep; SPQ.heldBeep = null; beep(...b.args); } // play after the words, don't drop it
-  pumpSpeech();
-  if (!speaking() && playerOpen() && silentEl && silentEl.paused) silentEl.play().catch(() => {}); // keep-alive only between utterances
+function finishUtterance(u) {
+  if (!u || u.done || SPQ.cur !== u) return;
+  u.done = true; SPQ.cur = null; SPQ.keep = SPQ.keep.filter(x => x !== u);
+  if (!u.hold && u.raw) SPQ.log.push({ text: u.raw, end: Date.now() });
+  drainSpeech();
 }
-// New step: drop queued prompts that have not started yet. The sentence already playing is allowed to finish.
+function drainSpeech() {
+  if (SPQ.cur) return;
+  if (SPQ.q.length) { pumpSpeech(); return; }
+  flushBeep();
+  if (settings.voice && playerOpen() && !P.paused) startHold();
+}
+function startHold() {
+  if (SPQ.cur || SPQ.q.length || !settings.voice || !playerOpen() || P.paused) return;
+  speakNow('', true, 0);
+}
+function flushBeep() {
+  if (!SPQ.heldBeep || speechPending()) return;
+  const b = SPQ.heldBeep; SPQ.heldBeep = null; beep(...b.args);
+}
 function speechNewStep() { SPQ.q = []; SPQ.heldBeep = null; }
-// Hard stop: only for ending the workout or an explicit Skip.
 function speechStop() {
   SPQ.q = []; SPQ.heldBeep = null; clearTimeout(SPQ.timer); SPQ.timer = null;
+  const u = SPQ.cur; SPQ.cur = null;
   if (!('speechSynthesis' in window)) return;
-  const active = SPQ.cur || speechSynthesis.speaking || speechSynthesis.pending; SPQ.cur = null;
-  if (active) { try { speechSynthesis.cancel(); SPQ.cancels++; } catch (e) {} SPQ.notBefore = Date.now() + 150; }
+  if (u || speechSynthesis.speaking || speechSynthesis.pending) {
+    try { speechSynthesis.cancel(); SPQ.cancels++; } catch (e) {}
+    if (Date.now() > (SPQ.gestureUntil || 0)) SPQ.notBefore = Date.now() + 160;
+  }
 }
+// Any tap re-opens the iOS gesture window and restarts the chain if it died.
+document.addEventListener('pointerdown', () => {
+  SPQ.gestureUntil = Date.now() + 1200;
+  if (!playerOpen() || !settings.voice || SPQ.cur || P.paused) return;
+  if (SPQ.q.length) pumpSpeech(); else if (P.steps && P.steps.length) startHold();
+}, true);
 
 /* ---------- player ---------- */
 const P = { sets: {}, steps: [], i: 0, end: 0, left: 0, paused: false, timer: null, started: 0, lastBeep: -1, wake: null, halfSaid: false, cueOff: {}, cueSaid: 0, tk: '' };
@@ -764,13 +856,14 @@ function cuesFor(ex, round = 1) {
   return c.length > 1 ? [c[b % c.length], c[(b + 1) % c.length]] : [c[0]];
 }
 async function startWorkout() {
-  unlockAudio(); // must run synchronously in the tap, before any await (iOS)
+  SPQ.gestureUntil = Date.now() + 1500;
+  unlockAudio(); // must run synchronously in the tap, before any await (iOS). Does not speak.
   warmAudio();
   P.steps = buildSteps(today); P.i = 0; P.started = Date.now(); P.sets = {}; P.paused = false; P.cueOff = assignCueOffsets(P.steps);
   P.ovh = ovhPerSet(); P.est = estSec(today, P.ovh); P.tl = []; P.prevI = null; P.stepT0 = 0; P.maxI = 0; P.pausedMs = 0; P.pauseT = 0; P.timingSaved = false;
   $('#player').classList.remove('hidden');
-  acquireWake(); // keep the screen on (Wake Lock API, or a muted looping video fallback)
-  enterStep();
+  enterStep(); // first announcement is inside this tap, before the wake video can take the audio session
+  acquireWake(); // keep the screen on (Wake Lock API; the video fallback stays off while voice is on)
   clearInterval(P.timer); P.timer = setInterval(tick, 200);
 }
 function logStepFor(i) { const s = P.steps[i], pw = P.steps[i - 1]; if (!s || s.type !== 'rest' || !pw || pw.type !== 'work') return null; const b = today.blocks.find(b => b.name === pw.block); return b && loggable(pw.ex, b.kind) ? pw : null; }
@@ -873,8 +966,10 @@ function enterStep() {
   P.end = Date.now() + s.dur * 1000; P.left = s.dur; P.lastBeep = -1; P.halfSaid = false; P.sideSaid = false; P.cueSaid = 0; P.tk = '';
   P.setupSaid = !(s.setup && s.restPart); // a combined rest+setup step announces "Set up" when the prep window starts
   P.logPrev = false;
-  if (s.type === 'work') { beep(1200, 350); say(perSide(s.ex) ? s.ex.name + '. Both sides.' : s.ex.name); }
-  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } beep(500, 250); say(s.transition ? (s.next ? 'Next, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? (s.restPart ? 'Rest.' + (s.next ? ' Next group, ' + s.next.ex.name : '') : 'Set up. ' + (s.next ? 'Next, ' + s.next.ex.name : '')) : 'Rest.' + (s.next ? ' Next, ' + s.next.ex.name : '')); }
+  // Speak first, then beep. The beep waits in SPQ.heldBeep until the words finish,
+  // and the name is not delayed onto a timer (that left the Start tap and iOS dropped it).
+  if (s.type === 'work') { say(perSide(s.ex) ? s.ex.name + '. Both sides.' : s.ex.name); beep(1200, 350); }
+  else if (s.type === 'rest') { const pw = logStepFor(P.i); if (pw && !P.sets[setKey(pw)] && P.skipped !== P.i - 1) { const v = setPrefill(pw); recordSet(pw, v.w, v.r, true); } say(s.transition ? (s.next ? 'Next, ' + s.next.ex.name : '') : s.sw ? 'Switch. ' + (s.next ? s.next.ex.name : '') : s.setup ? (s.restPart ? 'Rest.' + (s.next ? ' Next group, ' + s.next.ex.name : '') : 'Set up. ' + (s.next ? 'Next, ' + s.next.ex.name : '')) : 'Rest.' + (s.next ? ' Next, ' + s.next.ex.name : '')); beep(500, 250); }
   else if (s.type === 'prep') say('Get ready. First up, ' + s.ex.name);
   render();
 }
@@ -885,15 +980,15 @@ function tick() {
   const sec = Math.ceil(left);
   if (sec <= 3 && sec >= 1 && sec !== P.lastBeep) { P.lastBeep = sec; beep(880, 110, 0.25, false, true); }
   if (s.type === 'work' && switchesSides(s.ex) && !P.sideSaid && (s.dur - left) >= s.dur / 2) {
-    P.sideSaid = true; beep(1000, 160, 0.35); say('Switch sides'); // beep waits until the words finish
+    P.sideSaid = true; say('Switch sides'); beep(1000, 160, 0.35); // beep waits until the words finish
   }
-  if (s.setup && s.restPart && !P.setupSaid && left <= s.setupPart) { P.setupSaid = true; beep(700, 140); say(s.next ? 'Set up. Next, ' + s.next.ex.name : 'Set up.'); }
+  if (s.setup && s.restPart && !P.setupSaid && left <= s.setupPart) { P.setupSaid = true; say(s.next ? 'Set up. Next, ' + s.next.ex.name : 'Set up.'); beep(700, 140); }
   if (s.type === 'work') { // speak a form cue a few seconds in, and a second one past the midpoint on longer sets
     const el = s.dur - left, cs = cuesFor(s.ex, s.round), sw = perSide(s.ex);
     if (P.cueSaid === 0 && cs[0] && el >= 4 && left > 4) { if (say(cs[0])) P.cueSaid = 1; }
     else if (P.cueSaid === 1 && cs[1] && s.dur >= 30 && el >= s.dur / 2 + (sw ? 3 : 0) && left > 5) { if (say(cs[1])) P.cueSaid = 2; }
   }
-  if (s.type === 'rest' && !s.transition && s.dur >= 20 && !P.halfSaid && left <= 10 && left > 9) { P.halfSaid = true; beep(700, 120); say('10 seconds', { prio: 'low' }); }
+  if (s.type === 'rest' && !s.transition && s.dur >= 20 && !P.halfSaid && left <= 10 && left > 9) { P.halfSaid = true; say('10 seconds', { prio: 'low' }); beep(700, 120); }
   if (left <= 0) { P.i++; enterStep(); return; }
   renderTime();
 }
@@ -1249,6 +1344,6 @@ async function boot() {
   LIB = await (await fetch('exercises.json')).json();
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
-  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, switchesSides, highEnergy, pairConflict, dayIndexFromHistory, recordCompletion, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, openSwap, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
+  window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, enterStep, tick, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, switchesSides, highEnergy, pairConflict, dayIndexFromHistory, recordCompletion, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, openSwap, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };
 }
 boot().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<pre style="color:#f66">${e}</pre>`); console.error(e); });
