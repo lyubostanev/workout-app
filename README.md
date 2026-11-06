@@ -38,6 +38,10 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
 
+## v26
+- Ending a workout before the last step asks **Save** or **Discard**. Save keeps the sets and weights already logged, writes a partial history row, and marks that day done for the cycle. Discard throws the session away (a test run): no history row, and the weights logged during it are removed, so the day stays up next. Finishing the whole workout still opens the same “Save session” screen.
+- SW cache gymcoach-v26.
+
 ## v25
 - Speech is one chain started inside the Start tap. Later names and form cues are spoken from the previous line's end, not from the workout timer (iOS ignores those). A paused hold keeps that chain alive between lines. resume() is never called in the same turn as speak() — that dropped the utterance and is why v24 still only said the first name. The silence loop, beep files, and wake video stay off while voice is on, because an `<audio>`/`<video>` element pauses speech for the rest of the session. Beeps play after the words.
 - Main blocks reshuffle each new session of that day. The old draw was smaller than the "best muscle + heavier exercise" bonus, and it barely noticed the previous Push once Pull and Legs had been logged, so Block B came back the same. Repeats lose to another exercise that fits the slot, and the block order rotates. Pairing rules are unchanged. Warm-up and cool-down stay the fixed prep lists.
