@@ -38,6 +38,10 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
 
+## v27
+- Step Platform Quick Steps is removed. It is not programmed, not a finisher, not a swap, and not in the library.
+- SW cache gymcoach-v27.
+
 ## v26
 - Ending a workout before the last step asks **Save** or **Discard**. Save keeps the sets and weights already logged, writes a partial history row, and marks that day done for the cycle. Discard throws the session away (a test run): no history row, and the weights logged during it are removed, so the day stays up next. Finishing the whole workout still opens the same “Save session” screen.
 - SW cache gymcoach-v26.
@@ -61,7 +65,7 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - Between every block, including after the warm-up: 60 s rest then at least 30 s setup, and never under 90 s total. The warm-up used to hand off after only the 30 s setup.
 - Rest after a round inside a block is 60 s. A heavier exercise’s own rest (75 s) or a 30 s library override no longer changes that minute.
 - Every left/right move gets the halfway beep and “Switch sides”, including ones whose cue only says “then switch”. The beep plays at the midpoint even if a form cue is still speaking (that hold used to drop it).
-- A finisher cannot pair two max-effort moves (burpee + thruster, and the other full-body / sprint / jump finishers). One of those goes with a lighter conditioner (quick steps or renegade row).
+- A finisher cannot pair two max-effort moves (burpee + thruster, and the other full-body / sprint / jump finishers). One of those goes with a lighter conditioner (renegade row or mountain climber).
 - Finishing a workout marks that split day done immediately, so the home picker moves to the days still left in the cycle. “Legs” counts as Legs & Core. After all three days, the cycle starts over.
 - SW cache gymcoach-v22.
 

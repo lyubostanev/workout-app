@@ -2004,7 +2004,6 @@
   ],
   "imageSource": "free-exercise-db:Smith_Machine_Calf_Raise",
   "alternates": [
-   "step-runs",
    "db-step-up"
   ],
   "reps": [
@@ -3616,44 +3615,9 @@
   "demoTitle": "Correct Rowing Machine Technique, Improve Your Rowing  | Concept2",
   "demoChannel": "concept2usa",
   "alternates": [
-   "step-runs",
    "mountain-climber",
+   "db-renegade-row",
    "cat-cow"
-  ],
-  "timed": true,
-  "group": "Conditioning"
- },
- {
-  "id": "step-runs",
-  "name": "Step Platform Quick Steps",
-  "equipment": [
-   "step"
-  ],
-  "category": "conditioning",
-  "muscles": [
-   "conditioning",
-   "calves"
-  ],
-  "work": 30,
-  "rest": 20,
-  "cue": "",
-  "unilateral": false,
-  "image": [
-   "img/step-runs-0.webp",
-   "img/step-runs-1.webp"
-  ],
-  "formCues": [
-   "Quick, light feet on the step",
-   "Stay on the balls of your feet",
-   "Pump the arms",
-   "Upright posture, no hunching",
-   "Whole foot lands on the step"
-  ],
-  "imageSource": "generated",
-  "alternates": [
-   "mountain-climber",
-   "burpee",
-   "row-sprint"
   ],
   "timed": true,
   "group": "Conditioning"
@@ -3806,7 +3770,7 @@
   ],
   "imageSource": "free-exercise-db:Mountain_Climbers",
   "alternates": [
-   "step-runs",
+   "kb-thruster",
    "db-renegade-row",
    "burpee"
   ],
@@ -3846,7 +3810,7 @@
   "alternates": [
    "kb-thruster",
    "mountain-climber",
-   "step-runs"
+   "burpee"
   ],
   "timed": true,
   "group": "Conditioning"
