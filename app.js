@@ -1,15 +1,24 @@
 'use strict';
 /* Home Gym Coach – PWA prototype. All data in localStorage. */
 const $ = s => document.querySelector(s);
+// A second home-screen app (wife/index.html) sets window.GYM_PROFILE before this file loads.
+// With no profile, keys, assets, defaults, and the 3-day split stay exactly as they are.
+const PROFILE = window.GYM_PROFILE || null;
+const STORE = (PROFILE && PROFILE.store) || 'gc';
+const sk = k => STORE === 'gc' ? k : STORE + k.slice(2); // gc_history -> her_history
+const ASSET = (PROFILE && PROFILE.assetBase) || '';
+const asset = p => ASSET + p;
+const BANNED = new Set((PROFILE && PROFILE.banned) || []);
 const LS = {
-  get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
-  set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+  get: (k, d) => { try { return JSON.parse(localStorage.getItem(sk(k)) ?? d); } catch { return d; } },
+  set: (k, v) => localStorage.setItem(sk(k), JSON.stringify(v)),
+  remove: k => localStorage.removeItem(sk(k)),
 };
 // Default plan: 3-day rotating split Push -> Pull -> Legs & Core (whole body covered across the 3 days). TRX and rower are OFF by default (rower malfunctioning).
 // Kettlebells on hand: 2 x 25 lb + 1 x 35 lb (suggestions snap to these). No tempo counting (removed).
-const DEFAULTS = { daysPerWeek: 3, minutes: 45, level: 'intermediate', voice: true, beeps: true,
+const DEFAULTS = Object.assign({ daysPerWeek: 3, minutes: 45, level: 'intermediate', voice: true, beeps: true,
   excluded: [], avoided: [], warmup: true, cooldown: true, trx: false, rower: false, kettlebells: [25, 25, 35],
-  restSec: 60, restOverrides: {}, keepAwake: true, switchSec: 10, setupSec: 30 };  // restSec = 'Rest between rounds' (after both exercises of a pair); switchSec = A->B switch; setupSec = extra time between groups; restOverrides = per-exercise rest {id: seconds}
+  restSec: 60, restOverrides: {}, keepAwake: true, switchSec: 10, setupSec: 30 }, PROFILE && PROFILE.defaults);  // restSec = 'Rest between rounds' (after both exercises of a pair); switchSec = A->B switch; setupSec = extra time between groups; restOverrides = per-exercise rest {id: seconds}
 let settings = Object.assign({}, DEFAULTS, LS.get('gc_settings', {}));
 delete settings.tempo; // tempo feature removed entirely
 if (!Array.isArray(settings.avoided)) settings.avoided = [];
@@ -18,6 +27,7 @@ if (!Array.isArray(settings.kettlebells) || !settings.kettlebells.length) settin
 // Round rest is 60 s. Older saves (and the old "core gets half, min 30" rule) left this at 30.
 if (!(+settings.restSec >= 60)) { settings.restSec = 60; LS.set('gc_settings', settings); }
 if (!(+settings.setupSec >= 15)) { settings.setupSec = 30; LS.set('gc_settings', settings); }
+if (PROFILE && PROFILE.days && settings.daysPerWeek !== PROFILE.days) { settings.daysPerWeek = PROFILE.days; LS.set('gc_settings', settings); }
 let history = LS.get('gc_history', []);
 let LIB = [];
 let today = null;     // generated workout
@@ -58,6 +68,10 @@ const SPLITS = {
   ],
 };
 const LEVEL = { beginner: { rounds: 2, w: 0.85, r: 1.25 }, intermediate: { rounds: 3, w: 1, r: 1 }, advanced: { rounds: 4, w: 1.1, r: 0.85 } };
+function activeSplit() {
+  if (PROFILE && PROFILE.splits) return PROFILE.splits;
+  return SPLITS[settings.daysPerWeek] || SPLITS[4];
+}
 
 /* ---------- seeded RNG ---------- */
 function rng(seedStr) {
@@ -70,7 +84,7 @@ const dateKey = d => d.toLocaleDateString('en-CA'); // YYYY-MM-DD local
 /* ---------- generator ---------- */
 // Equipment switches: TRX and Rower have dedicated toggles (default OFF); other gear via the equipment list.
 const switchedOff = e => (!settings.trx && e.equipment.includes('TRX')) || (!settings.rower && e.equipment.includes('rower'));
-function available() { return LIB.filter(e => !switchedOff(e) && !settings.excluded.some(x => e.equipment.includes(x))); }
+function available() { return LIB.filter(e => !BANNED.has(e.id) && !switchedOff(e) && !settings.excluded.some(x => e.equipment.includes(x))); }
 // Generation pool: equipment you have, minus exercises you've marked "avoid" (injury).
 function genPool() { return available().filter(e => !settings.avoided.includes(e.id)); }
 const byId = id => LIB.find(e => e.id === id);
@@ -90,7 +104,7 @@ function dayIndexFromHistory(h, split) {
 /* Training cycle: each day of the split once, in any order. Derived from history (day name / dayIndex; old entries
    without a day count as "next in order"). When every day is done the cycle resets. */
 function cycleState() {
-  const split = SPLITS[settings.daysPerWeek] || SPLITS[4], n = split.length; let done = [], last = -1;
+  const split = activeSplit(), n = split.length; let done = [], last = -1;
   history.filter(h => h.split == null || h.split === settings.daysPerWeek).forEach(h => {
     let i = dayIndexFromHistory(h, split);
     if (i < 0) { if (String(h.day || '').trim()) return; i = (last + 1) % n; }
@@ -104,13 +118,13 @@ function cycleState() {
 const pickSig = () => history.length + '|' + settings.daysPerWeek;
 let dayPick = LS.get('gc_daypick', null);
 function nextDayIndex() {
-  const n = (SPLITS[settings.daysPerWeek] || SPLITS[4]).length;
+  const n = activeSplit().length;
   if (dayPick && dayPick.sig === pickSig() && dayPick.di >= 0 && dayPick.di < n) return dayPick.di;
   return cycleState().next;
 }
 function pickDay(di, temp) {
   dayPick = { di, sig: pickSig() }; if (!temp) LS.set('gc_daypick', dayPick);
-  shuffleN = 0; localStorage.removeItem('gc_swaps'); today = generate(); return today;
+  shuffleN = 0; LS.remove('gc_swaps'); today = generate(); return today;
 }
 function lastPerf(id) {
   let hl = null, hd = 0;
@@ -327,7 +341,7 @@ function warmupFor(day) {
   return ['wu-arm-circles', 'cat-cow', 'wu-band-pull-apart', 'wu-scap-pushup', 'st-dyn-chest', 'st-childs-pose'];
 }
 function generate() {
-  const split = SPLITS[settings.daysPerWeek] || SPLITS[4];
+  const split = activeSplit();
   const di = nextDayIndex(); const day = split[di];
   // Same calendar day used to reproduce the same blocks: the random draw is only 0–1,
   // smaller than "primary muscle" (3) or the heavy-exercise bonus (0.6), and the old
@@ -354,7 +368,8 @@ function generate() {
       // 2.6 is larger than the random draw plus the heavy bonus, so a repeat loses to a
       // fresh exercise with the same muscle fit. The only calf raise (no other fit-3) stays.
       const alt = again.has(e.id) && c.some(o => o !== e && fit(o) >= f);
-      return f + R() + (preferHeavy && e.rest >= 60 ? 0.6 : 0) - (alt ? 2.6 : 0);
+      const db = (PROFILE && PROFILE.preferDbPress && e.category === 'push' && (e.equipment || []).includes('dumbbells') && /press/i.test(e.name)) ? 0.45 : 0;
+      return f + R() + (preferHeavy && e.rest >= 60 ? 0.6 : 0) - (alt ? 2.6 : 0) + db;
     };
     return c.map(e => ({ e, score: score(e) })).sort((a, b) => b.score - a.score);
   };
@@ -601,13 +616,13 @@ function unlockAudio() {
   const c = audioCtx();
   if (c) { try { resumeAudio(); const b = c.createBuffer(1, 1, 22050), src = c.createBufferSource(); src.buffer = b; src.connect(c.destination); src.start(0); } catch (e) {} }
   try {
-    if (!silentEl) { silentEl = new Audio('audio/silence.wav'); silentEl.loop = true; silentEl.setAttribute('playsinline', ''); silentEl.preload = 'auto'; }
+    if (!silentEl) { silentEl = new Audio(asset('audio/silence.wav')); silentEl.loop = true; silentEl.setAttribute('playsinline', ''); silentEl.preload = 'auto'; }
     // Playing this loop pauses speechSynthesis on iOS and leaves it paused, so later names never start.
     if (!settings.voice && !speaking() && silentEl.paused) { const pr = silentEl.play(); if (pr && pr.catch) pr.catch(() => {}); }
   } catch (e) {}
   if (!settings.voice && !speaking()) BEEP_FILES.forEach(f => { // prime the fallback beep elements inside the gesture
     try {
-      if (beepEls[f]) return; const el = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); el.preload = 'auto'; beepEls[f] = el;
+      if (beepEls[f]) return; const el = new Audio(asset('audio/beep' + f + '.wav')); el.setAttribute('playsinline', ''); el.preload = 'auto'; beepEls[f] = el;
       el.muted = true; const pr = el.play(); if (pr && pr.then) pr.then(() => { el.pause(); el.currentTime = 0; el.muted = false; }).catch(() => { el.muted = false; }); else el.muted = false;
     } catch (e) {}
   });
@@ -668,7 +683,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && pl
 ['touchend', 'click'].forEach(t => document.addEventListener(t, () => { if (settings.voice || !playerOpen() || WAKE.mode !== 'video' || !wakeVid || !wakeVid.paused || !wakeWanted() || speaking()) return; wakeVid.muted = true; wakeVid.play().catch(() => {}); }, { capture: true, passive: true }));
 function beepFile(freq) {
   const f = BEEP_FILES.reduce((a, b) => Math.abs(b - freq) < Math.abs(a - freq) ? b : a);
-  try { let el = beepEls[f]; if (!el) { el = beepEls[f] = new Audio('audio/beep' + f + '.wav'); el.setAttribute('playsinline', ''); } el.muted = false; el.currentTime = 0; const pr = el.play(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {}
+  try { let el = beepEls[f]; if (!el) { el = beepEls[f] = new Audio(asset('audio/beep' + f + '.wav')); el.setAttribute('playsinline', ''); } el.muted = false; el.currentTime = 0; const pr = el.play(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {}
 }
 let lastBeepPath = '';
 function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false, overSpeech = false) {
@@ -1130,7 +1145,7 @@ function savePartial() {
   history.push({ date: new Date().toISOString(), day: today.day, dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: mins, s: P.started, finished: false, partial: true,
     timing: timing ? { plannedSec: timing.plannedSec, actualSec: timing.actualSec, sets: timing.sets, estSec: timing.estSec } : undefined,
     exerciseIds: partialExerciseIds(), swaps: netSwaps(), swapTaps: (today.swaps || []).length, log, sets });
-  LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); localStorage.removeItem('gc_daypick'); dayPick = null; shuffleN = 0;
+  LS.set('gc_history', history); LS.remove('gc_swaps'); LS.remove('gc_daypick'); dayPick = null; shuffleN = 0;
   const dayName = today.day;
   stopPlayer(); today = generate(); renderToday();
   toast(dayName + ' saved. It counts for this cycle.');
@@ -1240,7 +1255,7 @@ function recordCompletion(mins) {
   history.push({ date: new Date().toISOString(), day: today.day, dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: mins, s: P.started, finished: true,
     timing: P.timingRec ? { plannedSec: P.timingRec.plannedSec, actualSec: P.timingRec.actualSec, sets: P.timingRec.sets, estSec: P.timingRec.estSec } : undefined,
     exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length, log: [], sets });
-  LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); localStorage.removeItem('gc_daypick'); dayPick = null; shuffleN = 0;
+  LS.set('gc_history', history); LS.remove('gc_swaps'); LS.remove('gc_daypick'); dayPick = null; shuffleN = 0;
   P.doneDay = today.day; P.doneIndex = today.dayIndex;
   P.doneSnap = { day: today.day, dayIndex: today.dayIndex, exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length };
   today = generate();
@@ -1270,7 +1285,7 @@ function saveSession(mins, log) {
   const ex = history.find(h => h.s === P.started && !h.skipped);
   if (ex) { ex.minutes = mins; ex.log = log; ex.sets = sets; if (timing) ex.timing = timing; }
   else { const snap = P.doneSnap || { day: today.day, dayIndex: today.dayIndex, exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length }; history.push({ date: new Date().toISOString(), day: snap.day, dayIndex: snap.dayIndex, split: settings.daysPerWeek, minutes: mins, s: P.started, finished: true, timing, exerciseIds: snap.exerciseIds, swaps: snap.swaps, swapTaps: snap.swapTaps, log, sets }); }
-  LS.set('gc_history', history); localStorage.removeItem('gc_swaps'); localStorage.removeItem('gc_daypick'); dayPick = null; shuffleN = 0; today = generate();
+  LS.set('gc_history', history); LS.remove('gc_swaps'); LS.remove('gc_daypick'); dayPick = null; shuffleN = 0; today = generate();
 }
 
 /* ---------- exercise preview (pre-workout overview): big start/end images + details, never starts the workout ---------- */
@@ -1329,7 +1344,7 @@ function closePreview(now) {
 
 /* ---------- views ---------- */
 function renderToday() {
-  const w = today; const split = SPLITS[settings.daysPerWeek] || SPLITS[4], cy = cycleState();
+  const w = today; const split = activeSplit(), cy = cycleState();
   const doneToday = history.some(h => dateKey(new Date(h.date)) === dateKey(new Date()));
   $('#title').textContent = 'Today'; $('#sub').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
   $('#tab-today').innerHTML = `
@@ -1354,7 +1369,7 @@ function renderToday() {
   $('#tab-today').querySelectorAll('button.swap').forEach(b => longPress(b, () => { avoidAndSwap(+b.dataset.bi, +b.dataset.ii); renderToday(); }, () => openSwap(+b.dataset.bi, +b.dataset.ii)));
   $('#tab-today').querySelectorAll('button.avoid').forEach(b => b.onclick = () => { avoidOriginal(+b.dataset.bi, +b.dataset.ii); renderToday(); });
   $('#bShuffle').onclick = () => { shuffleN++; today = generate(); renderToday(); };
-  $('#bSkipDay').onclick = () => { history.push({ date: new Date().toISOString(), day: today.day + ' (skipped)', dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: 0, skipped: true, exerciseIds: [], log: [] }); LS.set('gc_history', history); dayPick = null; localStorage.removeItem('gc_daypick'); today = generate(); renderToday(); };
+  $('#bSkipDay').onclick = () => { history.push({ date: new Date().toISOString(), day: today.day + ' (skipped)', dayIndex: today.dayIndex, split: settings.daysPerWeek, minutes: 0, skipped: true, exerciseIds: [], log: [] }); LS.set('gc_history', history); dayPick = null; LS.remove('gc_daypick'); today = generate(); renderToday(); };
 }
 function renderHistory() {
   $('#title').textContent = 'History';
@@ -1382,8 +1397,12 @@ function renderSettings() {
   const eq = [...new Set(LIB.flatMap(e => e.equipment))].filter(x => x !== 'TRX' && x !== 'rower').sort();
   const kbTxt = (() => { const c = {}; settings.kettlebells.forEach(w => { c[w] = (c[w] || 0) + 1; }); return Object.keys(c).map(Number).sort((a, b) => a - b).map(w => `${c[w]} × ${w} lb`).join(', '); })();
   const nTrx = LIB.filter(e => e.equipment.includes('TRX')).length, nRow = LIB.filter(e => e.equipment.includes('rower')).length;
+  const dayCtrl = PROFILE && PROFILE.lockSplit
+    ? `<div class="mut" style="margin:4px 0 8px">Program · ${activeSplit().length}-day split</div>`
+    : `<label>Days per week</label><select id="sDays">${[3, 4, 5].map(d => `<option ${d == settings.daysPerWeek ? 'selected' : ''}>${d}</option>`).join('')}</select>`;
+  const rowNote = PROFILE ? 'on for this program · used in warm-ups, conditioning, and finishers' : "off while it's malfunctioning; warm-up is bodyweight/band prep";
   $('#tab-settings').innerHTML = `<div class="card">
-    <label>Days per week</label><select id="sDays">${[3, 4, 5].map(d => `<option ${d == settings.daysPerWeek ? 'selected' : ''}>${d}</option>`).join('')}</select>
+    ${dayCtrl}
     <label>Session length (minutes)</label><select id="sMin">${[30, 45, 60].map(d => `<option ${d == settings.minutes ? 'selected' : ''}>${d}</option>`).join('')}</select>
     <label>Switch time within pair (A → B)</label><select id="sSwitch">${[5, 10, 15, 20, 30].map(d => `<option value="${d}" ${d == clampSwitch() ? 'selected' : ''}>${d} s</option>`).join('')}</select>
     <label>Rest between rounds (after both exercises of a pair; then the setup time below)</label><select id="sRest">${[60, 75, 90, 120].map(d => `<option value="${d}" ${d == settings.restSec ? 'selected' : ''}>${d} s</option>`).join('')}</select>
@@ -1399,13 +1418,13 @@ function renderSettings() {
 </div>
     <h2>Equipment switches</h2><div class="card" id="eqToggles">
     <div class="chk"><input type="checkbox" id="sTrx" ${settings.trx ? 'checked' : ''}><span><b>TRX</b> <small class="mut">· ${nTrx} exercises · off = never programmed or offered as a swap</small></span></div>
-    <div class="chk"><input type="checkbox" id="sRower" ${settings.rower ? 'checked' : ''}><span><b>Rower</b> <small class="mut">· ${nRow} exercises · off while it's malfunctioning; warm-up is bodyweight/band prep</small></span></div>
+    <div class="chk"><input type="checkbox" id="sRower" ${settings.rower ? 'checked' : ''}><span><b>Rower</b> <small class="mut">· ${nRow} exercises · ${rowNote}</small></span></div>
     <label>Kettlebells (lb, one number per bell)</label><input id="sKb" value="${settings.kettlebells.join(', ')}"><div class="mut" style="font-size:13px" id="kbTxt">You have ${kbTxt}. Suggestions start from these. The set log still goes up past them (a 50 lb bell, and heavier).</div></div>
     <h2>Equipment available</h2><div class="card">${eq.map(x => `<div class="chk"><input type="checkbox" class="eq" value="${x}" ${settings.excluded.includes(x) ? '' : 'checked'}><span>${x}</span></div>`).join('')}</div>
     <h2>Avoided exercises</h2><div class="card" id="avoidList">${settings.avoided.length ? settings.avoided.map(id => `<div class="ex"><div style="flex:1">${(byId(id) || {}).name || id}<br><small>auto-replaced by ${((byId(id) || {}).alternates || []).filter(a => !settings.avoided.includes(a)).map(a => (byId(a) || {}).name).filter(Boolean).slice(0, 1).join('') || 'its backups'}</small></div><button class="unavoid" data-id="${id}">Un-avoid</button></div>`).join('') : '<div class="mut">None. Hold ⇄ Swap on an exercise to avoid it permanently.</div>'}</div>
     <button id="bReset" style="width:100%;margin:10px 0 20px">Clear history</button>`;
   const save = () => {
-    settings.daysPerWeek = +$('#sDays').value; settings.minutes = +$('#sMin').value; settings.level = $('#sLvl').value; settings.restSec = +$('#sRest').value; settings.switchSec = +$('#sSwitch').value; settings.setupSec = +$('#sSetup').value;
+    if ($('#sDays')) settings.daysPerWeek = +$('#sDays').value; settings.minutes = +$('#sMin').value; settings.level = $('#sLvl').value; settings.restSec = +$('#sRest').value; settings.switchSec = +$('#sSwitch').value; settings.setupSec = +$('#sSetup').value;
     settings.beeps = $('#sBeep').checked; settings.voice = $('#sVoice').checked; settings.warmup = $('#sWu').checked; settings.cooldown = $('#sCd').checked;
     settings.keepAwake = $('#sAwake').checked; if (settings.keepAwake) acquireWake(); else releaseWake();
     settings.trx = $('#sTrx').checked; settings.rower = $('#sRower').checked;
@@ -1429,7 +1448,8 @@ document.querySelectorAll('nav button').forEach(b => b.onclick = () => show(b.da
 
 /* ---------- boot ---------- */
 async function boot() {
-  LIB = await (await fetch('exercises.json')).json();
+  LIB = await (await fetch(asset('exercises.json'))).json();
+  if (ASSET) LIB.forEach(e => { if (e.image) e.image = e.image.map(p => asset(p)); });
   today = generate(); show('today');
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
   window.__gc = {doneEarly, WAKE, acquireWake, releaseWake, get wakeVid() { return wakeVid; }, get setLog() { return setLog; }, set setLog(v) { setLog = v; }, lastSet, logStepFor, render, recentHistory, saveAndNext, estSec, ovhPerSet, cycleState, pickDay, renderToday, recordTiming, stampStep, get dayPick() { return dayPick; }, SPQ, say, speechNewStep, speechStop, speechCap, enterStep, tick, quit, savePartial, discardSession, openEndChoice, finish, WARM, SPEECH_LEAD, totalSec, remainSec, isBW, perSide, sideCount, switchesSides, highEnergy, pairConflict, dayIndexFromHistory, recordCompletion, smithConflict, stationConflict, stepWeight, kbOptions, prevWork, openSwap, repsLabel, setupNow, withReps, restFor, get actx() { return actx; }, get lastBeepPath() { return lastBeepPath; }, unlockAudio, beep, openPreview, closePreview, get history() { return history; }, set history(v) { history = v; }, assignCueOffsets, cuesFor, kbOptions, available, generate, buildSteps, get today() { return today; }, set today(v) { today = v; }, P, SPLITS, settings, saveSession, doSwap, avoidAndSwap, slotCandidates, suggest, get LIB() { return LIB; } };

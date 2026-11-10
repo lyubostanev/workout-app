@@ -38,6 +38,10 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
 
+## v28
+- The same engine can run a second program. Hers is at [wife/](wife/) ([Her Workout](https://lyubostanev.github.io/workout-app/wife/)), with its own storage (`her_*`), service worker (`gymcoach-her-v1`), and home-screen manifest. His 3-day plan is unchanged. This app's service worker only deletes `gymcoach-v*` caches, so it does not wipe hers.
+- SW cache gymcoach-v28.
+
 ## v27
 - Step Platform Quick Steps is removed. It is not programmed, not a finisher, not a swap, and not in the library.
 - SW cache gymcoach-v27.

@@ -1,4 +1,4 @@
-const CACHE = 'gymcoach-v27';
+const CACHE = 'gymcoach-v28';
 const ASSETS = ['./', './index.html', './app.js', './exercises.json', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-192-maskable.png', './icons/icon-512-maskable.png',
   './audio/silence.wav', ...[420, 500, 700, 880, 1000, 1200, 1320].map(f => `./audio/beep${f}.wav`)];
@@ -15,7 +15,8 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
+  // Only this app's caches. gymcoach-her-* belongs to the other home-screen app.
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('gymcoach-v') && k !== CACHE).map(k => caches.delete(k)))));
   self.clients.claim();
 });
 self.addEventListener('fetch', e => {

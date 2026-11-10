@@ -1,0 +1,33 @@
+// Her program. Loaded before ../app.js. His app never sets this, so his plan is unchanged.
+window.GYM_PROFILE = {
+  store: 'her',
+  assetBase: '../',
+  lockSplit: true,
+  days: 4,
+  defaults: { daysPerWeek: 4, rower: true },
+  // Smith bench and shoulder press (and the incline press, same awkward setup). Dumbbell presses take those slots.
+  banned: ['smith-bench', 'smith-incline-bench', 'smith-ohp'],
+  preferDbPress: true,
+  splits: [
+    { name: 'Chest & Triceps', short: 'Chest', focus: 'Chest · Upper chest · Triceps · Core',
+      blocks: [['push:chest', 'push:triceps'], ['push:upper chest', 'core:abs'], ['push:chest', 'push:triceps'], ['core:obliques', 'push:triceps']],
+      finisher: ['conditioning', 'conditioning'],
+      cooldown: ['ball-chest-stretch', 'foam-roll-tspine'],
+      warmup: ['wu-arm-circles', 'wu-band-pull-apart', 'wu-scap-pushup', 'st-dyn-chest', 'st-triceps', 'wu-light-press'] },
+    { name: 'Back & Biceps', short: 'Back', focus: 'Lats · Mid back · Biceps · Core',
+      blocks: [['pull:lats', 'pull:biceps'], ['pull:mid back', 'core:abs'], ['pull:lats', 'conditioning'], ['core:obliques', 'pull:biceps']],
+      finisher: ['conditioning', 'conditioning'],
+      cooldown: ['foam-roll-tspine', 'cat-cow'],
+      warmup: ['row-steady', 'cat-cow', 'wu-band-pulldown', 'wu-scap-pull', 'wu-band-pull-apart', 'st-biceps'] },
+    { name: 'Shoulders & Lower Body', short: 'Shoulders', focus: 'Shoulders · Quads · Glutes · Core',
+      blocks: [['push:shoulders', 'legs:quads'], ['push:side delts', 'core:abs'], ['legs:glutes', 'push:front delts'], ['legs:hamstrings', 'core:obliques']],
+      finisher: ['conditioning', 'conditioning'],
+      cooldown: ['foam-roll-legs', 'st-hip-flexor'],
+      warmup: ['wu-arm-circles', 'wu-band-pull-apart', 'st-dyn-chest', 'wu-hip-circles', 'wu-leg-swings', 'wu-glute-bridge'] },
+    { name: 'Lower Body & Core', short: 'Lower', focus: 'Quads · Hams · Glutes · Abs · Obliques',
+      blocks: [['legs:quads', 'core:abs'], ['legs:hamstrings', 'core:obliques'], ['legs:glutes', 'core:lower abs/core/abs'], ['legs:glute med', 'core:abs']],
+      finisher: ['conditioning', 'conditioning'],
+      cooldown: ['foam-roll-legs', 'cat-cow'],
+      warmup: ['wu-hip-circles', 'wu-leg-swings', 'wu-glute-bridge', 'dead-bug', 'st-hip-flexor', 'st-hamstring', 'wu-bw-squat'] },
+  ],
+};
