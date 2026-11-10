@@ -1,4 +1,4 @@
-const CACHE = 'gymcoach-her-v1';
+const CACHE = 'gymcoach-her-v2';
 const PARENT = new URL('../', self.location);
 const HERE = new URL('./', self.location);
 const here = p => new URL(p, HERE).href;
@@ -13,7 +13,7 @@ self.addEventListener('install', e => {
     await c.addAll(ASSETS);
     try {
       const lib = await (await fetch(parent('exercises.json'), { cache: 'no-cache' })).json();
-      const imgs = [...new Set(lib.flatMap(x => x.image || []))].map(p => parent(p));
+      const imgs = [...new Set(lib.flatMap(x => x.image || []))].filter(p => !String(p).includes('img/ex/')).map(p => parent(p));
       await c.addAll(imgs);
     } catch (err) { /* images still cache at runtime */ }
   }));

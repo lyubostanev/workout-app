@@ -33,14 +33,19 @@
    "db-bench",
    "cable-fly",
    "smith-incline-bench",
-   "pushup"
+   "pushup",
+   "db-fly",
+   "db-incline-fly"
   ],
   "reps": [
    12,
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Machine%20Bench%20Press%20proper%20form",
+  "demoTitle": "Smith Machine Bench Press proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "smith-incline-bench",
@@ -74,14 +79,19 @@
   "alternates": [
    "db-incline-press",
    "cable-low-high-fly",
-   "smith-bench"
+   "smith-bench",
+   "db-fly",
+   "db-incline-fly"
   ],
   "reps": [
    12,
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Incline%20Press%20proper%20form",
+  "demoTitle": "Smith Incline Press proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "smith-ohp",
@@ -121,7 +131,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Shoulders"
+  "group": "Shoulders",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Seated%20Overhead%20Press%20proper%20form",
+  "demoTitle": "Smith Seated Overhead Press proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-bench",
@@ -156,14 +169,19 @@
   "alternates": [
    "cable-fly",
    "pushup",
-   "smith-bench"
+   "smith-bench",
+   "db-fly",
+   "db-incline-fly"
   ],
   "reps": [
    12,
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Bench%20Press%20proper%20form",
+  "demoTitle": "Dumbbell Bench Press proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-incline-press",
@@ -196,14 +214,18 @@
   "alternates": [
    "cable-low-high-fly",
    "db-incline-fly",
-   "smith-incline-bench"
+   "smith-incline-bench",
+   "db-fly"
   ],
   "reps": [
    12,
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Incline%20Dumbbell%20Press%20proper%20form",
+  "demoTitle": "Incline Dumbbell Press proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-shoulder-press",
@@ -243,7 +265,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Shoulders"
+  "group": "Shoulders",
+  "demoUrl": "https://www.youtube.com/results?search_query=Seated%20Dumbbell%20Shoulder%20Press%20proper%20form",
+  "demoTitle": "Seated Dumbbell Shoulder Press proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-arnold-press",
@@ -282,7 +307,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Shoulders"
+  "group": "Shoulders",
+  "demoUrl": "https://www.youtube.com/results?search_query=Arnold%20Press%20proper%20form",
+  "demoTitle": "Arnold Press proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-lateral-raise",
@@ -321,7 +349,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Shoulders"
+  "group": "Shoulders",
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Lateral%20Raise%20proper%20form",
+  "demoTitle": "Dumbbell Lateral Raise proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-fly",
@@ -353,14 +384,18 @@
   "alternates": [
    "db-bench",
    "cable-low-high-fly",
-   "db-fly"
+   "db-fly",
+   "db-incline-fly"
   ],
   "reps": [
    12,
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Cable%20Chest%20Fly%20proper%20form",
+  "demoTitle": "Cable Chest Fly proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-low-high-fly",
@@ -392,14 +427,18 @@
   "alternates": [
    "db-incline-fly",
    "cable-fly",
-   "db-incline-press"
+   "db-incline-press",
+   "db-fly"
   ],
   "reps": [
    12,
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Low-to-High%20Cable%20Fly%20proper%20form",
+  "demoTitle": "Low-to-High Cable Fly proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-tricep-pushdown",
@@ -437,7 +476,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Triceps"
+  "group": "Triceps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Rope%20Tricep%20Pushdown%20proper%20form",
+  "demoTitle": "Rope Tricep Pushdown proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-overhead-tricep",
@@ -475,7 +517,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Triceps"
+  "group": "Triceps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Overhead%20Rope%20Tricep%20Extension%20proper%20form",
+  "demoTitle": "Overhead Rope Tricep Extension proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "dips",
@@ -515,7 +560,10 @@
    8
   ],
   "tempo": "3-1-2-0",
-  "group": "Triceps"
+  "group": "Triceps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Dips%20proper%20form",
+  "demoTitle": "Dips proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "pushup",
@@ -548,14 +596,19 @@
   "alternates": [
    "bosu-pushup",
    "db-bench",
-   "cable-fly"
+   "cable-fly",
+   "db-fly",
+   "db-incline-fly"
   ],
   "reps": [
    12,
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Push-up%20proper%20form",
+  "demoTitle": "Push-up proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "bosu-pushup",
@@ -594,7 +647,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=BOSU%20Push-up%20proper%20form",
+  "demoTitle": "BOSU Push-up proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-lateral-raise",
@@ -633,11 +689,14 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Shoulders"
+  "group": "Shoulders",
+  "demoUrl": "https://www.youtube.com/results?search_query=Single-Arm%20Cable%20Lateral%20Raise%20proper%20form",
+  "demoTitle": "Single-Arm Cable Lateral Raise proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-fly",
-  "name": "Flat Dumbbell Fly",
+  "name": "Flat Bench Dumbbell Fly",
   "equipment": [
    "dumbbells",
    "bench"
@@ -673,7 +732,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Flat%20Bench%20Dumbbell%20Fly%20proper%20form",
+  "demoTitle": "Flat Bench Dumbbell Fly proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-incline-fly",
@@ -706,14 +768,18 @@
   "alternates": [
    "cable-low-high-fly",
    "cable-fly",
-   "db-incline-press"
+   "db-incline-press",
+   "db-fly"
   ],
   "reps": [
    12,
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Chest"
+  "group": "Chest",
+  "demoUrl": "https://www.youtube.com/results?search_query=Incline%20Dumbbell%20Fly%20proper%20form",
+  "demoTitle": "Incline Dumbbell Fly proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-front-raise",
@@ -752,7 +818,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Shoulders"
+  "group": "Shoulders",
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Front%20Raise%20proper%20form",
+  "demoTitle": "Dumbbell Front Raise proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-front-raise",
@@ -792,7 +861,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Shoulders"
+  "group": "Shoulders",
+  "demoUrl": "https://www.youtube.com/results?search_query=Cable%20Front%20Raise%20proper%20form",
+  "demoTitle": "Cable Front Raise proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "kb-front-raise",
@@ -834,7 +906,10 @@
    "mode": "single",
    "start": 25
   },
-  "group": "Shoulders"
+  "group": "Shoulders",
+  "demoUrl": "https://www.youtube.com/results?search_query=Kettlebell%20(or%20Plate)%20Front%20Raise%20proper%20form",
+  "demoTitle": "Kettlebell (or Plate) Front Raise proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "half-kneel-db-press",
@@ -920,7 +995,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Back"
+  "group": "Back",
+  "demoUrl": "https://www.youtube.com/results?search_query=Lat%20Pulldown%20proper%20form",
+  "demoTitle": "Lat Pulldown proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "pullup",
@@ -961,7 +1039,10 @@
   ],
   "startReps": 3,
   "tempo": "3-1-1-0",
-  "group": "Back"
+  "group": "Back",
+  "demoUrl": "https://www.youtube.com/results?search_query=Pull-up%20proper%20form",
+  "demoTitle": "Pull-up proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "chinup",
@@ -1002,7 +1083,10 @@
   ],
   "startReps": 3,
   "tempo": "3-1-1-0",
-  "group": "Back"
+  "group": "Back",
+  "demoUrl": "https://www.youtube.com/results?search_query=Chin-up%20proper%20form",
+  "demoTitle": "Chin-up proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "seated-cable-row",
@@ -1042,7 +1126,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Back"
+  "group": "Back",
+  "demoUrl": "https://www.youtube.com/results?search_query=Seated%20Cable%20Row%20proper%20form",
+  "demoTitle": "Seated Cable Row proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-face-pull",
@@ -1123,7 +1210,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Back"
+  "group": "Back",
+  "demoUrl": "https://www.youtube.com/results?search_query=Straight-Arm%20Pulldown%20proper%20form",
+  "demoTitle": "Straight-Arm Pulldown proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "smith-row",
@@ -1162,7 +1252,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Back"
+  "group": "Back",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Bent-Over%20Row%20proper%20form",
+  "demoTitle": "Smith Bent-Over Row proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "smith-inverted-row",
@@ -1244,7 +1337,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Back"
+  "group": "Back",
+  "demoUrl": "https://www.youtube.com/results?search_query=One-Arm%20Dumbbell%20Row%20proper%20form",
+  "demoTitle": "One-Arm Dumbbell Row proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-chest-supported-row",
@@ -1284,7 +1380,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Back"
+  "group": "Back",
+  "demoUrl": "https://www.youtube.com/results?search_query=Chest-Supported%20Incline%20DB%20Row%20proper%20form",
+  "demoTitle": "Chest-Supported Incline DB Row proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "trx-row",
@@ -1365,7 +1464,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Rear delts"
+  "group": "Rear delts",
+  "demoUrl": "https://www.youtube.com/results?search_query=Rear%20Delt%20Fly%20proper%20form",
+  "demoTitle": "Rear Delt Fly proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-curl",
@@ -1403,7 +1505,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Biceps"
+  "group": "Biceps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Biceps%20Curl%20proper%20form",
+  "demoTitle": "Dumbbell Biceps Curl proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-hammer-curl",
@@ -1441,7 +1546,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Biceps"
+  "group": "Biceps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Hammer%20Curl%20proper%20form",
+  "demoTitle": "Hammer Curl proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-curl",
@@ -1479,7 +1587,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Biceps"
+  "group": "Biceps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Straight-Bar%20Cable%20Curl%20proper%20form",
+  "demoTitle": "Straight-Bar Cable Curl proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "kb-high-pull",
@@ -1607,7 +1718,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Rear delts"
+  "group": "Rear delts",
+  "demoUrl": "https://www.youtube.com/results?search_query=Bent-Over%20DB%20Reverse%20Fly%20proper%20form",
+  "demoTitle": "Bent-Over DB Reverse Fly proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "band-pullup",
@@ -1734,7 +1848,10 @@
    15
   ],
   "tempo": "2-2-1-0",
-  "group": "Traps"
+  "group": "Traps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Shrug%20proper%20form",
+  "demoTitle": "Dumbbell Shrug proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "smith-shrug",
@@ -1772,7 +1889,10 @@
    15
   ],
   "tempo": "2-2-1-0",
-  "group": "Traps"
+  "group": "Traps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Machine%20Shrug%20proper%20form",
+  "demoTitle": "Smith Machine Shrug proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-shrug",
@@ -1811,7 +1931,10 @@
    15
   ],
   "tempo": "2-2-1-0",
-  "group": "Traps"
+  "group": "Traps",
+  "demoUrl": "https://www.youtube.com/results?search_query=Cable%20Shrug%20proper%20form",
+  "demoTitle": "Cable Shrug proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-upright-row",
@@ -1895,7 +2018,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Machine%20Squat%20proper%20form",
+  "demoTitle": "Smith Machine Squat proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "smith-split-squat",
@@ -1935,7 +2061,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Split%20Squat%20proper%20form",
+  "demoTitle": "Smith Split Squat proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "smith-rdl",
@@ -1974,7 +2103,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Romanian%20Deadlift%20proper%20form",
+  "demoTitle": "Smith Romanian Deadlift proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "smith-calf-raise",
@@ -2011,7 +2143,10 @@
    15
   ],
   "tempo": "2-1-1-1",
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Smith%20Calf%20Raise%20proper%20form",
+  "demoTitle": "Smith Calf Raise proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-goblet-squat",
@@ -2177,7 +2312,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Reverse%20Lunge%20proper%20form",
+  "demoTitle": "Reverse Lunge proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-step-up",
@@ -2217,7 +2355,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Step-up%20proper%20form",
+  "demoTitle": "Dumbbell Step-up proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "kb-swing",
@@ -2307,7 +2448,10 @@
    "mode": "single",
    "start": 35
   },
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Kettlebell%20Goblet%20Squat%20proper%20form",
+  "demoTitle": "Kettlebell Goblet Squat proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-pull-through",
@@ -2389,7 +2533,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Cable%20Glute%20Kickback%20proper%20form",
+  "demoTitle": "Cable Glute Kickback proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "cable-hip-abduction",
@@ -2427,7 +2574,10 @@
    15
   ],
   "tempo": "3-1-2-0",
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Cable%20Hip%20Abduction%20proper%20form",
+  "demoTitle": "Cable Hip Abduction proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "db-hip-thrust",
@@ -2716,7 +2866,10 @@
    "smith-squat"
   ],
   "timed": true,
-  "group": "Legs"
+  "group": "Legs",
+  "demoUrl": "https://www.youtube.com/results?search_query=Stability%20Ball%20Wall%20Squat%20proper%20form",
+  "demoTitle": "Stability Ball Wall Squat proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "plank",
@@ -2747,10 +2900,16 @@
   "alternates": [
    "dead-bug",
    "bosu-plank",
-   "pallof-press"
+   "pallof-press",
+   "high-plank",
+   "bear-plank",
+   "bear-shoulder-tap"
   ],
   "timed": true,
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Plank%20proper%20form",
+  "demoTitle": "Plank proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "side-plank",
@@ -2780,10 +2939,17 @@
   "imageSource": "free-exercise-db:Side_Bridge",
   "alternates": [
    "pallof-press",
-   "kb-suitcase-carry"
+   "kb-suitcase-carry",
+   "plank",
+   "high-plank",
+   "bear-plank",
+   "bear-shoulder-tap"
   ],
   "timed": true,
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Side%20Plank%20proper%20form",
+  "demoTitle": "Side Plank proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "dead-bug",
@@ -2817,7 +2983,9 @@
   "alternates": [
    "plank",
    "reverse-crunch",
-   "pilates-ring-squeeze"
+   "pilates-ring-squeeze",
+   "high-plank",
+   "bear-plank"
   ],
   "reps": [
    12,
@@ -2947,7 +3115,10 @@
    15
   ],
   "tempo": "2-1-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Kneeling%20Rope%20Crunch%20proper%20form",
+  "demoTitle": "Kneeling Rope Crunch proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "ball-rollout",
@@ -3143,10 +3314,16 @@
   "imageSource": "generated",
   "alternates": [
    "plank",
-   "dead-bug"
+   "dead-bug",
+   "high-plank",
+   "bear-plank",
+   "bear-shoulder-tap"
   ],
   "timed": true,
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=BOSU%20Mountain%20Hold%20Plank%20proper%20form",
+  "demoTitle": "BOSU Mountain Hold Plank proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "russian-twist",
@@ -3184,7 +3361,10 @@
    15
   ],
   "tempo": "2-0-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Med%20Ball%20Russian%20Twist%20proper%20form",
+  "demoTitle": "Med Ball Russian Twist proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "pilates-ring-squeeze",
@@ -3224,7 +3404,10 @@
    15
   ],
   "tempo": "2-1-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Pilates%20Ring%20Crunch%20Squeeze%20proper%20form",
+  "demoTitle": "Pilates Ring Crunch Squeeze proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "kb-suitcase-carry",
@@ -3305,7 +3488,10 @@
    15
   ],
   "tempo": "2-1-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Sit-up%20proper%20form",
+  "demoTitle": "Sit-up proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "crunch",
@@ -3344,7 +3530,10 @@
    15
   ],
   "tempo": "2-1-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Crunch%20proper%20form",
+  "demoTitle": "Crunch proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "decline-situp",
@@ -3384,7 +3573,10 @@
    15
   ],
   "tempo": "2-1-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Decline%20Bench%20Sit-up%20proper%20form",
+  "demoTitle": "Decline Bench Sit-up proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "ball-crunch",
@@ -3423,7 +3615,10 @@
    15
   ],
   "tempo": "2-1-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Stability%20Ball%20Crunch%20proper%20form",
+  "demoTitle": "Stability Ball Crunch proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "bicycle-crunch",
@@ -3505,7 +3700,10 @@
    15
   ],
   "tempo": "2-1-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Reverse%20Crunch%20proper%20form",
+  "demoTitle": "Reverse Crunch proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "weighted-crunch",
@@ -3545,7 +3743,10 @@
    15
   ],
   "tempo": "2-1-2-0",
-  "group": "Core"
+  "group": "Core",
+  "demoUrl": "https://www.youtube.com/results?search_query=Weighted%20Crunch%20proper%20form",
+  "demoTitle": "Weighted Crunch proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "row-sprint",
@@ -3731,9 +3932,10 @@
   "demoTitle": "Renegade Row Guide | Form Tips, Muscles Worked, and Variations",
   "demoChannel": "BarBend",
   "alternates": [
-   "mountain-climber",
-   "burpee",
-   "kb-thruster"
+   "bear-crawl",
+   "inchworm",
+   "plank-walkout",
+   "mountain-climber"
   ],
   "reps": [
    8,
@@ -3775,7 +3977,10 @@
    "burpee"
   ],
   "timed": true,
-  "group": "Conditioning"
+  "group": "Conditioning",
+  "demoUrl": "https://www.youtube.com/results?search_query=Mountain%20Climber%20proper%20form",
+  "demoTitle": "Mountain Climber proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "trx-jump-squat",
@@ -3992,7 +4197,10 @@
    "cat-cow"
   ],
   "timed": true,
-  "group": "Mobility"
+  "group": "Mobility",
+  "demoUrl": "https://www.youtube.com/results?search_query=Stability%20Ball%20Chest%20Opener%20proper%20form",
+  "demoTitle": "Stability Ball Chest Opener proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-arm-circles",
@@ -4026,7 +4234,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Arm%20Circles%20proper%20form",
+  "demoTitle": "Arm Circles proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-band-pull-apart",
@@ -4061,7 +4272,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Band%20Pull-Apart%20proper%20form",
+  "demoTitle": "Band Pull-Apart proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-scap-pushup",
@@ -4096,7 +4310,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Scap%20Push-up%20(incline)%20proper%20form",
+  "demoTitle": "Scap Push-up (incline) proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-light-press",
@@ -4131,7 +4348,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Light%20Incline%20Push-up%20proper%20form",
+  "demoTitle": "Light Incline Push-up proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "st-dyn-chest",
@@ -4167,7 +4387,10 @@
   "timed": true,
   "group": "Warm-up",
   "warmup": true,
-  "stretch": true
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Dynamic%20Chest%20Opener%20proper%20form",
+  "demoTitle": "Dynamic Chest Opener proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "st-triceps",
@@ -4202,7 +4425,10 @@
   "timed": true,
   "group": "Warm-up",
   "warmup": true,
-  "stretch": true
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Triceps%20Stretch%20proper%20form",
+  "demoTitle": "Triceps Stretch proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-band-pulldown",
@@ -4237,7 +4463,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Band%20Straight-Arm%20Pulldown%20proper%20form",
+  "demoTitle": "Band Straight-Arm Pulldown proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-scap-pull",
@@ -4272,7 +4501,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Scap%20Pulls%20%2B%20Supported%20Hang%20proper%20form",
+  "demoTitle": "Scap Pulls + Supported Hang proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "st-biceps",
@@ -4308,7 +4540,10 @@
   "timed": true,
   "group": "Warm-up",
   "warmup": true,
-  "stretch": true
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Standing%20Biceps%20Stretch%20proper%20form",
+  "demoTitle": "Standing Biceps Stretch proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "st-childs-pose",
@@ -4344,7 +4579,10 @@
   "timed": true,
   "group": "Warm-up",
   "warmup": true,
-  "stretch": true
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Child's%20Pose%20Lat%20Reach%20proper%20form",
+  "demoTitle": "Child's Pose Lat Reach proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-hip-circles",
@@ -4378,7 +4616,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Standing%20Hip%20Circles%20proper%20form",
+  "demoTitle": "Standing Hip Circles proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-leg-swings",
@@ -4413,7 +4654,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Leg%20Swings%20proper%20form",
+  "demoTitle": "Leg Swings proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-glute-bridge",
@@ -4448,7 +4692,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Glute%20Bridge%20proper%20form",
+  "demoTitle": "Glute Bridge proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "wu-bw-squat",
@@ -4483,7 +4730,10 @@
   ],
   "timed": true,
   "group": "Warm-up",
-  "warmup": true
+  "warmup": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Bodyweight%20Squat%20(easy%20depth)%20proper%20form",
+  "demoTitle": "Bodyweight Squat (easy depth) proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "st-hip-flexor",
@@ -4519,7 +4769,10 @@
   "timed": true,
   "group": "Warm-up",
   "warmup": true,
-  "stretch": true
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Kneeling%20Hip%20Flexor%20Stretch%20proper%20form",
+  "demoTitle": "Kneeling Hip Flexor Stretch proper form",
+  "demoChannel": "YouTube"
  },
  {
   "id": "st-hamstring",
@@ -4554,6 +4807,1676 @@
   "timed": true,
   "group": "Warm-up",
   "warmup": true,
-  "stretch": true
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Lying%20Hamstring%20Stretch%20proper%20form",
+  "demoTitle": "Lying Hamstring Stretch proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Hands on the bench behind you",
+  "formCues": [
+   "Sit on the bench, hands beside your hips, fingers forward",
+   "Slide your hips off the front edge",
+   "Lower until elbows are about 90 degrees",
+   "Keep hips close to the bench, don't drift forward",
+   "Press through the palms, don't shrug",
+   "Stop if the front of the shoulder pinches"
+  ],
+  "alternates": [
+   "cable-tricep-pushdown",
+   "db-kickback",
+   "db-skull-crusher",
+   "diamond-pushup"
+  ],
+  "id": "bench-dip",
+  "name": "Bench Dips",
+  "equipment": [
+   "bench",
+   "bodyweight"
+  ],
+  "category": "push",
+  "muscles": [
+   "triceps",
+   "chest"
+  ],
+  "work": 35,
+  "rest": 45,
+  "group": "Triceps",
+  "reps": [
+   8,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Bench%20Dips%20proper%20form",
+  "demoTitle": "Bench Dips proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Bells close, elbows tucked",
+  "formCues": [
+   "Lie flat, dumbbells touching over the chest",
+   "Elbows stay close to the ribs",
+   "Lower to the lower chest",
+   "Press up without flaring the elbows",
+   "Wrists stacked, shoulders pinned to the bench",
+   "Use a lighter pair than your bench press"
+  ],
+  "alternates": [
+   "db-bench",
+   "db-skull-crusher",
+   "cable-tricep-pushdown"
+  ],
+  "id": "close-grip-db-press",
+  "name": "Close-Grip Dumbbell Press",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "triceps",
+   "chest"
+  ],
+  "work": 40,
+  "rest": 60,
+  "group": "Triceps",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Close-Grip%20Dumbbell%20Press%20proper%20form",
+  "demoTitle": "Close-Grip Dumbbell Press proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Hands together under the chest, thumbs and index fingers make a diamond",
+   "Elbows track back, not out",
+   "Body in one line, glutes tight",
+   "Lower the chest toward your hands",
+   "Push the floor away, don't shrug",
+   "Drop to your knees if the shoulders complain"
+  ],
+  "alternates": [
+   "bench-dip",
+   "close-grip-db-press",
+   "pushup"
+  ],
+  "id": "diamond-pushup",
+  "name": "Diamond Push-up",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "push",
+  "muscles": [
+   "triceps",
+   "chest"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Triceps",
+  "reps": [
+   6,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Diamond%20Push-up%20proper%20form",
+  "demoTitle": "Diamond Push-up proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Hands on the bench",
+  "formCues": [
+   "Hands on the bench, slightly wider than shoulders",
+   "Body straight from head to heels",
+   "Lower the chest toward the bench",
+   "Elbows about 45 degrees",
+   "Push back to a tall plank",
+   "The higher the hands, the easier the set"
+  ],
+  "alternates": [
+   "pushup",
+   "db-bench",
+   "db-fly"
+  ],
+  "id": "incline-pushup",
+  "name": "Incline Push-up",
+  "equipment": [
+   "bench",
+   "bodyweight"
+  ],
+  "category": "push",
+  "muscles": [
+   "chest",
+   "triceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Chest",
+  "reps": [
+   8,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Incline%20Push-up%20proper%20form",
+  "demoTitle": "Incline Push-up proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Feet on the bench",
+  "formCues": [
+   "Feet on the bench, hands under shoulders",
+   "Hips stay level, don't pike up",
+   "Lower until the chest nears the floor",
+   "Elbows at about 45 degrees",
+   "Push the floor away",
+   "Step down if the lower back sags"
+  ],
+  "alternates": [
+   "incline-pushup",
+   "db-incline-press",
+   "db-incline-fly"
+  ],
+  "id": "decline-pushup",
+  "name": "Decline Push-up",
+  "equipment": [
+   "bench",
+   "bodyweight"
+  ],
+  "category": "push",
+  "muscles": [
+   "upper chest",
+   "triceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Chest",
+  "reps": [
+   6,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Decline%20Push-up%20proper%20form",
+  "demoTitle": "Decline Push-up proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "One bell, both hands",
+  "formCues": [
+   "Lie across the bench, hips dropped a little",
+   "Hold one dumbbell over the chest",
+   "Reach the bell back in an arc, ribs down",
+   "Stop when you feel the lats, not a shoulder pinch",
+   "Pull the bell back over the chest",
+   "Soft elbows, don't bend and straighten them"
+  ],
+  "alternates": [
+   "cable-straight-arm-pd",
+   "lat-pulldown",
+   "db-row"
+  ],
+  "id": "db-pullover",
+  "name": "Dumbbell Pullover",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "pull",
+  "muscles": [
+   "lats",
+   "chest"
+  ],
+  "work": 40,
+  "rest": 45,
+  "group": "Back",
+  "reps": [
+   10,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Pullover%20proper%20form",
+  "demoTitle": "Dumbbell Pullover proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "One arm at a time",
+  "formCues": [
+   "Sit, elbow braced on the inner thigh",
+   "Curl without swinging the shoulder",
+   "Pause and squeeze at the top",
+   "Lower all the way, arm stays long",
+   "Switch arms halfway",
+   "Keep the torso still"
+  ],
+  "alternates": [
+   "db-curl",
+   "db-hammer-curl",
+   "cable-curl"
+  ],
+  "id": "db-concentration-curl",
+  "name": "Concentration Curl",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "pull",
+  "muscles": [
+   "biceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Biceps",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Concentration%20Curl%20proper%20form",
+  "demoTitle": "Concentration Curl proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Bench at about 45 degrees",
+  "formCues": [
+   "Sit back on an incline, arms hang behind the body",
+   "Palms forward or neutral",
+   "Curl without swinging the bells forward",
+   "Elbows stay still",
+   "Lower until the arms are straight",
+   "Shoulders stay down"
+  ],
+  "alternates": [
+   "db-curl",
+   "db-hammer-curl",
+   "cable-hammer-curl"
+  ],
+  "id": "db-incline-curl",
+  "name": "Incline Dumbbell Curl",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "pull",
+  "muscles": [
+   "biceps"
+  ],
+  "work": 40,
+  "rest": 45,
+  "group": "Biceps",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Incline%20Dumbbell%20Curl%20proper%20form",
+  "demoTitle": "Incline Dumbbell Curl proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Upper arm on the bench pad",
+  "formCues": [
+   "Rest the back of the upper arm on the top of an incline bench",
+   "Curl the bell toward the shoulder",
+   "Don't let the elbow lift off the pad",
+   "Lower slowly to a soft elbow, not a snap",
+   "Torso stays tall",
+   "Switch arms if you use one bell"
+  ],
+  "alternates": [
+   "db-curl",
+   "cable-curl",
+   "db-concentration-curl"
+  ],
+  "id": "db-preacher-curl",
+  "name": "Dumbbell Preacher Curl",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "pull",
+  "muscles": [
+   "biceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Biceps",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Preacher%20Curl%20proper%20form",
+  "demoTitle": "Dumbbell Preacher Curl proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Rope at the low pulley",
+   "Thumbs up, palms face each other",
+   "Curl without rocking the hips",
+   "Squeeze at the top, elbows pinned",
+   "Lower until the arms are straight",
+   "Shoulders stay down"
+  ],
+  "alternates": [
+   "db-hammer-curl",
+   "cable-curl",
+   "db-curl"
+  ],
+  "id": "cable-hammer-curl",
+  "name": "Rope Hammer Curl",
+  "equipment": [
+   "cables",
+   "tricep rope"
+  ],
+  "category": "pull",
+  "muscles": [
+   "biceps",
+   "forearms"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Biceps",
+  "reps": [
+   10,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Rope%20Hammer%20Curl%20proper%20form",
+  "demoTitle": "Rope Hammer Curl proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Lie flat, bells over the shoulders",
+   "Bend only at the elbows",
+   "Lower the bells beside the ears, not onto the face",
+   "Elbows stay pointed at the ceiling",
+   "Press back to straight arms",
+   "Keep the ribs down"
+  ],
+  "alternates": [
+   "cable-overhead-tricep",
+   "close-grip-db-press",
+   "bench-dip"
+  ],
+  "id": "db-skull-crusher",
+  "name": "Dumbbell Skull Crusher",
+  "equipment": [
+   "dumbbells",
+   "bench"
+  ],
+  "category": "push",
+  "muscles": [
+   "triceps"
+  ],
+  "work": 40,
+  "rest": 45,
+  "group": "Triceps",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Skull%20Crusher%20proper%20form",
+  "demoTitle": "Dumbbell Skull Crusher proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "One arm, then the other",
+  "formCues": [
+   "Hinge at the hips, back flat",
+   "Upper arm stays glued to your side",
+   "Straighten the elbow until the arm is level",
+   "Squeeze the triceps, don't swing",
+   "Lower only the forearm",
+   "Switch arms halfway"
+  ],
+  "alternates": [
+   "cable-tricep-pushdown",
+   "bench-dip",
+   "db-skull-crusher"
+  ],
+  "id": "db-kickback",
+  "name": "Dumbbell Kickback",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "push",
+  "muscles": [
+   "triceps"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Triceps",
+  "reps": [
+   10,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Kickback%20proper%20form",
+  "demoTitle": "Dumbbell Kickback proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Bar to chest height, not the chin",
+  "formCues": [
+   "Low pulley, bar in front of the thighs",
+   "Lead with the elbows, out and up",
+   "Stop at chest height",
+   "Wrists stay neutral, don't crank them",
+   "Shoulders down as the elbows rise",
+   "Lower under control"
+  ],
+  "alternates": [
+   "db-upright-row",
+   "db-shrug",
+   "cable-shrug"
+  ],
+  "id": "cable-upright-row",
+  "name": "Cable Upright Row",
+  "equipment": [
+   "cables",
+   "straight bar"
+  ],
+  "category": "push",
+  "muscles": [
+   "traps",
+   "side delts"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Traps",
+  "reps": [
+   10,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Cable%20Upright%20Row%20proper%20form",
+  "demoTitle": "Cable Upright Row proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Wide stance, toes out",
+  "formCues": [
+   "Feet wide, toes turned out",
+   "Hold one bell between the legs",
+   "Sit down between the hips",
+   "Knees track over the toes",
+   "Chest tall, don't round the back",
+   "Drive through the heels"
+  ],
+  "alternates": [
+   "db-goblet-squat",
+   "kb-goblet-squat",
+   "smith-squat"
+  ],
+  "id": "db-sumo-squat",
+  "name": "Dumbbell Sumo Squat",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "group": "Legs",
+  "reps": [
+   10,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Sumo%20Squat%20proper%20form",
+  "demoTitle": "Dumbbell Sumo Squat proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Both sides",
+  "formCues": [
+   "Step long, not short and choppy",
+   "Front knee stays over the ankle",
+   "Back knee lowers toward the floor",
+   "Torso tall, bells at your sides",
+   "Push through the front heel to the next step",
+   "Switch the lead leg, both sides in the set"
+  ],
+  "alternates": [
+   "db-reverse-lunge",
+   "db-step-up",
+   "db-bulgarian"
+  ],
+  "id": "db-walking-lunge",
+  "name": "Walking Lunge",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "group": "Legs",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Walking%20Lunge%20proper%20form",
+  "demoTitle": "Walking Lunge proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Step wide to the side",
+   "Sit into that hip, the other leg stays straight",
+   "Chest up, knee tracks over the toes",
+   "Push back to the start",
+   "Switch sides halfway",
+   "Keep the heel down on the bending leg"
+  ],
+  "alternates": [
+   "db-reverse-lunge",
+   "db-sumo-squat",
+   "db-step-up"
+  ],
+  "id": "db-lateral-lunge",
+  "name": "Lateral Lunge",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "legs",
+  "muscles": [
+   "quads",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 45,
+  "group": "Legs",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Lateral%20Lunge%20proper%20form",
+  "demoTitle": "Lateral Lunge proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Bells at your sides",
+   "Rise as high as you can on the balls of the feet",
+   "Pause at the top",
+   "Lower the heels slowly",
+   "Knees soft, not locked",
+   "Don't bounce"
+  ],
+  "alternates": [
+   "smith-calf-raise",
+   "sl-calf-raise",
+   "db-step-up"
+  ],
+  "id": "db-calf-raise",
+  "name": "Dumbbell Calf Raise",
+  "equipment": [
+   "dumbbells"
+  ],
+  "category": "legs",
+  "muscles": [
+   "calves"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Legs",
+  "reps": [
+   12,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Dumbbell%20Calf%20Raise%20proper%20form",
+  "demoTitle": "Dumbbell Calf Raise proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Ball of one foot on the step, heel hanging",
+   "Hold a wall for balance",
+   "Rise as high as you can",
+   "Lower the heel below the step",
+   "Switch sides halfway",
+   "Move slowly, no bouncing"
+  ],
+  "alternates": [
+   "db-calf-raise",
+   "smith-calf-raise",
+   "db-step-up"
+  ],
+  "id": "sl-calf-raise",
+  "name": "Single-Leg Calf Raise",
+  "equipment": [
+   "bodyweight",
+   "step"
+  ],
+  "category": "legs",
+  "muscles": [
+   "calves"
+  ],
+  "work": 35,
+  "rest": 30,
+  "group": "Legs",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Single-Leg%20Calf%20Raise%20proper%20form",
+  "demoTitle": "Single-Leg Calf Raise proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Top foot on the bench, bottom leg under it",
+   "Lift the hips into a side line",
+   "Don't let the bottom shoulder collapse",
+   "Inner thigh does the work",
+   "Switch sides halfway",
+   "Bend the bottom knee if the straight-leg version is too hard"
+  ],
+  "alternates": [
+   "side-lying-adduction",
+   "cable-hip-abduction",
+   "side-plank"
+  ],
+  "id": "copenhagen-plank",
+  "name": "Copenhagen Plank",
+  "equipment": [
+   "bench",
+   "bodyweight"
+  ],
+  "category": "legs",
+  "muscles": [
+   "adductors",
+   "core"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Legs",
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Copenhagen%20Plank%20proper%20form",
+  "demoTitle": "Copenhagen Plank proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Lie on your side, bottom leg straight",
+   "Top leg bent, foot on the floor in front",
+   "Lift the bottom leg a few inches",
+   "Don't roll the hips back",
+   "Lower slowly",
+   "Switch sides halfway"
+  ],
+  "alternates": [
+   "copenhagen-plank",
+   "cable-hip-abduction",
+   "db-sumo-squat"
+  ],
+  "id": "side-lying-adduction",
+  "name": "Side-Lying Leg Adduction",
+  "equipment": [
+   "mat"
+  ],
+  "category": "legs",
+  "muscles": [
+   "adductors"
+  ],
+  "work": 35,
+  "rest": 20,
+  "group": "Legs",
+  "reps": [
+   10,
+   15
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Side-Lying%20Leg%20Adduction%20proper%20form",
+  "demoTitle": "Side-Lying Leg Adduction proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Hands under shoulders, arms straight",
+   "Body one line from head to heels",
+   "Push the floor away so the shoulder blades spread",
+   "Glutes and quads tight",
+   "Don't let the hips sag or pike",
+   "Breathe, don't hold your breath"
+  ],
+  "alternates": [
+   "plank",
+   "bear-plank",
+   "plank-updown",
+   "plank-hip-dip"
+  ],
+  "id": "high-plank",
+  "name": "High Plank",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "core"
+  ],
+  "work": 40,
+  "rest": 20,
+  "group": "Core",
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=High%20Plank%20proper%20form",
+  "demoTitle": "High Plank proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Knees hover",
+  "formCues": [
+   "Hands under shoulders, knees under hips",
+   "Lift the knees just off the floor",
+   "Back stays flat, ribs down",
+   "Push the floor away",
+   "Don't let the hips shoot up",
+   "Breathe while you hold"
+  ],
+  "alternates": [
+   "bear-shoulder-tap",
+   "high-plank",
+   "plank",
+   "bird-dog"
+  ],
+  "id": "bear-plank",
+  "name": "Bear Plank",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "core"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Core",
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Bear%20Plank%20proper%20form",
+  "demoTitle": "Bear Plank proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Start in a bear plank, knees hovering",
+   "Tap one shoulder with the opposite hand",
+   "Hips stay square, don't rock side to side",
+   "Put the hand back before the next tap",
+   "Keep the knees low",
+   "Move slower if you start swaying"
+  ],
+  "alternates": [
+   "bear-plank",
+   "plank-updown",
+   "high-plank",
+   "bird-dog"
+  ],
+  "id": "bear-shoulder-tap",
+  "name": "Bear Plank Shoulder Taps",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "core"
+  ],
+  "work": 35,
+  "rest": 20,
+  "group": "Core",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Bear%20Plank%20Shoulder%20Taps%20proper%20form",
+  "demoTitle": "Bear Plank Shoulder Taps proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Start on the forearms",
+   "Walk one hand then the other up to a high plank",
+   "Walk back down one arm at a time",
+   "Hips stay quiet",
+   "Feet a bit wider if you wobble",
+   "Don't rush the elbows down"
+  ],
+  "alternates": [
+   "high-plank",
+   "plank",
+   "bear-plank",
+   "plank-hip-dip"
+  ],
+  "id": "plank-updown",
+  "name": "Plank Up-Downs",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "core",
+   "shoulders"
+  ],
+  "work": 35,
+  "rest": 20,
+  "group": "Core",
+  "reps": [
+   6,
+   10
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Plank%20Up-Downs%20proper%20form",
+  "demoTitle": "Plank Up-Downs proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "Quicker feet, steady shoulders",
+  "formCues": [
+   "High plank, shoulders over wrists",
+   "Jump the feet out and in",
+   "Hips stay level, don't bounce up",
+   "Keep the hands planted",
+   "Land softly",
+   "Slow the feet if the back starts sagging"
+  ],
+  "alternates": [
+   "mountain-climber",
+   "plank-updown",
+   "high-plank",
+   "bear-crawl"
+  ],
+  "id": "plank-jack",
+  "name": "Plank Jacks",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "core",
+   "full body"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Core",
+  "timed": true,
+  "highEnergy": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Plank%20Jacks%20proper%20form",
+  "demoTitle": "Plank Jacks proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Forearm plank, feet together",
+   "Drop both hips a little to one side",
+   "Come back through center",
+   "Drop to the other side",
+   "Shoulders stay over the elbows",
+   "Small range, don't rest on the floor"
+  ],
+  "alternates": [
+   "side-plank",
+   "plank",
+   "side-plank-reach",
+   "bicycle-crunch"
+  ],
+  "id": "plank-hip-dip",
+  "name": "Plank Hip Dips",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "obliques",
+   "core"
+  ],
+  "work": 35,
+  "rest": 20,
+  "group": "Core",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Plank%20Hip%20Dips%20proper%20form",
+  "demoTitle": "Plank Hip Dips proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Side plank, elbow under the shoulder",
+   "Top arm reaches under the body",
+   "Open the chest back to the ceiling",
+   "Hips stay high",
+   "Switch sides halfway",
+   "Don't let the bottom shoulder collapse"
+  ],
+  "alternates": [
+   "side-plank",
+   "plank-hip-dip",
+   "pallof-press",
+   "bird-dog"
+  ],
+  "id": "side-plank-reach",
+  "name": "Side Plank with Reach-Through",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "obliques"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Core",
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Side%20Plank%20with%20Reach-Through%20proper%20form",
+  "demoTitle": "Side Plank with Reach-Through proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Hands under shoulders, knees under hips",
+   "Reach the opposite arm and leg",
+   "Hips stay square to the floor",
+   "Pause when the arm and leg are long",
+   "Don't arch the lower back",
+   "Return and change sides, slow"
+  ],
+  "alternates": [
+   "dead-bug",
+   "bear-plank",
+   "plank",
+   "hollow-hold"
+  ],
+  "id": "bird-dog",
+  "name": "Bird Dog",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "core",
+   "glutes"
+  ],
+  "work": 40,
+  "rest": 20,
+  "group": "Core",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Bird%20Dog%20proper%20form",
+  "demoTitle": "Bird Dog proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Lie on your back, arms overhead",
+   "Press the lower back into the floor",
+   "Lift the shoulders and the legs together",
+   "Only as high as the back stays down",
+   "Ribs knit down",
+   "Lower if you start shaking into an arch"
+  ],
+  "alternates": [
+   "dead-bug",
+   "v-up",
+   "crunch",
+   "plank"
+  ],
+  "id": "hollow-hold",
+  "name": "Hollow Hold",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Core",
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Hollow%20Hold%20proper%20form",
+  "demoTitle": "Hollow Hold proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Lie long, arms overhead",
+   "Lift the legs and the chest together",
+   "Reach the hands toward the feet",
+   "Lower with control, back stays down",
+   "Bend the knees if the straight-leg version pulls the back",
+   "Exhale as you rise"
+  ],
+  "alternates": [
+   "hollow-hold",
+   "crunch",
+   "ball-crunch",
+   "flutter-kick"
+  ],
+  "id": "v-up",
+  "name": "V-up",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs"
+  ],
+  "work": 35,
+  "rest": 20,
+  "group": "Core",
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=V-up%20proper%20form",
+  "demoTitle": "V-up proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "On your back, hands under the hips if needed",
+   "Legs long, a few inches off the floor",
+   "Small quick kicks",
+   "Lower back stays down",
+   "Keep the neck relaxed",
+   "Lift the legs higher if the back peels up"
+  ],
+  "alternates": [
+   "reverse-crunch",
+   "hollow-hold",
+   "dead-bug",
+   "v-up"
+  ],
+  "id": "flutter-kick",
+  "name": "Flutter Kicks",
+  "equipment": [
+   "mat"
+  ],
+  "category": "core",
+  "muscles": [
+   "lower abs"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Core",
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Flutter%20Kicks%20proper%20form",
+  "demoTitle": "Flutter Kicks proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Forearms on the ball, feet back",
+   "Body in a plank",
+   "Circle the forearms on the ball",
+   "Hips stay quiet, don't sway",
+   "Smaller circles if the back sags",
+   "Go both directions"
+  ],
+  "alternates": [
+   "ball-rollout",
+   "plank",
+   "ball-pike",
+   "dead-bug"
+  ],
+  "id": "stir-the-pot",
+  "name": "Stir the Pot",
+  "equipment": [
+   "stability ball"
+  ],
+  "category": "core",
+  "muscles": [
+   "abs",
+   "core"
+  ],
+  "work": 35,
+  "rest": 20,
+  "group": "Core",
+  "reps": [
+   6,
+   10
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Stir%20the%20Pot%20proper%20form",
+  "demoTitle": "Stir the Pot proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Ball overhead, ribs down",
+   "Slam the ball into the floor in front of you",
+   "Hinge the hips, don't round hard",
+   "Catch or pick it up with bent knees",
+   "Reset tall before the next slam",
+   "Use a ball that won't bounce into your face"
+  ],
+  "alternates": [
+   "burpee",
+   "kb-thruster",
+   "mountain-climber",
+   "plank-jack"
+  ],
+  "id": "med-ball-slam",
+  "name": "Medicine Ball Slam",
+  "equipment": [
+   "medicine ball"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "full body"
+  ],
+  "work": 30,
+  "rest": 30,
+  "group": "Conditioning",
+  "highEnergy": true,
+  "reps": [
+   8,
+   12
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Medicine%20Ball%20Slam%20proper%20form",
+  "demoTitle": "Medicine Ball Slam proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Knees hover an inch off the floor",
+   "Step the opposite hand and foot",
+   "Back stays flat",
+   "Hips don't wag",
+   "Short steps, quiet feet",
+   "Turn around if you run out of room"
+  ],
+  "alternates": [
+   "inchworm",
+   "plank-walkout",
+   "db-renegade-row",
+   "mountain-climber"
+  ],
+  "id": "bear-crawl",
+  "name": "Bear Crawl",
+  "equipment": [
+   "mat"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "core",
+   "shoulders"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Conditioning",
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Bear%20Crawl%20proper%20form",
+  "demoTitle": "Bear Crawl proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Fold forward, hands to the floor",
+   "Walk the hands out to a plank",
+   "Hold a beat, hips level",
+   "Walk the hands back to the feet",
+   "Bend the knees a little if the hamstrings pull",
+   "Don't rush the plank"
+  ],
+  "alternates": [
+   "bear-crawl",
+   "plank-walkout",
+   "db-renegade-row",
+   "high-plank"
+  ],
+  "id": "inchworm",
+  "name": "Inchworm",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "core",
+   "hamstrings"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Conditioning",
+  "reps": [
+   6,
+   10
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Inchworm%20proper%20form",
+  "demoTitle": "Inchworm proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Stand, fold, hands on the floor",
+   "Walk out until the body is a plank",
+   "Pause with the hips level",
+   "Walk the hands back in",
+   "Keep the knees soft",
+   "Smaller steps if the shoulders fatigue"
+  ],
+  "alternates": [
+   "inchworm",
+   "bear-crawl",
+   "plank-updown",
+   "high-plank"
+  ],
+  "id": "plank-walkout",
+  "name": "Plank Walkout",
+  "equipment": [
+   "mat"
+  ],
+  "category": "conditioning",
+  "muscles": [
+   "core",
+   "shoulders"
+  ],
+  "work": 30,
+  "rest": 20,
+  "group": "Conditioning",
+  "reps": [
+   6,
+   10
+  ],
+  "demoUrl": "https://www.youtube.com/results?search_query=Plank%20Walkout%20proper%20form",
+  "demoTitle": "Plank Walkout proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Swing the arms across the chest and open them",
+   "Stay tall",
+   "Smaller swings if a shoulder pinches",
+   "Let the torso rotate a little",
+   "Breathe, don't force the end range"
+  ],
+  "alternates": [
+   "wu-arm-circles",
+   "st-dyn-chest",
+   "st-pec"
+  ],
+  "id": "wu-arm-swing",
+  "name": "Arm Swings",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "shoulders",
+   "chest"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Arm%20Swings%20proper%20form",
+  "demoTitle": "Arm Swings proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Lie on your side, knees bent",
+   "Open the top arm toward the floor behind you",
+   "Follow the hand with your eyes",
+   "Knees stay together",
+   "Switch sides halfway",
+   "Only go as far as the breath allows"
+  ],
+  "alternates": [
+   "cat-cow",
+   "worlds-greatest",
+   "st-childs-pose"
+  ],
+  "id": "wu-thoracic-open",
+  "name": "Open-Book Thoracic Rotation",
+  "equipment": [
+   "mat"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "thoracic spine"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Open-Book%20Thoracic%20Rotation%20proper%20form",
+  "demoTitle": "Open-Book Thoracic Rotation proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Step into a lunge, both hands inside the front foot",
+   "Drop the back knee if you want",
+   "Elbow toward the instep",
+   "Keep the front heel down",
+   "Switch sides halfway",
+   "Don't bounce into the hip"
+  ],
+  "alternates": [
+   "worlds-greatest",
+   "st-hip-flexor",
+   "wu-leg-swings"
+  ],
+  "id": "wu-spiderman",
+  "name": "Spiderman Stretch",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "hips",
+   "hip flexors"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Spiderman%20Stretch%20proper%20form",
+  "demoTitle": "Spiderman Stretch proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Fold and walk the hands out",
+   "Stop in a plank, hips level",
+   "Walk back to standing",
+   "Bend the knees as much as you need",
+   "Move smoothly",
+   "This is a warm-up, not a race"
+  ],
+  "alternates": [
+   "wu-arm-circles",
+   "cat-cow",
+   "worlds-greatest"
+  ],
+  "id": "wu-inchworm",
+  "name": "Inchworm Walkout",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "hamstrings",
+   "core"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Inchworm%20Walkout%20proper%20form",
+  "demoTitle": "Inchworm Walkout proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "On your back, ankle over the opposite thigh",
+   "Pull the thigh toward you",
+   "Keep the head down",
+   "Switch sides halfway",
+   "Ease off if the knee complains"
+  ],
+  "alternates": [
+   "foam-roll-legs",
+   "st-hip-flexor",
+   "wu-glute-bridge"
+  ],
+  "id": "wu-glute-stretch",
+  "name": "Figure-4 Glute Stretch",
+  "equipment": [
+   "mat"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "glutes"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Figure-4%20Glute%20Stretch%20proper%20form",
+  "demoTitle": "Figure-4 Glute Stretch proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Hands on a wall, one foot back",
+   "Heel stays down",
+   "Back leg straight for the calf",
+   "Slight bend for the lower calf",
+   "Switch sides halfway",
+   "Don't bounce"
+  ],
+  "alternates": [
+   "st-hamstring",
+   "wu-leg-swings",
+   "foam-roll-legs"
+  ],
+  "id": "wu-calf-stretch",
+  "name": "Standing Calf Stretch",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "calves"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Standing%20Calf%20Stretch%20proper%20form",
+  "demoTitle": "Standing Calf Stretch proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": false,
+  "cue": "",
+  "formCues": [
+   "Forearm on a door frame, elbow about shoulder height",
+   "Step through until the chest opens",
+   "Don't shrug",
+   "Breathe into the stretch",
+   "Smaller range if the front of the shoulder pinches"
+  ],
+  "alternates": [
+   "ball-chest-stretch",
+   "st-dyn-chest",
+   "st-triceps"
+  ],
+  "id": "st-pec",
+  "name": "Doorway Chest Stretch",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "chest",
+   "front delts"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Doorway%20Chest%20Stretch%20proper%20form",
+  "demoTitle": "Doorway Chest Stretch proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Hold a wall, pull one heel toward the glute",
+   "Knees stay close",
+   "Stand tall, don't arch",
+   "Switch sides halfway",
+   "Use a smaller bend if the knee hurts"
+  ],
+  "alternates": [
+   "st-hip-flexor",
+   "foam-roll-legs",
+   "wu-bw-squat"
+  ],
+  "id": "st-quad",
+  "name": "Standing Quad Stretch",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "quads"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Standing%20Quad%20Stretch%20proper%20form",
+  "demoTitle": "Standing Quad Stretch proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Sit tall, ankle over the opposite knee",
+   "Hinge forward a little",
+   "Keep the back long",
+   "Switch sides halfway",
+   "Don't yank the knee"
+  ],
+  "alternates": [
+   "wu-glute-stretch",
+   "foam-roll-legs",
+   "st-hip-flexor"
+  ],
+  "id": "st-figure4",
+  "name": "Seated Figure-4 Stretch",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "glutes"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Seated%20Figure-4%20Stretch%20proper%20form",
+  "demoTitle": "Seated Figure-4 Stretch proper form",
+  "demoChannel": "YouTube"
+ },
+ {
+  "unilateral": true,
+  "cue": "Switch sides",
+  "formCues": [
+   "Toes on the wall or heel back",
+   "Knee straight, then a soft bend",
+   "Switch sides halfway",
+   "Hold and breathe",
+   "No bouncing"
+  ],
+  "alternates": [
+   "wu-calf-stretch",
+   "st-hamstring",
+   "foam-roll-legs"
+  ],
+  "id": "st-calf",
+  "name": "Wall Calf Stretch",
+  "equipment": [
+   "bodyweight"
+  ],
+  "category": "mobility",
+  "muscles": [
+   "calves"
+  ],
+  "work": 30,
+  "rest": 0,
+  "group": "Warm-up",
+  "warmup": true,
+  "timed": true,
+  "stretch": true,
+  "demoUrl": "https://www.youtube.com/results?search_query=Wall%20Calf%20Stretch%20proper%20form",
+  "demoTitle": "Wall Calf Stretch proper form",
+  "demoChannel": "YouTube"
  }
 ]

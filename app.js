@@ -252,10 +252,16 @@ function withReps(x) {
     return x;
   }
   const sg = suggest(x.id); x.targetReps = (sg && sg.reps) || src.startReps || src.reps[0];
+  if (genJitter && x.targetReps) {
+    const [lo, hi] = src.reps, step = hi - lo > 4 ? 2 : 1, r = genJitter();
+    const shift = r < 0.28 ? -step : r > 0.72 ? step : 0;
+    x.targetReps = Math.min(hi, Math.max(lo, x.targetReps + shift));
+  }
   const sides = sideCount(src);
   x.work = Math.min(150, Math.max(25, Math.round((SET_SETUP + x.targetReps * SEC_PER_REP * sides) / 5) * 5));
   return x;
 }
+let genJitter = null;
 const isLiftStep = s => s.type === 'work' && s.kind !== 'warmup' && s.kind !== 'cooldown';
 // Extra seconds per lifting set, from real sessions: mean of the default and the last 5 measured sessions (5-60 s).
 function ovhPerSet() {
@@ -299,6 +305,10 @@ const STATION = {
   'db-bulgarian': ['bench:foot'],
   'db-hip-thrust': ['bench:hip'], 'sl-hip-thrust': ['bench:hip'],
   'decline-situp': ['bench:decline'],
+  'bench-dip': ['bench:edge'], 'close-grip-db-press': ['bench:flat'], 'db-skull-crusher': ['bench:flat'],
+  'db-pullover': ['bench:flat'], 'incline-pushup': ['bench:incline'], 'decline-pushup': ['bench:decline'],
+  'db-incline-curl': ['bench:incline'], 'db-preacher-curl': ['bench:preacher'], 'copenhagen-plank': ['bench:copenhagen'],
+  'cable-hammer-curl': ['cable:low-rope'], 'cable-upright-row': ['cable:low-bar'],
   'cable-fly': ['cable:high-d'], 'cable-woodchop': ['cable:high-d'],
   'cable-low-high-fly': ['cable:low-d'], 'cable-front-raise': ['cable:low-d'], 'cable-lateral-raise': ['cable:low-d'],
   'cable-tricep-pushdown': ['cable:high-rope'], 'cable-crunch': ['cable:high-rope'],
@@ -327,18 +337,63 @@ function stationConflict(a, b) {
 function smithConflict(a, b) { return stationConflict(a, b); }
 // Full-body / hard-effort finishers. Burpee + thruster (and the other max efforts in that pool)
 // are too much in one superset; pair one of them with a lighter conditioner instead.
-const HIGH_ENERGY = new Set(['burpee', 'kb-thruster', 'row-sprint', 'mountain-climber', 'trx-jump-squat']);
+const HIGH_ENERGY = new Set(['burpee', 'kb-thruster', 'row-sprint', 'mountain-climber', 'trx-jump-squat', 'med-ball-slam', 'plank-jack']);
 function highEnergy(e) {
   if (!e) return false;
-  if (HIGH_ENERGY.has(e.id)) return true;
+  if (e.highEnergy || HIGH_ENERGY.has(e.id)) return true;
   return e.category === 'conditioning' && (e.muscles || []).includes('full body');
 }
 function pairConflict(a, b) { return stationConflict(a, b) || (highEnergy(a) && highEnergy(b)); }
-function warmupFor(day) {
-  if (day.warmup) return day.warmup;
-  const cats = new Set(day.blocks.flat().map(c => c.split(':')[0]));
-  if (cats.has('legs') && !cats.has('push')) return ['wu-hip-circles', 'wu-leg-swings', 'wu-glute-bridge', 'dead-bug', 'st-hip-flexor', 'wu-bw-squat'];
-  return ['wu-arm-circles', 'cat-cow', 'wu-band-pull-apart', 'wu-scap-pushup', 'st-dyn-chest', 'st-childs-pose'];
+const WU_POOL = {
+  push: ['wu-arm-circles', 'wu-arm-swing', 'wu-band-pull-apart', 'wu-scap-pushup', 'wu-light-press', 'st-dyn-chest', 'st-triceps', 'st-pec', 'wu-thoracic-open', 'wu-inchworm', 'cat-cow'],
+  pull: ['wu-band-pulldown', 'wu-scap-pull', 'wu-band-pull-apart', 'st-childs-pose', 'st-biceps', 'cat-cow', 'wu-thoracic-open', 'wu-arm-circles', 'row-steady', 'wu-inchworm'],
+  legs: ['wu-hip-circles', 'wu-leg-swings', 'wu-glute-bridge', 'wu-bw-squat', 'st-hip-flexor', 'st-hamstring', 'wu-spiderman', 'wu-glute-stretch', 'wu-calf-stretch', 'st-quad', 'st-figure4', 'st-calf', 'worlds-greatest', 'dead-bug', 'bird-dog'],
+  shoulders: ['wu-arm-circles', 'wu-arm-swing', 'wu-band-pull-apart', 'st-dyn-chest', 'wu-hip-circles', 'wu-leg-swings', 'wu-glute-bridge', 'st-pec', 'wu-thoracic-open'],
+};
+const CD_POOL = {
+  push: ['ball-chest-stretch', 'foam-roll-tspine', 'st-triceps', 'st-pec', 'st-childs-pose', 'cat-cow'],
+  pull: ['foam-roll-tspine', 'cat-cow', 'st-childs-pose', 'st-biceps', 'wu-band-pull-apart'],
+  legs: ['foam-roll-legs', 'st-hip-flexor', 'st-hamstring', 'st-figure4', 'st-quad', 'st-calf', 'wu-glute-stretch', 'wu-calf-stretch', 'cat-cow', 'worlds-greatest'],
+};
+function dayCats(day) { return new Set((day.blocks || []).flat().map(c => String(c).split(':')[0])); }
+function warmupPool(day) {
+  const cats = dayCats(day), ids = [...(day.warmup || [])];
+  if (cats.has('push')) ids.push(...WU_POOL.push);
+  if (cats.has('pull')) ids.push(...WU_POOL.pull);
+  if (cats.has('legs')) ids.push(...WU_POOL.legs);
+  if (cats.has('core')) ids.push('dead-bug', 'bird-dog', 'cat-cow');
+  if (!ids.length) ids.push(...WU_POOL.push);
+  return [...new Set(ids)];
+}
+function cooldownPool(day) {
+  const cats = dayCats(day), ids = [...(day.cooldown || [])];
+  if (cats.has('push')) ids.push(...CD_POOL.push);
+  if (cats.has('pull')) ids.push(...CD_POOL.pull);
+  if (cats.has('legs')) ids.push(...CD_POOL.legs);
+  else if (cats.has('core')) ids.push('cat-cow', 'foam-roll-tspine');
+  if (!ids.length) ids.push(...CD_POOL.push);
+  return [...new Set(ids)];
+}
+function pickWeighted(rows, R) {
+  const tot = rows.reduce((s, r) => s + r.w, 0);
+  if (!tot) return rows[0];
+  let x = R() * tot;
+  for (const r of rows) { x -= r.w; if (x <= 0) return r; }
+  return rows[rows.length - 1];
+}
+function recentDayRows(di, n) {
+  const split = activeSplit();
+  const rows = history.filter(h => !h.skipped && dayIndexFromHistory(h, split) === di);
+  const logged = (LS.get('gc_variety', {})[di] || []).slice(-n).map(x => ({ exerciseIds: x.ids || [] }));
+  return [...rows, ...logged].slice(-n);
+}
+function noteVariety(w) {
+  if (!w || w.dayIndex == null) return;
+  const all = LS.get('gc_variety', {}), di = w.dayIndex;
+  const list = all[di] || [];
+  list.push({ t: Date.now(), ids: (w.blocks || []).flatMap(b => b.items.map(e => e.id)) });
+  all[di] = list.slice(-8);
+  LS.set('gc_variety', all);
 }
 function generate() {
   const split = activeSplit();
@@ -350,61 +405,65 @@ function generate() {
   // those lifts when another on-role option exists, and rotate which patterns lead.
   const prior = history.filter(h => !h.skipped && dayIndexFromHistory(h, split) === di);
   const turn = prior.length;
-  const again = new Set(prior.slice(-2).flatMap(h => h.exerciseIds || []));
-  const R = rng([dateKey(new Date()), di, shuffleN, turn, settings.daysPerWeek].join('|'));
+  const idset = rows => new Set(rows.flatMap(h => h.exerciseIds || []));
+  const last1 = idset(recentDayRows(di, 1)), last2 = idset(recentDayRows(di, 2)), last3 = idset(recentDayRows(di, 3));
+  const R = rng([dateKey(new Date()), di, shuffleN, turn, settings.daysPerWeek, STORE].join('|'));
+  genJitter = R;
   const lv = LEVEL[settings.level] || LEVEL.intermediate;
   const pool = available(), okPool = genPool(); const used = new Set();
-  // An avoided exercise is never programmed: its slot automatically gets its first usable backup instead
-  // (keeps the rest of the plan stable). If no backup is usable, the next-best pick is taken.
   const sub = e => { if (!settings.avoided.includes(e.id)) return e; const a = (e.alternates || []).map(x => okPool.find(p => p.id === x && !used.has(x))).find(Boolean); return a ? { ...a, autoFor: e.id } : null; };
-  // Fixed warm-up/cool-down picks fall back to their first usable alternate if avoided or missing equipment.
-  const fixed = id => { const ok = x => okPool.find(e => e.id === x && !used.has(x)); const e = ok(id) || (byId(id)?.alternates || []).map(ok).find(Boolean); if (e) used.add(e.id); return e; };
   const rankSlot = (slot, preferHeavy, skip) => {
     const [cat, mus] = slot.split(':'); const want = mus ? mus.split('/') : [];
     const c = pool.filter(e => e.category === cat && !used.has(e.id) && !skip.has(e.id) && e.id !== 'row-steady');
-    const fit = e => !want.length ? 0 : want.includes((e.muscles || [])[0]) ? 3 : (e.muscles || []).some(m => want.includes(m)) ? 1.5 : 0;
-    const score = e => {
-      const f = fit(e);
-      // 2.6 is larger than the random draw plus the heavy bonus, so a repeat loses to a
-      // fresh exercise with the same muscle fit. The only calf raise (no other fit-3) stays.
-      const alt = again.has(e.id) && c.some(o => o !== e && fit(o) >= f);
+    const fitOf = e => !want.length ? 0 : want.includes((e.muscles || [])[0]) ? 3 : (e.muscles || []).some(m => want.includes(m)) ? 1.5 : 0;
+    c.forEach(e => { e._fit = fitOf(e); });
+    const rows = c.map(e => {
+      const f = e._fit;
+      const same = c.some(o => o.id !== e.id && o._fit >= f && (f > 0 || c.length > 1));
+      const rec = !same ? 1 : last1.has(e.id) ? 0.16 : last2.has(e.id) ? 0.42 : 1;
       const db = (PROFILE && PROFILE.preferDbPress && e.category === 'push' && (e.equipment || []).includes('dumbbells') && /press/i.test(e.name)) ? 0.45 : 0;
-      return f + R() + (preferHeavy && e.rest >= 60 ? 0.6 : 0) - (alt ? 2.6 : 0) + db;
-    };
-    return c.map(e => ({ e, score: score(e) })).sort((a, b) => b.score - a.score);
+      const heavy = preferHeavy && (e.rest || 0) >= 60 ? 0.55 : 0;
+      const w = Math.max(0.05, (0.35 + f) * rec * (0.65 + 0.7 * R()) + heavy + db);
+      return { e, w, score: w };
+    });
+    const good = rows.filter(r => r.e._fit > 0);
+    return (good.length ? good : rows).sort((a, b) => b.w - a.w);
   };
-  // Highest-scoring superset that does not pair two different setups of the same station
-  // (Smith stops, cable pulley/attachment, bench angle, BOSU side, TRX length, step height).
-  // Searching the pair keeps a real hamstring with the calf raise instead of dropping the calf.
+  // Weighted sample of a conflict-free pair. Station clashes and two max-effort moves are never chosen.
   const chooseItems = (pat, preferFirst) => {
     const lists = pat.map((slot, i) => rankSlot(slot, preferFirst && i === 0, new Set()));
-    let best = null, bestScore = -Infinity;
-    const chosen = [];
-    const dfs = i => {
-      if (i === lists.length) {
-        const sc = chosen.reduce((a, c) => a + c.score, 0);
-        if (sc > bestScore) { bestScore = sc; best = chosen.map(c => ({ raw: c.e, item: c.item })); }
-        return;
+    if (pat.length === 2 && lists[0].length && lists[1].length) {
+      const pairs = [];
+      for (const a of lists[0]) for (const b of lists[1]) {
+        if (a.e.id === b.e.id) continue;
+        const ia = sub(a.e), ib = sub(b.e); if (!ia || !ib || ia.id === ib.id || pairConflict(ia, ib)) continue;
+        pairs.push({ raw: [a.e, b.e], items: [ia, ib], w: a.w * b.w });
       }
-      for (const row of lists[i]) {
-        if (chosen.some(c => c.e.id === row.e.id)) continue;
-        const item = sub(row.e); if (!item) continue;
-        if (chosen.some(c => c.item.id === item.id || pairConflict(c.item, item))) continue;
-        chosen.push({ e: row.e, item, score: row.score }); dfs(i + 1); chosen.pop();
+      if (pairs.length) {
+        const pick = pickWeighted(pairs, R);
+        pick.raw.forEach(e => used.add(e.id)); pick.items.forEach(e => used.add(e.id));
+        return pick.items;
       }
-    };
-    dfs(0);
-    if (!best) {
-      const items = [];
-      for (let i = 0; i < pat.length; i++) {
-        const row = rankSlot(pat[i], preferFirst && i === 0, new Set(items.map(e => e.id))).find(r => sub(r.e));
-        if (!row) continue;
-        const item = sub(row.e); used.add(row.e.id); used.add(item.id); items.push(item);
-      }
-      return items;
     }
-    best.forEach(c => { used.add(c.raw.id); used.add(c.item.id); });
-    return best.map(c => c.item);
+    const items = [];
+    for (let i = 0; i < pat.length; i++) {
+      const rows = rankSlot(pat[i], preferFirst && i === 0, new Set(items.map(e => e.id))).filter(r => sub(r.e) && !items.some(it => it.id === r.e.id || pairConflict(it, sub(r.e))));
+      if (!rows.length) continue;
+      const row = pickWeighted(rows, R), item = sub(row.e);
+      used.add(row.e.id); used.add(item.id); items.push(item);
+    }
+    return items;
+  };
+  const takeRotating = (ids, n, avoid) => {
+    const bag = [...new Set(ids)].map(id => okPool.find(e => e.id === id && !used.has(e.id))).filter(Boolean);
+    const fresh = bag.filter(e => !avoid.has(e.id));
+    const src = fresh.length >= Math.min(n, 3) ? fresh : bag;
+    const left = src.slice(), out = [];
+    while (out.length < n && left.length) {
+      const row = pickWeighted(left.map(e => ({ e, w: avoid.has(e.id) ? 0.25 : 1 })), R);
+      out.push(row.e); used.add(row.e.id); left.splice(left.indexOf(row.e), 1);
+    }
+    return out;
   };
   const scale = e => withReps({ ...e, work: Math.round(e.work * lv.w / 5) * 5, rest: restFor(e) });
   const budget = settings.minutes * 60;
@@ -412,12 +471,11 @@ function generate() {
   const out = { day: day.name, focus: day.focus, dayIndex: di, splitLen: split.length, nextDay: split[rem.length ? rem[0] : (di + 1) % split.length].name, blocks: [] };
   let t = 0;
   if (settings.warmup) {
-    // Day-specific prep + a short dynamic-stretch segment (gentle on lower back, right shoulder, left elbow, knees).
     const wt = settings.minutes <= 30 ? 25 : 30;
-    const wu = warmupFor(day).map(fixed).filter(Boolean).map(e => ({ ...e, work: perSide(e) ? Math.round(wt * 2 / 5) * 5 : wt, rest: 10 }));
+    const wu = takeRotating(warmupPool(day), 6, last3).map(e => ({ ...e, work: perSide(e) ? Math.round(wt * 2 / 5) * 5 : wt, rest: 10 }));
     if (wu.length) { out.blocks.push({ name: 'Warm-up', rounds: 1, items: wu, kind: 'warmup' }); t += wu.reduce((s, e) => s + e.work + e.rest, 0); }
   }
-  const cdItems = settings.cooldown ? (day.cooldown || ['foam-roll-legs', 'ball-chest-stretch']).map(fixed).filter(Boolean).map(e => ({ ...e, work: perSide(e) ? 120 : 60, rest: 5 })) : [];
+  const cdItems = settings.cooldown ? takeRotating(cooldownPool(day), 2, last3).map(e => ({ ...e, work: perSide(e) ? 120 : 60, rest: 5 })) : [];
   const cdTime = cdItems.reduce((s, e) => s + e.work + e.rest, 0);
   // Short conditioning finisher (2 rounds) reserved up front so main work fills the rest of the budget.
   const finItems = day.finisher ? chooseItems(day.finisher, false).map(scale) : [];
@@ -430,9 +488,11 @@ function generate() {
   // Fit to the chosen length using the REALISTIC estimate (every step buildSteps makes + per-set overhead).
   // Realistic estimate must not exceed the chosen length; up to 4 min under is fine (fewer blocks/rounds beat cramming).
   const hi = budget, lo = budget - 240, all = () => [...out.blocks, fin, cdBlock];
+  const pats = day.blocks.slice();
+  for (let i = pats.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); const tmp = pats[i]; pats[i] = pats[j]; pats[j] = tmp; }
   let bi = 0;
   while (bi < 10) {
-    const pat = day.blocks[(bi + turn) % day.blocks.length];
+    const pat = pats[bi % pats.length];
     const items = chooseItems(pat, bi < 2).map(scale);
     if (!items.length) break;
     const isFinisher = !day.finisher && pat.every(c => /^(conditioning|core)/.test(c));
@@ -456,6 +516,7 @@ function generate() {
   out.key = [dateKey(new Date()), di, shuffleN, turn, settings.daysPerWeek, settings.minutes, settings.level, settings.restSec, settings.switchSec, settings.setupSec].join('|');
   applySwaps(out);
   out.stepSec = totalSec(out); out.totalSec = estSec(out); out.estMin = Math.round(out.totalSec / 60);
+  genJitter = null;
   return out;
 }
 /* The one true session length: the sum of every step the player will run. Used by Today, preview and the player header. */
@@ -468,28 +529,32 @@ const minText = s => Math.round(s / 60) + ' min';
    brings its own images, form cues and demo link. Swaps persist for this session (gc_swaps, keyed to the
    generated workout) and are logged in history. Long-press = avoid this exercise permanently. */
 function slotCandidates(w, bi, ii) {
-  const cur = w.blocks[bi].items[ii], orig = byId(cur.origId || cur.id);
+  const cur = w.blocks[bi].items[ii], orig = byId(cur.origId || cur.id) || byId(cur.id);
   const used = new Set(w.blocks.flatMap((b, x) => b.items.filter((e, y) => !(x === bi && y === ii)).map(e => e.id)));
   const avail = new Set(available().map(e => e.id));
   const partners = w.blocks[bi].items.filter((_, y) => y !== ii);
   const pass = id => { const e = byId(id); return !!(e && avail.has(id) && !settings.avoided.includes(id) && !used.has(id) && id !== 'row-steady' && !partners.some(p => pairConflict(p, e))); };
   const base = [];
   const push = id => { if (id && !base.includes(id) && (id === cur.id || pass(id))) base.push(id); };
-  push(cur.id); push(orig.id); (orig.alternates || []).forEach(push);
-  const extra = extraForSlot(orig, base, used, partners, avail);
-  if (extra) base.push(extra);
+  push(cur.id); if (orig) { push(orig.id); (orig.alternates || []).forEach(push); }
+  let guard = 0;
+  while (base.filter(id => id !== cur.id).length < 3 && guard < 24) {
+    const extra = extraForSlot(orig, base, used, partners, avail, guard++);
+    if (extra) base.push(extra);
+  }
   return base;
 }
-// One more replacement than the curated backups: same category and muscle role, still free of
-// station conflicts and a second max-effort finisher.
-function extraForSlot(orig, have, used, partners, avail) {
+// Keep adding same-role, then same-category, backups until the chooser has three alternatives.
+// Station clashes and a second max-effort move are still rejected.
+function extraForSlot(orig, have, used, partners, avail, passN = 0) {
   if (!orig) return null;
   const primary = (orig.muscles || [])[0];
-  const pool = available().filter(e => avail.has(e.id) && !have.includes(e.id) && !used.has(e.id) && !settings.avoided.includes(e.id) && e.id !== 'row-steady' && e.category === orig.category && !partners.some(p => pairConflict(p, e)));
-  const role = e => (e.muscles || [])[0] === primary ? 2 : (e.muscles || []).some(m => (orig.muscles || []).includes(m)) ? 1 : 0;
-  pool.sort((a, b) => role(b) - role(a) || a.name.localeCompare(b.name));
-  const fit = pool.find(e => role(e) > 0) || pool[0];
-  return fit ? fit.id : null;
+  const share = e => (e.muscles || [])[0] === primary || (e.muscles || []).some(m => (orig.muscles || []).includes(m));
+  let pool = available().filter(e => avail.has(e.id) && !have.includes(e.id) && !used.has(e.id) && !settings.avoided.includes(e.id) && e.id !== 'row-steady' && e.id !== orig.id && !partners.some(p => pairConflict(p, e)));
+  if (passN < 12) pool = pool.filter(e => e.category === orig.category);
+  if (passN < 6) pool = pool.filter(share);
+  pool.sort((a, b) => (share(b) - share(a)) || a.name.localeCompare(b.name));
+  return pool.length ? pool[0].id : null;
 }
 function nextAlternate(w, bi, ii) {
   const cur = w.blocks[bi].items[ii], c = slotCandidates(w, bi, ii);
@@ -1019,6 +1084,35 @@ function openDemo(url) {
 }
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const demoLink = (e, cls, label) => e.demoUrl ? `<a class="demo ${cls}" href="${e.demoUrl}" target="_blank" rel="noopener" data-demo="${e.id}" title="${esc((e.demoTitle || '') + (e.demoChannel ? ' · ' + e.demoChannel : ''))}">${label}</a>` : '';
+function exArtErr(img) {
+  const fb = img.getAttribute('data-fb');
+  img.onerror = null;
+  if (fb && img.getAttribute('src') !== fb) img.src = fb;
+  else {
+    img.classList.add('gone');
+    const box = img.parentElement;
+    if (box && box.classList.contains('exfade') && ![...box.querySelectorAll('img')].some(i => !i.classList.contains('gone'))) box.classList.add('gone');
+  }
+}
+window.exArtErr = exArtErr;
+// Optional illustrations: img/ex/<slug>-start.webp and -end.webp. Missing files fall back to the older photo, then hide.
+function artHTML(e, mode) {
+  if (!e || !e.id) return '';
+  const start = asset('img/ex/' + e.id + '-start.webp'), end = asset('img/ex/' + e.id + '-end.webp');
+  const legacy = e.image || [], fb0 = legacy[0] || '', fb1 = legacy[1] || legacy[0] || '';
+  if (mode === 'start') return `<img class="exart" loading="lazy" alt="${esc(e.name)}" src="${start}" data-fb="${esc(fb0)}" onerror="exArtErr(this)">`;
+  return `<span class="exfade"><img class="exart on" loading="lazy" alt="${esc(e.name)}, start position" src="${start}" data-fb="${esc(fb0)}" onerror="exArtErr(this)"><img class="exart" loading="lazy" alt="${esc(e.name)}, end position" src="${end}" data-fb="${esc(fb1)}" onerror="exArtErr(this)"></span>`;
+}
+setInterval(() => {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('.exfade').forEach(box => {
+    const imgs = [...box.querySelectorAll('img')].filter(i => !i.classList.contains('gone'));
+    if (imgs.length < 2) return;
+    const on = imgs.find(i => i.classList.contains('on')) || imgs[0];
+    const nxt = imgs[(imgs.indexOf(on) + 1) % imgs.length];
+    on.classList.remove('on'); nxt.classList.add('on');
+  });
+}, 1200);
 // Player swap targets the exercise on screen: the current one during work, the upcoming one during get-ready/rest.
 function playerSwap(avoid) {
   const s = P.steps[P.i]; const tgt = s && (s.type === 'work' ? s.ex : s.next && s.next.ex); const slot = tgt && findSlot(tgt); if (!slot) return;
@@ -1048,7 +1142,7 @@ function openSwap(bi, ii) {
     <div class="pvhead"><div><div class="pvblk">${esc(w.blocks[bi].name)}</div><h2 id="swapTitle">Swap exercise</h2><div class="mut">Same slot · no setup clash</div></div>
       <button type="button" class="pvx" id="swapClose" aria-label="Close swap">✕</button></div>
     <div class="swaplist">${ids.map(id => { const e = byId(id), on = id === cur.id, extra = !curated.has(id);
-      return `<button type="button" class="swapopt${on ? ' on' : ''}" data-id="${id}"><img src="${(e.image || [])[0] || ''}" alt="">
+      return `<button type="button" class="swapopt${on ? ' on' : ''}" data-id="${id}">${artHTML(e, 'start')}
         <span><b>${esc(e.name)}</b><small>${on ? 'Current' : extra ? 'Also fits this slot' : 'Backup'}${e.equipment ? ' · ' + esc(e.equipment.join(', ')) : ''}</small></span></button>`; }).join('')}</div>
   </div>`;
   document.body.appendChild(ov); requestAnimationFrame(() => ov.classList.add('on'));
@@ -1147,6 +1241,7 @@ function savePartial() {
     exerciseIds: partialExerciseIds(), swaps: netSwaps(), swapTaps: (today.swaps || []).length, log, sets });
   LS.set('gc_history', history); LS.remove('gc_swaps'); LS.remove('gc_daypick'); dayPick = null; shuffleN = 0;
   const dayName = today.day;
+  noteVariety(today);
   stopPlayer(); today = generate(); renderToday();
   toast(dayName + ' saved. It counts for this cycle.');
 }
@@ -1192,12 +1287,12 @@ function render() {
     ${s.type === 'work' && (nowW.length || (sg && sgText(s.ex, sg))) ? `<div class="lastline">${nowW.length ? `<span>Today: ${nowW.join(', ')}</span>` : ''}${sg && sgText(s.ex, sg) ? `<span>Try ${sgText(s.ex, sg)}</span>` : ''}</div>` : ''}
     ${s.type === 'work' && s.ex.targetReps ? `<div class="target" id="target">${repsLabel(s.ex)}</div>` : ''}
     ${s.type === 'work' ? `<button type="button" class="donebtn" id="bDone">Done ✓<small>${P.steps[P.i + 1] && logStepFor(P.i + 1) ? 'finished early · log this set now' : 'finished early · move on'}</small></button>` : ''}
-    ${(() => { if (s.setup) return ''; const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie && ie.image ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}${pw ? ' small' : ''}"><img id="pimg" src="${ie.image[0]}" data-f="${ie.image.join('|')}" alt="${ie.name}">${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
+    ${(() => { if (s.setup) return ''; const ie = s.type === 'work' ? s.ex : (s.ex || (s.next && s.next.ex)); return ie ? `<div class="pimg${s.type === 'work' ? '' : ' dim'}${pw ? ' small' : ''}">${artHTML(ie)}${(() => { const sl = findSlot(ie); return sl ? `<div class="swapbar"><button class="swap" id="bSwap" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button>${ie.origId && ie.origId !== ie.id ? `<button class="avoid" id="bAvoid" title="Never program ${esc(byId(ie.origId).name)} again">🚫 Avoid ${esc(byId(ie.origId).name)}</button>` : ''}</div>` : ''; })()}${ie.demoUrl ? `<a class="demo" id="bDemo" href="${ie.demoUrl}" target="_blank" rel="noopener" title="${esc(ie.demoTitle || '')}">▶ Watch demo</a>` : ''}</div>` : ''; })()}
     ${(() => { if (s.setup) return ''; const cs = s.type === 'work' ? cuesFor(s.ex, s.round) : (s.next && !pw ? cuesFor(s.next.ex, s.next.round).slice(0, 1) : []); return cs.length ? `<div class="cues${s.type === 'work' ? '' : ' dim'}">${s.type === 'work' ? '' : '<b>Next focus:</b> '}${cs.map(c => `<div>• ${c}</div>`).join('')}</div>` : ''; })()}
     <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" stroke="#d9e7f2" stroke-width="7" fill="none"/>
       <circle id="arc" cx="50" cy="50" r="45" stroke="${s.type === 'rest' ? '#1d4ed8' : '#0ea5e9'}" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="0"/></svg>
       <div class="n" id="num">${fmt(P.left)}</div></div>
-    ${s.setup ? '' : `<div class="next">${s.next ? `${s.next.ex.image ? `<img class="thumb" src="${s.next.ex.image[1]}" alt="">` : ''}<div><div class="mut">Next</div><div style="font-weight:600;font-size:18px">${s.next.ex.name}</div><div class="mut">${repsLabel(s.next.ex) ? repsLabel(s.next.ex) + ' · ' : ''}${s.next.dur}s · ${s.next.ex.equipment.join(', ')}</div></div>` : '<div style="font-weight:600">Last one. Finish strong!</div>'}</div>`}
+    ${s.setup ? '' : `<div class="next">${s.next ? `${artHTML(s.next.ex, 'start')}<div><div class="mut">Next</div><div style="font-weight:600;font-size:18px">${s.next.ex.name}</div><div class="mut">${repsLabel(s.next.ex) ? repsLabel(s.next.ex) + ' · ' : ''}${s.next.dur}s · ${s.next.ex.equipment.join(', ')}</div></div>` : '<div style="font-weight:600">Last one. Finish strong!</div>'}</div>`}
     <div class="ctrl"><button id="bPrev">⏮</button><button id="bPause" class="pri" style="flex:2">${P.paused ? '▶ Resume' : '⏸ Pause'}</button><button id="bSkip" title="Skip (no log)" aria-label="Skip without logging">⏭</button></div>
     <button id="bQuit" style="margin-top:4px;padding:8px;background:none;color:var(--mut);flex-shrink:0">End workout</button>`;
   $('#bPause').onclick = togglePause; if (pw) wireSetLog(pw);
@@ -1223,7 +1318,7 @@ function setupHTML(s) {
     const tgt = `${rounds} × ${e.targetReps ? repsLabel(e) : fmt(e.work) + (e.work < 60 ? ' s' : '')}`;
     return `<div class="bpx" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">
       <div class="bpn"><span class="bpk">${String.fromCharCode(65 + ii)}</span>${esc(e.name)}<i aria-hidden="true">ⓘ</i></div>
-      ${im.length ? `<div class="bpimgs">${[im[0], im[im.length - 1]].filter((x, k, a) => k === 0 || x !== a[0]).map((p, k) => `<figure><img src="${p}" alt="${esc(e.name)} ${k ? 'end' : 'start'}"><figcaption>${k ? 'End' : 'Start'}</figcaption></figure>`).join('')}</div>` : ''}
+      <div class="bpimgs">${artHTML(e)}</div>
       <div class="bprow"><small>Target</small><b class="bptgt">${tgt}</b></div>
       <div class="bprow"><small>Last time</small>${last ? `<b class="bplast">${last.txt}</b><span class="bpd">${last.date}</span>` : '<b class="bplast none">No history yet</b>'}</div>
       ${sgt ? `<div class="bprow"><small>Today</small><b class="bptry">try ${sgt}</b></div>` : ''}
@@ -1243,8 +1338,6 @@ function renderTime() {
     if (sub) sub.textContent = now ? `Set up ${s.setupPart} s · get the next group ready` : (s.restPart ? `Rest ${s.restPart} s, then ${s.setupPart} s to set up` : `Set up ${s.setupPart} s · get the next group ready`);
   }
   if (a) a.setAttribute('stroke-dashoffset', (282.7 * (1 - P.left / s.dur)).toFixed(1));
-  const im = $('#pimg'); // alternate start/end frames every ~1.2s while working
-  if (im && !P.paused) { const f = im.dataset.f.split('|'), k = s.type === 'work' ? Math.floor((s.dur - P.left) / 1.2) % f.length : 0; if (!im.src.endsWith(f[k])) im.src = f[k]; }
 }
 // The day counts as soon as the player finishes — not only after "Save session".
 // Otherwise closing the app on the done screen leaves dayPick on Legs and the home
@@ -1258,6 +1351,7 @@ function recordCompletion(mins) {
   LS.set('gc_history', history); LS.remove('gc_swaps'); LS.remove('gc_daypick'); dayPick = null; shuffleN = 0;
   P.doneDay = today.day; P.doneIndex = today.dayIndex;
   P.doneSnap = { day: today.day, dayIndex: today.dayIndex, exerciseIds: today.blocks.flatMap(b => b.items.map(e => e.id)), swaps: netSwaps(), swapTaps: (today.swaps || []).length };
+  noteVariety(today);
   today = generate();
 }
 function finish() {
@@ -1302,8 +1396,7 @@ function previewHTML(bi, ii) {
     <div class="pvgrab" aria-hidden="true"></div>
     <div class="pvhead"><div><div class="pvblk">${esc(b.name)} · workout ~${minText(estSec(w))}${e.origId && e.origId !== e.id ? ` · swapped for ${esc(byId(e.origId).name)}` : ''}</div><h2 id="pvTitle">${esc(e.name)}</h2><div class="mut">${esc(e.muscles.join(', '))}</div></div>
       <button type="button" class="pvx" id="pvClose" aria-label="Close preview">✕</button></div>
-    ${imgs.length ? `<div class="pvimgs" id="pvImgs">${imgs.map((p, k) => `<figure><img src="${p}" alt="${esc(e.name)} – ${k ? 'end' : 'start'} position"><figcaption>${k === 0 ? 'Start' : k === imgs.length - 1 ? 'End' : 'Step ' + (k + 1)} position</figcaption></figure>`).join('')}</div>
-      ${imgs.length > 1 ? `<div class="pvdots" id="pvDots">${imgs.map((_, k) => `<i class="${k ? '' : 'on'}"></i>`).join('')}<span class="mut">swipe</span></div>` : ''}` : ''}
+    <div class="pvimgs" id="pvImgs">${artHTML(e)}</div>
     <div class="pvstats">
       ${st('Sets × reps', vol, volSub)}
       ${st('Set time', fmt(e.work) + (e.work < 60 ? ' s' : ''), e.targetReps ? 'per set · own pace' : 'per round')}
@@ -1358,7 +1451,7 @@ function renderToday() {
    <button class="pri" id="bStart">▶ Start workout</button>
    <div class="mut pvhint">Tap any exercise for a big preview</div>
    ${w.blocks.map(b => `<div class="card block"><div class="bt">${b.name} <span class="mut">· ${b.rounds} round${b.rounds > 1 ? 's' : ''}</span></div>
-     ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex pv" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}<br><small>${repsLabel(e) ? repsLabel(e) + ' · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
+     ${b.items.map((e, ii) => { const sg = suggest(e.id); const bi = w.blocks.indexOf(b); const sw = e.origId && e.origId !== e.id; return `<div class="ex pv" data-bi="${bi}" data-ii="${ii}" role="button" tabindex="0" aria-label="Preview ${esc(e.name)}">${artHTML(e)}<div style="flex:1">${e.name}<br><small>${repsLabel(e) ? repsLabel(e) + ' · ' : ''}${e.equipment.join(', ')}${sg && sgText(e, sg) ? ' · try ' + sgText(e, sg) : ''}</small>${demoLink(e, 'sm', '▶ Demo')}${e.autoFor ? `<div class="swapnote">🚫 replaces ${esc(byId(e.autoFor).name)} (avoided)</div>` : ''}${sw ? `<div class="swapnote">⇄ for ${esc(byId(e.origId).name)} · <button class="avoid sm" data-bi="${bi}" data-ii="${ii}">🚫 Avoid it</button></div>` : ''}</div><div class="mut" style="text-align:right">${fmt(e.work)}${e.work < 60 ? 's' : ''} / ${e.rest}s<br><button class="swap sm" data-bi="${bi}" data-ii="${ii}" title="Tap: next backup · Hold: avoid permanently">⇄ Swap</button></div></div>`; }).join('')}</div>`).join('')}
    <div class="row" style="margin:10px 0 20px"><button id="bShuffle">🔀 Shuffle exercises</button><button id="bSkipDay">Skip to next day</button></div>`;
   $('#bStart').onclick = startWorkout;
   $('#tab-today').querySelectorAll('#dayPick button, #otherDays button').forEach(b => b.onclick = () => { pickDay(+b.dataset.di); renderToday(); });
@@ -1388,8 +1481,8 @@ function renderLibrary() {
   const tl = $('#tab-library'); tl.onclick = ev => { const r = ev.target.closest('.ex.lib'); if (r) $('#det-' + r.dataset.id).classList.toggle('hidden'); };
   tl.onchange = ev => { const sel = ev.target.closest('select.rov'); if (!sel) return; const v = +sel.value; if (v) settings.restOverrides[sel.dataset.id] = v; else delete settings.restOverrides[sel.dataset.id];
     LS.set('gc_settings', settings); today = generate(); const row = tl.querySelector('.ex.lib[data-id="' + sel.dataset.id + '"] .mut'); if (row) row.textContent = byId(sel.dataset.id).work + 's / ' + restFor(byId(sel.dataset.id)) + 's rest ›'; };
-  tl.innerHTML = cats.map(c => `<h2>${c}</h2><div class="card">${available().filter(e => (e.group || e.category) === c).map(e => `<div class="ex lib" data-id="${e.id}">${e.image ? `<img class="thumb" loading="lazy" src="${e.image[0]}" alt="">` : ''}<div style="flex:1">${e.name}${settings.avoided.includes(e.id) ? ' <span class="tag">avoided</span>' : ''}<br><small>${e.muscles.join(', ')}${e.reps ? ' · ' + e.reps[0] + '–' + e.reps[1] + ' reps' : ' · timed'}</small></div><div class="mut">${e.work}s / ${restFor(e)}s rest ›</div></div>
-      <div class="libdet hidden" id="det-${e.id}">${(e.image || []).map(p => `<img loading="lazy" src="${p}" alt="">`).join('')}
+  tl.innerHTML = cats.map(c => `<h2>${c}</h2><div class="card">${available().filter(e => (e.group || e.category) === c).map(e => `<div class="ex lib" data-id="${e.id}">${artHTML(e)}<div style="flex:1">${e.name}${settings.avoided.includes(e.id) ? ' <span class="tag">avoided</span>' : ''}<br><small>${e.muscles.join(', ')}${e.reps ? ' · ' + e.reps[0] + '–' + e.reps[1] + ' reps' : ' · timed'}</small></div><div class="mut">${e.work}s / ${restFor(e)}s rest ›</div></div>
+      <div class="libdet hidden" id="det-${e.id}">${artHTML(e)}
         <div class="mut" style="margin:6px 0 2px">${e.equipment.join(', ')}${e.cue ? ' · ' + e.cue : ''}</div><div class="mut" style="font-size:13px">${e.reps ? `Reps ${e.reps[0]}–${e.reps[1]}${e.startReps ? ` (start at ${e.startReps})` : ''}` : 'Timed'}${e.kb ? ` · KB: ${e.kb.mode === 'double' ? '2×' : ''}${snapKB(e, e.kb.start)} lb to start` : ''}</div>${e.demoUrl ? `<div style="margin:6px 0">${demoLink(e, '', '▶ Watch demo')}<div class="mut" style="font-size:12px;margin-top:4px">${esc(e.demoTitle)} · ${esc(e.demoChannel)}</div></div>` : ''}${e.category !== 'mobility' ? `<div class="restov"><span class="mut" style="font-size:13px">Rest after each set</span><select class="rov" data-id="${e.id}"><option value="">Default (${restFor({ ...e, id: '' })} s)</option>${[20, 30, 45, 60, 75, 90, 120, 150].map(v => `<option value="${v}" ${settings.restOverrides[e.id] === v ? 'selected' : ''}>${v} s</option>`).join('')}</select></div>` : ''}<b>Form cues</b><ul>${(e.formCues || []).map(c => `<li>${c}</li>`).join('')}</ul><div class="mut" style="font-size:13px;margin-bottom:8px"><b>Swap backups:</b> ${(e.alternates || []).map(a => (byId(a) || {}).name || a).join(' → ')}</div></div>`).join('')}</div>`).join('');
 }
 function renderSettings() {

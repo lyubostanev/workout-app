@@ -1,4 +1,4 @@
-const CACHE = 'gymcoach-v28';
+const CACHE = 'gymcoach-v29';
 const ASSETS = ['./', './index.html', './app.js', './exercises.json', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-192-maskable.png', './icons/icon-512-maskable.png',
   './audio/silence.wav', ...[420, 500, 700, 880, 1000, 1200, 1320].map(f => `./audio/beep${f}.wav`)];
@@ -8,7 +8,8 @@ self.addEventListener('install', e => {
     await c.addAll(ASSETS);
     try {
       const lib = await (await fetch('./exercises.json', {cache: 'no-cache'})).json();
-      const imgs = [...new Set(lib.flatMap(x => x.image || []))].map(p => './' + p);
+      // img/ex/<slug>-start|end.webp is cached on first view, not precached.
+      const imgs = [...new Set(lib.flatMap(x => x.image || []))].filter(p => !String(p).includes('img/ex/')).map(p => './' + p);
       await c.addAll(imgs);
     } catch (err) { /* images will still be cached at runtime */ }
   }));

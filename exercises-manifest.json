@@ -1,0 +1,974 @@
+[
+  {
+    "slug": "smith-bench",
+    "name": "Smith Machine Bench Press",
+    "start": "Start: Pinch shoulder blades back and down before unracking. Equipment in frame: smith, bench. Muscles: chest, triceps, front delts.",
+    "end": "End: Elbows about 45 degrees, not flared to 90. Equipment in frame: smith, bench. Muscles: chest, triceps, front delts."
+  },
+  {
+    "slug": "smith-incline-bench",
+    "name": "Smith Incline Press",
+    "start": "Start: Bench at 30 degrees, bar path to upper chest. Equipment in frame: smith, bench. Muscles: upper chest, front delts, triceps.",
+    "end": "End: Elbows slightly tucked, forearms vertical. Equipment in frame: smith, bench. Muscles: upper chest, front delts, triceps."
+  },
+  {
+    "slug": "smith-ohp",
+    "name": "Smith Seated Overhead Press",
+    "start": "Start: Brace abs and squeeze glutes, ribs down. Equipment in frame: smith, bench. Muscles: shoulders, triceps.",
+    "end": "End: Head through at the top, biceps by ears. Equipment in frame: smith, bench. Muscles: shoulders, triceps."
+  },
+  {
+    "slug": "db-bench",
+    "name": "Dumbbell Bench Press",
+    "start": "Start: Retract shoulder blades, chest up. Equipment in frame: dumbbells, bench. Muscles: chest, triceps, front delts.",
+    "end": "End: Press up and slightly in, don't clank the bells. Equipment in frame: dumbbells, bench. Muscles: chest, triceps, front delts."
+  },
+  {
+    "slug": "db-incline-press",
+    "name": "Incline Dumbbell Press",
+    "start": "Start: Bench at 30 degrees, not steeper. Equipment in frame: dumbbells, bench. Muscles: upper chest, front delts.",
+    "end": "End: Keep shoulder blades back against the bench. Equipment in frame: dumbbells, bench. Muscles: upper chest, front delts."
+  },
+  {
+    "slug": "db-shoulder-press",
+    "name": "Seated Dumbbell Shoulder Press",
+    "start": "Start: Back flat on an upright bench, ribs down. Equipment in frame: dumbbells, bench. Muscles: shoulders, triceps.",
+    "end": "End: Press straight up, finish over your shoulders. Equipment in frame: dumbbells, bench. Muscles: shoulders, triceps."
+  },
+  {
+    "slug": "db-arnold-press",
+    "name": "Arnold Press",
+    "start": "Start: Start palms facing you at chin height. Equipment in frame: dumbbells, bench. Muscles: shoulders.",
+    "end": "End: Reverse the rotation smoothly on the way down. Equipment in frame: dumbbells, bench. Muscles: shoulders."
+  },
+  {
+    "slug": "db-lateral-raise",
+    "name": "Dumbbell Lateral Raise",
+    "start": "Start: Lead with elbows, not hands. Equipment in frame: light dumbbells. Muscles: side delts.",
+    "end": "End: Raise to shoulder height, no higher. Equipment in frame: light dumbbells. Muscles: side delts."
+  },
+  {
+    "slug": "cable-fly",
+    "name": "Cable Chest Fly",
+    "start": "Start: Soft elbows, keep the bend fixed. Equipment in frame: cables, D-handles. Muscles: chest.",
+    "end": "End: Stagger stance, slight forward lean. Equipment in frame: cables, D-handles. Muscles: chest."
+  },
+  {
+    "slug": "cable-low-high-fly",
+    "name": "Low-to-High Cable Fly",
+    "start": "Start: Pulleys low, sweep up to eye level. Equipment in frame: cables, D-handles. Muscles: upper chest.",
+    "end": "End: Palms up, squeeze upper chest at the top. Equipment in frame: cables, D-handles. Muscles: upper chest."
+  },
+  {
+    "slug": "cable-tricep-pushdown",
+    "name": "Rope Tricep Pushdown",
+    "start": "Start: Pin elbows to your sides. Equipment in frame: cables, tricep rope. Muscles: triceps.",
+    "end": "End: Lock out fully and squeeze triceps. Equipment in frame: cables, tricep rope. Muscles: triceps."
+  },
+  {
+    "slug": "cable-overhead-tricep",
+    "name": "Overhead Rope Tricep Extension",
+    "start": "Start: Face away, rope behind head, elbows by ears. Equipment in frame: cables, tricep rope. Muscles: triceps.",
+    "end": "End: Extend fully overhead, then slow stretch back. Equipment in frame: cables, tricep rope. Muscles: triceps."
+  },
+  {
+    "slug": "dips",
+    "name": "Dips",
+    "start": "Start: Shoulders down, away from ears. Equipment in frame: dip handles. Muscles: chest, triceps.",
+    "end": "End: Lower until upper arms are parallel, no deeper. Equipment in frame: dip handles. Muscles: chest, triceps."
+  },
+  {
+    "slug": "pushup",
+    "name": "Push-up",
+    "start": "Start: Hands under shoulders, fingers spread. Equipment in frame: bodyweight. Muscles: chest, triceps, core.",
+    "end": "End: Elbows about 45 degrees from your body. Equipment in frame: bodyweight. Muscles: chest, triceps, core."
+  },
+  {
+    "slug": "bosu-pushup",
+    "name": "BOSU Push-up",
+    "start": "Start: Grip the edges of the flat side firmly. Equipment in frame: BOSU. Muscles: chest, core.",
+    "end": "End: Body straight from head to heels. Equipment in frame: BOSU. Muscles: chest, core."
+  },
+  {
+    "slug": "cable-lateral-raise",
+    "name": "Single-Arm Cable Lateral Raise",
+    "start": "Start: Cable crosses in front of your body. Equipment in frame: cables, D-handles. Muscles: side delts.",
+    "end": "End: Raise to shoulder height, pause. Equipment in frame: cables, D-handles. Muscles: side delts."
+  },
+  {
+    "slug": "db-fly",
+    "name": "Flat Bench Dumbbell Fly",
+    "start": "Start: Slight bend in the elbows, locked in place. Equipment in frame: dumbbells, bench. Muscles: chest.",
+    "end": "End: Neutral grip (palms facing) to spare the shoulders. Equipment in frame: dumbbells, bench. Muscles: chest."
+  },
+  {
+    "slug": "db-incline-fly",
+    "name": "Incline Dumbbell Fly",
+    "start": "Start: Bench at about 30 degrees. Equipment in frame: dumbbells, bench. Muscles: upper chest.",
+    "end": "End: Stop when upper arms are level with the bench. Equipment in frame: dumbbells, bench. Muscles: upper chest."
+  },
+  {
+    "slug": "db-front-raise",
+    "name": "Dumbbell Front Raise",
+    "start": "Start: Thumbs up, neutral grip. Equipment in frame: light dumbbells. Muscles: front delts.",
+    "end": "End: Ribs down, no leaning back. Equipment in frame: light dumbbells. Muscles: front delts."
+  },
+  {
+    "slug": "cable-front-raise",
+    "name": "Cable Front Raise",
+    "start": "Start: Stand tall facing away from the low pulley. Equipment in frame: cables, D-handles. Muscles: front delts.",
+    "end": "End: No swinging, glutes squeezed. Equipment in frame: cables, D-handles. Muscles: front delts."
+  },
+  {
+    "slug": "kb-front-raise",
+    "name": "Kettlebell (or Plate) Front Raise",
+    "start": "Start: Hold the bell by the horns, bottom down. Equipment in frame: kettlebell. Muscles: front delts.",
+    "end": "End: Brace abs, don't lean back. Equipment in frame: kettlebell. Muscles: front delts."
+  },
+  {
+    "slug": "half-kneel-db-press",
+    "name": "Half-Kneeling Single-Arm DB Press",
+    "start": "Start: Down knee under hip, front knee at 90 degrees. Equipment in frame: dumbbells, mat. Muscles: shoulders, core.",
+    "end": "End: Neutral grip, press up beside the ear. Equipment in frame: dumbbells, mat. Muscles: shoulders, core."
+  },
+  {
+    "slug": "lat-pulldown",
+    "name": "Lat Pulldown",
+    "start": "Start: Grip just outside shoulders, thighs locked under pads. Equipment in frame: cables, lat bar, pulldown seat. Muscles: lats, biceps.",
+    "end": "End: Bar to upper chest, chest up to meet it. Equipment in frame: cables, lat bar, pulldown seat. Muscles: lats, biceps."
+  },
+  {
+    "slug": "pullup",
+    "name": "Pull-up",
+    "start": "Start: Start with 3 to 5 reps, quality over quantity. Equipment in frame: pull-up bar. Muscles: lats, biceps.",
+    "end": "End: Pull elbows down toward your hips. Equipment in frame: pull-up bar. Muscles: lats, biceps."
+  },
+  {
+    "slug": "chinup",
+    "name": "Chin-up",
+    "start": "Start: Start with 3 to 5 reps, quality over quantity. Equipment in frame: pull-up bar. Muscles: lats, biceps.",
+    "end": "End: Lead with your chest toward the bar. Equipment in frame: pull-up bar. Muscles: lats, biceps."
+  },
+  {
+    "slug": "seated-cable-row",
+    "name": "Seated Cable Row",
+    "start": "Start: Sit tall, knees slightly bent. Equipment in frame: cables, V-handle. Muscles: mid back, lats.",
+    "end": "End: Squeeze shoulder blades together, pause. Equipment in frame: cables, V-handle. Muscles: mid back, lats."
+  },
+  {
+    "slug": "cable-face-pull",
+    "name": "Face Pull",
+    "start": "Start: Rope at eye level, thumbs toward you. Equipment in frame: cables, tricep rope. Muscles: rear delts, upper back.",
+    "end": "End: Elbows high, at or above shoulders. Equipment in frame: cables, tricep rope. Muscles: rear delts, upper back."
+  },
+  {
+    "slug": "cable-straight-arm-pd",
+    "name": "Straight-Arm Pulldown",
+    "start": "Start: Arms nearly straight, slight elbow bend. Equipment in frame: cables, straight bar. Muscles: lats.",
+    "end": "End: Sweep the bar down to your thighs. Equipment in frame: cables, straight bar. Muscles: lats."
+  },
+  {
+    "slug": "smith-row",
+    "name": "Smith Bent-Over Row",
+    "start": "Start: Hinge to about 45 degrees, flat back. Equipment in frame: smith. Muscles: mid back, lats.",
+    "end": "End: Elbows back, squeeze shoulder blades. Equipment in frame: smith. Muscles: mid back, lats."
+  },
+  {
+    "slug": "smith-inverted-row",
+    "name": "Smith Inverted Row",
+    "start": "Start: Body straight, heels on floor. Equipment in frame: smith. Muscles: upper back, biceps.",
+    "end": "End: Squeeze glutes so hips don't sag. Equipment in frame: smith. Muscles: upper back, biceps."
+  },
+  {
+    "slug": "db-row",
+    "name": "One-Arm Dumbbell Row",
+    "start": "Start: Hand and knee on bench, flat back. Equipment in frame: dumbbells, bench. Muscles: lats, mid back.",
+    "end": "End: Elbow close to body. Equipment in frame: dumbbells, bench. Muscles: lats, mid back."
+  },
+  {
+    "slug": "db-chest-supported-row",
+    "name": "Chest-Supported Incline DB Row",
+    "start": "Start: Chest on the incline, toes on the floor. Equipment in frame: dumbbells, bench. Muscles: upper back, rear delts.",
+    "end": "End: Row elbows back, squeeze blades. Equipment in frame: dumbbells, bench. Muscles: upper back, rear delts."
+  },
+  {
+    "slug": "trx-row",
+    "name": "TRX Row",
+    "start": "Start: Walk feet forward to increase difficulty. Equipment in frame: TRX. Muscles: upper back, biceps.",
+    "end": "End: Pull handles to your ribs, palms in. Equipment in frame: TRX. Muscles: upper back, biceps."
+  },
+  {
+    "slug": "db-rear-delt-fly",
+    "name": "Rear Delt Fly",
+    "start": "Start: Chest on an incline bench or hinge flat-backed. Equipment in frame: light dumbbells, bench. Muscles: rear delts.",
+    "end": "End: Open arms out wide, lead with pinkies. Equipment in frame: light dumbbells, bench. Muscles: rear delts."
+  },
+  {
+    "slug": "db-curl",
+    "name": "Dumbbell Biceps Curl",
+    "start": "Start: Elbows pinned at your sides. Equipment in frame: dumbbells. Muscles: biceps.",
+    "end": "End: Squeeze at the top, don't swing. Equipment in frame: dumbbells. Muscles: biceps."
+  },
+  {
+    "slug": "db-hammer-curl",
+    "name": "Hammer Curl",
+    "start": "Start: Palms face each other the whole time. Equipment in frame: dumbbells. Muscles: biceps, forearms.",
+    "end": "End: Curl to shoulder height, squeeze. Equipment in frame: dumbbells. Muscles: biceps, forearms."
+  },
+  {
+    "slug": "cable-curl",
+    "name": "Straight-Bar Cable Curl",
+    "start": "Start: Stand close to the pulley, elbows fixed. Equipment in frame: cables, straight bar. Muscles: biceps.",
+    "end": "End: Squeeze biceps at the top. Equipment in frame: cables, straight bar. Muscles: biceps."
+  },
+  {
+    "slug": "kb-high-pull",
+    "name": "Kettlebell High Pull",
+    "start": "Start: Hinge and hike, power from the hips. Equipment in frame: kettlebell. Muscles: upper back, traps.",
+    "end": "End: Bell finishes at chest height. Equipment in frame: kettlebell. Muscles: upper back, traps."
+  },
+  {
+    "slug": "cable-rear-delt-fly",
+    "name": "Cable Rear Delt Fly",
+    "start": "Start: Pulleys at shoulder height, cables crossed. Equipment in frame: cables, D-handles. Muscles: rear delts.",
+    "end": "End: Sweep arms out wide, move only at the shoulder. Equipment in frame: cables, D-handles. Muscles: rear delts."
+  },
+  {
+    "slug": "db-bent-reverse-fly",
+    "name": "Bent-Over DB Reverse Fly",
+    "start": "Start: Hinge to about 45 degrees, flat back. Equipment in frame: light dumbbells. Muscles: rear delts, upper back.",
+    "end": "End: Thumbs leading, soft elbows. Equipment in frame: light dumbbells. Muscles: rear delts, upper back."
+  },
+  {
+    "slug": "band-pullup",
+    "name": "Band-Assisted Pull-up",
+    "start": "Start: Aim for 6 to 10 good reps, quality over quantity. Equipment in frame: pull-up bar, resistance band. Muscles: lats, biceps.",
+    "end": "End: Shoulders down before you pull. Equipment in frame: pull-up bar, resistance band. Muscles: lats, biceps."
+  },
+  {
+    "slug": "negative-pullup",
+    "name": "Negative Pull-up",
+    "start": "Start: Start with 3 to 5 slow lowers, quality over quantity. Equipment in frame: pull-up bar, step. Muscles: lats, biceps.",
+    "end": "End: Take 3 to 5 seconds to lower. Equipment in frame: pull-up bar, step. Muscles: lats, biceps."
+  },
+  {
+    "slug": "db-shrug",
+    "name": "Dumbbell Shrug",
+    "start": "Start: Arms long, shrug straight up toward the ears. Equipment in frame: dumbbells. Muscles: traps.",
+    "end": "End: No rolling the shoulders. Equipment in frame: dumbbells. Muscles: traps."
+  },
+  {
+    "slug": "smith-shrug",
+    "name": "Smith Machine Shrug",
+    "start": "Start: Bar close to the thighs. Equipment in frame: smith. Muscles: traps.",
+    "end": "End: Hold the squeeze at the top. Equipment in frame: smith. Muscles: traps."
+  },
+  {
+    "slug": "cable-shrug",
+    "name": "Cable Shrug",
+    "start": "Start: Stand close to the low pulley. Equipment in frame: cables, straight bar. Muscles: traps.",
+    "end": "End: Pause at the top. Equipment in frame: cables, straight bar. Muscles: traps."
+  },
+  {
+    "slug": "db-upright-row",
+    "name": "Dumbbell Upright Row",
+    "start": "Start: Light bells, slightly wider than shoulder grip. Equipment in frame: light dumbbells. Muscles: traps, side delts.",
+    "end": "End: Stop with elbows at shoulder height. Equipment in frame: light dumbbells. Muscles: traps, side delts."
+  },
+  {
+    "slug": "smith-squat",
+    "name": "Smith Machine Squat",
+    "start": "Start: Feet slightly in front of the bar. Equipment in frame: smith, squat pad. Muscles: quads, glutes.",
+    "end": "End: Knees track over toes. Equipment in frame: smith, squat pad. Muscles: quads, glutes."
+  },
+  {
+    "slug": "smith-split-squat",
+    "name": "Smith Split Squat",
+    "start": "Start: Long stance, front foot slightly forward. Equipment in frame: smith, squat pad. Muscles: quads, glutes.",
+    "end": "End: Front knee tracks over toes. Equipment in frame: smith, squat pad. Muscles: quads, glutes."
+  },
+  {
+    "slug": "smith-rdl",
+    "name": "Smith Romanian Deadlift",
+    "start": "Start: Soft knees, push hips straight back. Equipment in frame: smith. Muscles: hamstrings, glutes.",
+    "end": "End: Flat back, chest proud. Equipment in frame: smith. Muscles: hamstrings, glutes."
+  },
+  {
+    "slug": "smith-calf-raise",
+    "name": "Smith Calf Raise",
+    "start": "Start: Balls of feet on the step, heels hanging. Equipment in frame: smith, step. Muscles: calves.",
+    "end": "End: Rise as high as possible. Equipment in frame: smith, step. Muscles: calves."
+  },
+  {
+    "slug": "db-goblet-squat",
+    "name": "Goblet Squat",
+    "start": "Start: Hold the dumbbell vertically at your chest. Equipment in frame: dumbbells. Muscles: quads, glutes.",
+    "end": "End: Chest tall, sit between your heels. Equipment in frame: dumbbells. Muscles: quads, glutes."
+  },
+  {
+    "slug": "db-rdl",
+    "name": "Dumbbell Romanian Deadlift",
+    "start": "Start: Dumbbells slide down your thighs. Equipment in frame: dumbbells. Muscles: hamstrings, glutes.",
+    "end": "End: Flat back, neck neutral. Equipment in frame: dumbbells. Muscles: hamstrings, glutes."
+  },
+  {
+    "slug": "db-bulgarian",
+    "name": "Bulgarian Split Squat",
+    "start": "Start: Back foot laces-down on the bench. Equipment in frame: dumbbells, bench. Muscles: quads, glutes.",
+    "end": "End: Drop the back knee straight down. Equipment in frame: dumbbells, bench. Muscles: quads, glutes."
+  },
+  {
+    "slug": "db-reverse-lunge",
+    "name": "Reverse Lunge",
+    "start": "Start: Step back long and soft. Equipment in frame: dumbbells. Muscles: quads, glutes.",
+    "end": "End: Front shin near vertical. Equipment in frame: dumbbells. Muscles: quads, glutes."
+  },
+  {
+    "slug": "db-step-up",
+    "name": "Dumbbell Step-up",
+    "start": "Start: Whole foot on the step. Equipment in frame: dumbbells, step. Muscles: quads, glutes.",
+    "end": "End: Stand fully tall at the top. Equipment in frame: dumbbells, step. Muscles: quads, glutes."
+  },
+  {
+    "slug": "kb-swing",
+    "name": "Kettlebell Swing",
+    "start": "Start: Hike the bell back between your thighs. Equipment in frame: kettlebell. Muscles: glutes, hamstrings, conditioning.",
+    "end": "End: Arms are ropes, the hips do the work. Equipment in frame: kettlebell. Muscles: glutes, hamstrings, conditioning."
+  },
+  {
+    "slug": "kb-goblet-squat",
+    "name": "Kettlebell Goblet Squat",
+    "start": "Start: Hold the bell by the horns at your chest. Equipment in frame: kettlebell. Muscles: quads, glutes.",
+    "end": "End: Chest up, spine neutral. Equipment in frame: kettlebell. Muscles: quads, glutes."
+  },
+  {
+    "slug": "cable-pull-through",
+    "name": "Cable Pull-Through",
+    "start": "Start: Face away, rope between your legs. Equipment in frame: cables, tricep rope. Muscles: glutes, hamstrings.",
+    "end": "End: Arms stay straight, just hold the rope. Equipment in frame: cables, tricep rope. Muscles: glutes, hamstrings."
+  },
+  {
+    "slug": "cable-kickback",
+    "name": "Cable Glute Kickback",
+    "start": "Start: Hinge slightly, hold the frame. Equipment in frame: cables, ankle strap. Muscles: glutes.",
+    "end": "End: Squeeze the glute, pause. Equipment in frame: cables, ankle strap. Muscles: glutes."
+  },
+  {
+    "slug": "cable-hip-abduction",
+    "name": "Cable Hip Abduction",
+    "start": "Start: Strap on the outside leg, stand tall. Equipment in frame: cables, ankle strap. Muscles: glute med.",
+    "end": "End: Toes point forward, not up. Equipment in frame: cables, ankle strap. Muscles: glute med."
+  },
+  {
+    "slug": "db-hip-thrust",
+    "name": "Dumbbell Hip Thrust",
+    "start": "Start: Bench edge under the shoulder blades. Equipment in frame: dumbbells, bench. Muscles: glutes, hamstrings.",
+    "end": "End: Drive through the heels. Equipment in frame: dumbbells, bench. Muscles: glutes, hamstrings."
+  },
+  {
+    "slug": "sl-hip-thrust",
+    "name": "Single-Leg Hip Thrust",
+    "start": "Start: Upper back on the bench, one foot planted. Equipment in frame: bench. Muscles: glutes, hamstrings.",
+    "end": "End: Push through the heel of the working leg. Equipment in frame: bench. Muscles: glutes, hamstrings."
+  },
+  {
+    "slug": "ball-ham-curl",
+    "name": "Stability Ball Hamstring Curl",
+    "start": "Start: Heels on the ball, lift hips. Equipment in frame: stability ball. Muscles: hamstrings, glutes.",
+    "end": "End: Pull the ball in with your heels. Equipment in frame: stability ball. Muscles: hamstrings, glutes."
+  },
+  {
+    "slug": "trx-ham-curl",
+    "name": "TRX Hamstring Curl",
+    "start": "Start: Heels in the foot cradles, lie on your back. Equipment in frame: TRX. Muscles: hamstrings.",
+    "end": "End: Curl heels toward your glutes. Equipment in frame: TRX. Muscles: hamstrings."
+  },
+  {
+    "slug": "db-sl-rdl",
+    "name": "Single-Leg Dumbbell RDL",
+    "start": "Start: Hinge on one leg, soft knee. Equipment in frame: dumbbells. Muscles: hamstrings, glutes, balance.",
+    "end": "End: Keep hips square, toes of the back foot down. Equipment in frame: dumbbells. Muscles: hamstrings, glutes, balance."
+  },
+  {
+    "slug": "trx-pistol",
+    "name": "TRX Assisted Pistol Squat",
+    "start": "Start: Hold handles with arms extended. Equipment in frame: TRX. Muscles: quads, balance.",
+    "end": "End: Free leg reaches forward. Equipment in frame: TRX. Muscles: quads, balance."
+  },
+  {
+    "slug": "wall-sit-ball",
+    "name": "Stability Ball Wall Squat",
+    "start": "Start: Ball at lower back against the wall. Equipment in frame: stability ball. Muscles: quads.",
+    "end": "End: Sit until thighs are parallel. Equipment in frame: stability ball. Muscles: quads."
+  },
+  {
+    "slug": "plank",
+    "name": "Plank",
+    "start": "Start: Elbows under shoulders. Equipment in frame: mat. Muscles: core.",
+    "end": "End: Tuck ribs down, slight posterior pelvic tilt. Equipment in frame: mat. Muscles: core."
+  },
+  {
+    "slug": "side-plank",
+    "name": "Side Plank",
+    "start": "Start: Elbow under shoulder. Equipment in frame: mat. Muscles: obliques.",
+    "end": "End: Stack feet or stagger for balance. Equipment in frame: mat. Muscles: obliques."
+  },
+  {
+    "slug": "dead-bug",
+    "name": "Dead Bug",
+    "start": "Start: Press your lower back into the floor. Equipment in frame: mat. Muscles: core.",
+    "end": "End: Exhale as you extend. Equipment in frame: mat. Muscles: core."
+  },
+  {
+    "slug": "pallof-press",
+    "name": "Pallof Press",
+    "start": "Start: Stand side-on to the cable, feet shoulder-width. Equipment in frame: cables, D-handles. Muscles: anti-rotation core.",
+    "end": "End: Resist the rotation, hips square. Equipment in frame: cables, D-handles. Muscles: anti-rotation core."
+  },
+  {
+    "slug": "cable-woodchop",
+    "name": "Cable Woodchop",
+    "start": "Start: Rotate through the hips and torso together. Equipment in frame: cables, D-handles. Muscles: obliques.",
+    "end": "End: Pivot the back foot. Equipment in frame: cables, D-handles. Muscles: obliques."
+  },
+  {
+    "slug": "cable-crunch",
+    "name": "Kneeling Rope Crunch",
+    "start": "Start: Kneel, rope beside your head. Equipment in frame: cables, tricep rope. Muscles: abs.",
+    "end": "End: Hips stay still, don't sit back. Equipment in frame: cables, tricep rope. Muscles: abs."
+  },
+  {
+    "slug": "ball-rollout",
+    "name": "Stability Ball Rollout",
+    "start": "Start: Forearms on the ball, knees on the mat. Equipment in frame: stability ball. Muscles: abs.",
+    "end": "End: Keep hips in line, no sagging. Equipment in frame: stability ball. Muscles: abs."
+  },
+  {
+    "slug": "ball-pike",
+    "name": "Stability Ball Pike / Jackknife",
+    "start": "Start: Shins or toes on the ball, hands under shoulders. Equipment in frame: stability ball. Muscles: abs, shoulders.",
+    "end": "End: Keep legs straight. Equipment in frame: stability ball. Muscles: abs, shoulders."
+  },
+  {
+    "slug": "trx-fallout",
+    "name": "TRX Fallout",
+    "start": "Start: Arms straight, lean into the straps. Equipment in frame: TRX. Muscles: abs.",
+    "end": "End: Hollow body, ribs down. Equipment in frame: TRX. Muscles: abs."
+  },
+  {
+    "slug": "hanging-knee-raise",
+    "name": "Hanging Knee Raise",
+    "start": "Start: Start from a still dead hang. Equipment in frame: pull-up bar. Muscles: abs, hip flexors.",
+    "end": "End: Knees to chest height or higher. Equipment in frame: pull-up bar. Muscles: abs, hip flexors."
+  },
+  {
+    "slug": "bosu-plank",
+    "name": "BOSU Mountain Hold Plank",
+    "start": "Start: Forearms or hands on the dome. Equipment in frame: BOSU. Muscles: core.",
+    "end": "End: Breathe, keep the BOSU steady. Equipment in frame: BOSU. Muscles: core."
+  },
+  {
+    "slug": "russian-twist",
+    "name": "Med Ball Russian Twist",
+    "start": "Start: Lean back, chest tall. Equipment in frame: medicine ball. Muscles: obliques.",
+    "end": "End: Touch the ball beside each hip. Equipment in frame: medicine ball. Muscles: obliques."
+  },
+  {
+    "slug": "pilates-ring-squeeze",
+    "name": "Pilates Ring Crunch Squeeze",
+    "start": "Start: Ring between hands or knees, squeeze steadily. Equipment in frame: pilates ring, mat. Muscles: abs, adductors.",
+    "end": "End: Exhale on the crunch. Equipment in frame: pilates ring, mat. Muscles: abs, adductors."
+  },
+  {
+    "slug": "kb-suitcase-carry",
+    "name": "Kettlebell Suitcase Carry",
+    "start": "Start: Stand tall, don't lean toward the bell. Equipment in frame: kettlebell. Muscles: obliques, grip.",
+    "end": "End: Brace like a plank on your feet. Equipment in frame: kettlebell. Muscles: obliques, grip."
+  },
+  {
+    "slug": "situp",
+    "name": "Sit-up",
+    "start": "Start: Feet anchored or flat, knees bent. Equipment in frame: mat. Muscles: abs, hip flexors.",
+    "end": "End: Curl up one vertebra at a time. Equipment in frame: mat. Muscles: abs, hip flexors."
+  },
+  {
+    "slug": "crunch",
+    "name": "Crunch",
+    "start": "Start: Lower back stays on the floor. Equipment in frame: mat. Muscles: abs.",
+    "end": "End: Lift shoulder blades only. Equipment in frame: mat. Muscles: abs."
+  },
+  {
+    "slug": "decline-situp",
+    "name": "Decline Bench Sit-up",
+    "start": "Start: Feet hooked at the high end. Equipment in frame: bench. Muscles: abs, hip flexors.",
+    "end": "End: Curl up, don't yank. Equipment in frame: bench. Muscles: abs, hip flexors."
+  },
+  {
+    "slug": "ball-crunch",
+    "name": "Stability Ball Crunch",
+    "start": "Start: Ball under the lower back. Equipment in frame: stability ball. Muscles: abs.",
+    "end": "End: Stretch back over the ball. Equipment in frame: stability ball. Muscles: abs."
+  },
+  {
+    "slug": "bicycle-crunch",
+    "name": "Bicycle Crunch",
+    "start": "Start: Lower back pressed into the mat. Equipment in frame: mat. Muscles: abs, obliques.",
+    "end": "End: Extend the other leg long. Equipment in frame: mat. Muscles: abs, obliques."
+  },
+  {
+    "slug": "reverse-crunch",
+    "name": "Reverse Crunch",
+    "start": "Start: Knees bent at 90 degrees. Equipment in frame: mat. Muscles: lower abs.",
+    "end": "End: Use the abs, not momentum. Equipment in frame: mat. Muscles: lower abs."
+  },
+  {
+    "slug": "weighted-crunch",
+    "name": "Weighted Crunch",
+    "start": "Start: Hold a light DB or plate on the chest. Equipment in frame: light dumbbells, mat. Muscles: abs.",
+    "end": "End: Curl the ribs toward the hips. Equipment in frame: light dumbbells, mat. Muscles: abs."
+  },
+  {
+    "slug": "row-sprint",
+    "name": "Rower Sprint",
+    "start": "Start: Legs, then back, then arms. Equipment in frame: rower. Muscles: full body, conditioning.",
+    "end": "End: Drive hard with the legs. Equipment in frame: rower. Muscles: full body, conditioning."
+  },
+  {
+    "slug": "row-steady",
+    "name": "Rower Steady Pace",
+    "start": "Start: Legs, back, arms; then arms, back, legs. Equipment in frame: rower. Muscles: conditioning.",
+    "end": "End: Ratio: one count drive, two counts recovery. Equipment in frame: rower. Muscles: conditioning."
+  },
+  {
+    "slug": "burpee",
+    "name": "Burpee",
+    "start": "Start: Hands planted, jump feet back to a plank. Equipment in frame: bodyweight. Muscles: full body.",
+    "end": "End: Snap feet back under hips. Equipment in frame: bodyweight. Muscles: full body."
+  },
+  {
+    "slug": "kb-thruster",
+    "name": "Kettlebell Thruster",
+    "start": "Start: Bells in rack position, elbows down. Equipment in frame: kettlebell. Muscles: full body.",
+    "end": "End: Drive up and press in one motion. Equipment in frame: kettlebell. Muscles: full body."
+  },
+  {
+    "slug": "db-renegade-row",
+    "name": "Renegade Row",
+    "start": "Start: Wide feet for stability. Equipment in frame: dumbbells. Muscles: core, back.",
+    "end": "End: Row one DB, keep hips square. Equipment in frame: dumbbells. Muscles: core, back."
+  },
+  {
+    "slug": "mountain-climber",
+    "name": "Mountain Climber",
+    "start": "Start: Hands under shoulders. Equipment in frame: mat. Muscles: core, conditioning.",
+    "end": "End: Keep hips low, level. Equipment in frame: mat. Muscles: core, conditioning."
+  },
+  {
+    "slug": "trx-jump-squat",
+    "name": "TRX Jump Squat",
+    "start": "Start: Hold handles, arms extended. Equipment in frame: TRX. Muscles: legs, conditioning.",
+    "end": "End: Jump using legs, straps only for balance. Equipment in frame: TRX. Muscles: legs, conditioning."
+  },
+  {
+    "slug": "foam-roll-tspine",
+    "name": "Foam Roll Upper Back",
+    "start": "Start: Roller across mid-back, hands behind head. Equipment in frame: foam roller. Muscles: thoracic spine.",
+    "end": "End: Pause on tight spots. Equipment in frame: foam roller. Muscles: thoracic spine."
+  },
+  {
+    "slug": "foam-roll-legs",
+    "name": "Foam Roll Quads/IT/Glutes",
+    "start": "Start: Roll slowly, about an inch per second. Equipment in frame: foam roller. Muscles: legs.",
+    "end": "End: Breathe and relax into it. Equipment in frame: foam roller. Muscles: legs."
+  },
+  {
+    "slug": "worlds-greatest",
+    "name": "World's Greatest Stretch",
+    "start": "Start: Step into a deep lunge. Equipment in frame: mat. Muscles: hips, t-spine.",
+    "end": "End: Rotate and reach to the ceiling. Equipment in frame: mat. Muscles: hips, t-spine."
+  },
+  {
+    "slug": "cat-cow",
+    "name": "Cat-Cow",
+    "start": "Start: Hands under shoulders, knees under hips. Equipment in frame: mat. Muscles: spine.",
+    "end": "End: Exhale, round your back, chin to chest. Equipment in frame: mat. Muscles: spine."
+  },
+  {
+    "slug": "ball-chest-stretch",
+    "name": "Stability Ball Chest Opener",
+    "start": "Start: Kneel, arm on the ball. Equipment in frame: stability ball. Muscles: chest, shoulders.",
+    "end": "End: Feel the stretch across chest and shoulder. Equipment in frame: stability ball. Muscles: chest, shoulders."
+  },
+  {
+    "slug": "wu-arm-circles",
+    "name": "Arm Circles",
+    "start": "Start: Arms out to the sides, small circles. Equipment in frame: bodyweight. Muscles: shoulders.",
+    "end": "End: Keep it pain-free, smaller circles if the right shoulder pinches. Equipment in frame: bodyweight. Muscles: shoulders."
+  },
+  {
+    "slug": "wu-band-pull-apart",
+    "name": "Band Pull-Apart",
+    "start": "Start: Light band, arms straight out at chest height. Equipment in frame: resistance band. Muscles: rear delts, upper back.",
+    "end": "End: Pull the band apart, squeeze your shoulder blades. Equipment in frame: resistance band. Muscles: rear delts, upper back."
+  },
+  {
+    "slug": "wu-scap-pushup",
+    "name": "Scap Push-up (incline)",
+    "start": "Start: Hands on a bench or the wall, arms straight. Equipment in frame: bodyweight. Muscles: serratus, shoulders.",
+    "end": "End: Then push the floor away, upper back rounds slightly. Equipment in frame: bodyweight. Muscles: serratus, shoulders."
+  },
+  {
+    "slug": "wu-light-press",
+    "name": "Light Incline Push-up",
+    "start": "Start: Hands on a bench, easy reps at half effort. Equipment in frame: bodyweight. Muscles: chest, triceps.",
+    "end": "End: Stop short of any elbow or shoulder pain. Equipment in frame: bodyweight. Muscles: chest, triceps."
+  },
+  {
+    "slug": "st-dyn-chest",
+    "name": "Dynamic Chest Opener",
+    "start": "Start: Swing your arms open to a gentle chest stretch. Equipment in frame: bodyweight. Muscles: chest, front delts.",
+    "end": "End: Stay within a comfortable range for the right shoulder. Equipment in frame: bodyweight. Muscles: chest, front delts."
+  },
+  {
+    "slug": "st-triceps",
+    "name": "Triceps Stretch",
+    "start": "Start: Reach one hand down your upper back. Equipment in frame: bodyweight. Muscles: triceps.",
+    "end": "End: If the right shoulder complains, pull the arm across your chest instead. Equipment in frame: bodyweight. Muscles: triceps."
+  },
+  {
+    "slug": "wu-band-pulldown",
+    "name": "Band Straight-Arm Pulldown",
+    "start": "Start: Loop a light band over the bar. Equipment in frame: resistance band, pull-up bar. Muscles: lats.",
+    "end": "End: Sweep your hands down to your thighs. Equipment in frame: resistance band, pull-up bar. Muscles: lats."
+  },
+  {
+    "slug": "wu-scap-pull",
+    "name": "Scap Pulls + Supported Hang",
+    "start": "Start: Hang with feet on the floor or a step to unload. Equipment in frame: pull-up bar. Muscles: lats, traps.",
+    "end": "End: Hold 2 seconds, then relax into a gentle hang. Equipment in frame: pull-up bar. Muscles: lats, traps."
+  },
+  {
+    "slug": "st-biceps",
+    "name": "Standing Biceps Stretch",
+    "start": "Start: Hands behind you, palms together or on a doorframe. Equipment in frame: bodyweight. Muscles: biceps, chest.",
+    "end": "End: Soft elbows, no hard lockout for the left elbow. Equipment in frame: bodyweight. Muscles: biceps, chest."
+  },
+  {
+    "slug": "st-childs-pose",
+    "name": "Child's Pose Lat Reach",
+    "start": "Start: Sit back toward your heels, arms long. Equipment in frame: mat. Muscles: lats, lower back.",
+    "end": "End: Breathe into your back ribs. Equipment in frame: mat. Muscles: lats, lower back."
+  },
+  {
+    "slug": "wu-hip-circles",
+    "name": "Standing Hip Circles",
+    "start": "Start: Hands on hips, feet shoulder-width. Equipment in frame: bodyweight. Muscles: hips.",
+    "end": "End: Keep the range comfortable for your lower back. Equipment in frame: bodyweight. Muscles: hips."
+  },
+  {
+    "slug": "wu-leg-swings",
+    "name": "Leg Swings",
+    "start": "Start: Hold a rack or wall for balance. Equipment in frame: bodyweight. Muscles: hamstrings, hip flexors.",
+    "end": "End: Start small, grow the range gradually. Equipment in frame: bodyweight. Muscles: hamstrings, hip flexors."
+  },
+  {
+    "slug": "wu-glute-bridge",
+    "name": "Glute Bridge",
+    "start": "Start: Lie on your back, feet flat, hip-width. Equipment in frame: mat. Muscles: glutes, hamstrings.",
+    "end": "End: Ribs down, don't arch the lower back. Equipment in frame: mat. Muscles: glutes, hamstrings."
+  },
+  {
+    "slug": "wu-bw-squat",
+    "name": "Bodyweight Squat (easy depth)",
+    "start": "Start: Feet shoulder-width, toes slightly out. Equipment in frame: bodyweight. Muscles: quads, glutes.",
+    "end": "End: Knees track over your toes. Equipment in frame: bodyweight. Muscles: quads, glutes."
+  },
+  {
+    "slug": "st-hip-flexor",
+    "name": "Kneeling Hip Flexor Stretch",
+    "start": "Start: Half-kneel with a pad under the down knee. Equipment in frame: mat. Muscles: hip flexors, quads.",
+    "end": "End: Gently shift forward and back. Equipment in frame: mat. Muscles: hip flexors, quads."
+  },
+  {
+    "slug": "st-hamstring",
+    "name": "Lying Hamstring Stretch",
+    "start": "Start: Lie on your back, hold behind one thigh at 90 degrees. Equipment in frame: mat. Muscles: hamstrings.",
+    "end": "End: Lower back stays flat on the floor. Equipment in frame: mat. Muscles: hamstrings."
+  },
+  {
+    "slug": "bench-dip",
+    "name": "Bench Dips",
+    "start": "Start: Sit on the bench, hands beside your hips, fingers forward. Equipment in frame: bench, bodyweight. Muscles: triceps, chest.",
+    "end": "End: Lower until elbows are about 90 degrees. Equipment in frame: bench, bodyweight. Muscles: triceps, chest."
+  },
+  {
+    "slug": "close-grip-db-press",
+    "name": "Close-Grip Dumbbell Press",
+    "start": "Start: Lie flat, dumbbells touching over the chest. Equipment in frame: dumbbells, bench. Muscles: triceps, chest.",
+    "end": "End: Lower to the lower chest. Equipment in frame: dumbbells, bench. Muscles: triceps, chest."
+  },
+  {
+    "slug": "diamond-pushup",
+    "name": "Diamond Push-up",
+    "start": "Start: Hands together under the chest, thumbs and index fingers make a diamond. Equipment in frame: bodyweight. Muscles: triceps, chest.",
+    "end": "End: Body in one line, glutes tight. Equipment in frame: bodyweight. Muscles: triceps, chest."
+  },
+  {
+    "slug": "incline-pushup",
+    "name": "Incline Push-up",
+    "start": "Start: Hands on the bench, slightly wider than shoulders. Equipment in frame: bench, bodyweight. Muscles: chest, triceps.",
+    "end": "End: Lower the chest toward the bench. Equipment in frame: bench, bodyweight. Muscles: chest, triceps."
+  },
+  {
+    "slug": "decline-pushup",
+    "name": "Decline Push-up",
+    "start": "Start: Feet on the bench, hands under shoulders. Equipment in frame: bench, bodyweight. Muscles: upper chest, triceps.",
+    "end": "End: Lower until the chest nears the floor. Equipment in frame: bench, bodyweight. Muscles: upper chest, triceps."
+  },
+  {
+    "slug": "db-pullover",
+    "name": "Dumbbell Pullover",
+    "start": "Start: Lie across the bench, hips dropped a little. Equipment in frame: dumbbells, bench. Muscles: lats, chest.",
+    "end": "End: Reach the bell back in an arc, ribs down. Equipment in frame: dumbbells, bench. Muscles: lats, chest."
+  },
+  {
+    "slug": "db-concentration-curl",
+    "name": "Concentration Curl",
+    "start": "Start: Sit, elbow braced on the inner thigh. Equipment in frame: dumbbells. Muscles: biceps.",
+    "end": "End: Pause and squeeze at the top. Equipment in frame: dumbbells. Muscles: biceps."
+  },
+  {
+    "slug": "db-incline-curl",
+    "name": "Incline Dumbbell Curl",
+    "start": "Start: Sit back on an incline, arms hang behind the body. Equipment in frame: dumbbells, bench. Muscles: biceps.",
+    "end": "End: Curl without swinging the bells forward. Equipment in frame: dumbbells, bench. Muscles: biceps."
+  },
+  {
+    "slug": "db-preacher-curl",
+    "name": "Dumbbell Preacher Curl",
+    "start": "Start: Rest the back of the upper arm on the top of an incline bench. Equipment in frame: dumbbells, bench. Muscles: biceps.",
+    "end": "End: Don't let the elbow lift off the pad. Equipment in frame: dumbbells, bench. Muscles: biceps."
+  },
+  {
+    "slug": "cable-hammer-curl",
+    "name": "Rope Hammer Curl",
+    "start": "Start: Rope at the low pulley. Equipment in frame: cables, tricep rope. Muscles: biceps, forearms.",
+    "end": "End: Curl without rocking the hips. Equipment in frame: cables, tricep rope. Muscles: biceps, forearms."
+  },
+  {
+    "slug": "db-skull-crusher",
+    "name": "Dumbbell Skull Crusher",
+    "start": "Start: Lie flat, bells over the shoulders. Equipment in frame: dumbbells, bench. Muscles: triceps.",
+    "end": "End: Lower the bells beside the ears, not onto the face. Equipment in frame: dumbbells, bench. Muscles: triceps."
+  },
+  {
+    "slug": "db-kickback",
+    "name": "Dumbbell Kickback",
+    "start": "Start: Hinge at the hips, back flat. Equipment in frame: dumbbells. Muscles: triceps.",
+    "end": "End: Straighten the elbow until the arm is level. Equipment in frame: dumbbells. Muscles: triceps."
+  },
+  {
+    "slug": "cable-upright-row",
+    "name": "Cable Upright Row",
+    "start": "Start: Low pulley, bar in front of the thighs. Equipment in frame: cables, straight bar. Muscles: traps, side delts.",
+    "end": "End: Stop at chest height. Equipment in frame: cables, straight bar. Muscles: traps, side delts."
+  },
+  {
+    "slug": "db-sumo-squat",
+    "name": "Dumbbell Sumo Squat",
+    "start": "Start: Feet wide, toes turned out. Equipment in frame: dumbbells. Muscles: quads, glutes.",
+    "end": "End: Sit down between the hips. Equipment in frame: dumbbells. Muscles: quads, glutes."
+  },
+  {
+    "slug": "db-walking-lunge",
+    "name": "Walking Lunge",
+    "start": "Start: Step long, not short and choppy. Equipment in frame: dumbbells. Muscles: quads, glutes.",
+    "end": "End: Back knee lowers toward the floor. Equipment in frame: dumbbells. Muscles: quads, glutes."
+  },
+  {
+    "slug": "db-lateral-lunge",
+    "name": "Lateral Lunge",
+    "start": "Start: Step wide to the side. Equipment in frame: dumbbells. Muscles: quads, glutes.",
+    "end": "End: Chest up, knee tracks over the toes. Equipment in frame: dumbbells. Muscles: quads, glutes."
+  },
+  {
+    "slug": "db-calf-raise",
+    "name": "Dumbbell Calf Raise",
+    "start": "Start: Bells at your sides. Equipment in frame: dumbbells. Muscles: calves.",
+    "end": "End: Pause at the top. Equipment in frame: dumbbells. Muscles: calves."
+  },
+  {
+    "slug": "sl-calf-raise",
+    "name": "Single-Leg Calf Raise",
+    "start": "Start: Ball of one foot on the step, heel hanging. Equipment in frame: bodyweight, step. Muscles: calves.",
+    "end": "End: Rise as high as you can. Equipment in frame: bodyweight, step. Muscles: calves."
+  },
+  {
+    "slug": "copenhagen-plank",
+    "name": "Copenhagen Plank",
+    "start": "Start: Top foot on the bench, bottom leg under it. Equipment in frame: bench, bodyweight. Muscles: adductors, core.",
+    "end": "End: Don't let the bottom shoulder collapse. Equipment in frame: bench, bodyweight. Muscles: adductors, core."
+  },
+  {
+    "slug": "side-lying-adduction",
+    "name": "Side-Lying Leg Adduction",
+    "start": "Start: Lie on your side, bottom leg straight. Equipment in frame: mat. Muscles: adductors.",
+    "end": "End: Lift the bottom leg a few inches. Equipment in frame: mat. Muscles: adductors."
+  },
+  {
+    "slug": "high-plank",
+    "name": "High Plank",
+    "start": "Start: Hands under shoulders, arms straight. Equipment in frame: mat. Muscles: core.",
+    "end": "End: Push the floor away so the shoulder blades spread. Equipment in frame: mat. Muscles: core."
+  },
+  {
+    "slug": "bear-plank",
+    "name": "Bear Plank",
+    "start": "Start: Hands under shoulders, knees under hips. Equipment in frame: mat. Muscles: core.",
+    "end": "End: Back stays flat, ribs down. Equipment in frame: mat. Muscles: core."
+  },
+  {
+    "slug": "bear-shoulder-tap",
+    "name": "Bear Plank Shoulder Taps",
+    "start": "Start: Start in a bear plank, knees hovering. Equipment in frame: mat. Muscles: core.",
+    "end": "End: Hips stay square, don't rock side to side. Equipment in frame: mat. Muscles: core."
+  },
+  {
+    "slug": "plank-updown",
+    "name": "Plank Up-Downs",
+    "start": "Start: Start on the forearms. Equipment in frame: mat. Muscles: core, shoulders.",
+    "end": "End: Walk back down one arm at a time. Equipment in frame: mat. Muscles: core, shoulders."
+  },
+  {
+    "slug": "plank-jack",
+    "name": "Plank Jacks",
+    "start": "Start: High plank, shoulders over wrists. Equipment in frame: mat. Muscles: core, full body.",
+    "end": "End: Hips stay level, don't bounce up. Equipment in frame: mat. Muscles: core, full body."
+  },
+  {
+    "slug": "plank-hip-dip",
+    "name": "Plank Hip Dips",
+    "start": "Start: Forearm plank, feet together. Equipment in frame: mat. Muscles: obliques, core.",
+    "end": "End: Come back through center. Equipment in frame: mat. Muscles: obliques, core."
+  },
+  {
+    "slug": "side-plank-reach",
+    "name": "Side Plank with Reach-Through",
+    "start": "Start: Side plank, elbow under the shoulder. Equipment in frame: mat. Muscles: obliques.",
+    "end": "End: Open the chest back to the ceiling. Equipment in frame: mat. Muscles: obliques."
+  },
+  {
+    "slug": "bird-dog",
+    "name": "Bird Dog",
+    "start": "Start: Hands under shoulders, knees under hips. Equipment in frame: mat. Muscles: core, glutes.",
+    "end": "End: Hips stay square to the floor. Equipment in frame: mat. Muscles: core, glutes."
+  },
+  {
+    "slug": "hollow-hold",
+    "name": "Hollow Hold",
+    "start": "Start: Lie on your back, arms overhead. Equipment in frame: mat. Muscles: abs.",
+    "end": "End: Lift the shoulders and the legs together. Equipment in frame: mat. Muscles: abs."
+  },
+  {
+    "slug": "v-up",
+    "name": "V-up",
+    "start": "Start: Lie long, arms overhead. Equipment in frame: mat. Muscles: abs.",
+    "end": "End: Reach the hands toward the feet. Equipment in frame: mat. Muscles: abs."
+  },
+  {
+    "slug": "flutter-kick",
+    "name": "Flutter Kicks",
+    "start": "Start: On your back, hands under the hips if needed. Equipment in frame: mat. Muscles: lower abs.",
+    "end": "End: Small quick kicks. Equipment in frame: mat. Muscles: lower abs."
+  },
+  {
+    "slug": "stir-the-pot",
+    "name": "Stir the Pot",
+    "start": "Start: Forearms on the ball, feet back. Equipment in frame: stability ball. Muscles: abs, core.",
+    "end": "End: Circle the forearms on the ball. Equipment in frame: stability ball. Muscles: abs, core."
+  },
+  {
+    "slug": "med-ball-slam",
+    "name": "Medicine Ball Slam",
+    "start": "Start: Ball overhead, ribs down. Equipment in frame: medicine ball. Muscles: full body.",
+    "end": "End: Hinge the hips, don't round hard. Equipment in frame: medicine ball. Muscles: full body."
+  },
+  {
+    "slug": "bear-crawl",
+    "name": "Bear Crawl",
+    "start": "Start: Knees hover an inch off the floor. Equipment in frame: mat. Muscles: core, shoulders.",
+    "end": "End: Back stays flat. Equipment in frame: mat. Muscles: core, shoulders."
+  },
+  {
+    "slug": "inchworm",
+    "name": "Inchworm",
+    "start": "Start: Fold forward, hands to the floor. Equipment in frame: bodyweight. Muscles: core, hamstrings.",
+    "end": "End: Hold a beat, hips level. Equipment in frame: bodyweight. Muscles: core, hamstrings."
+  },
+  {
+    "slug": "plank-walkout",
+    "name": "Plank Walkout",
+    "start": "Start: Stand, fold, hands on the floor. Equipment in frame: mat. Muscles: core, shoulders.",
+    "end": "End: Pause with the hips level. Equipment in frame: mat. Muscles: core, shoulders."
+  },
+  {
+    "slug": "wu-arm-swing",
+    "name": "Arm Swings",
+    "start": "Start: Swing the arms across the chest and open them. Equipment in frame: bodyweight. Muscles: shoulders, chest.",
+    "end": "End: Smaller swings if a shoulder pinches. Equipment in frame: bodyweight. Muscles: shoulders, chest."
+  },
+  {
+    "slug": "wu-thoracic-open",
+    "name": "Open-Book Thoracic Rotation",
+    "start": "Start: Lie on your side, knees bent. Equipment in frame: mat. Muscles: thoracic spine.",
+    "end": "End: Follow the hand with your eyes. Equipment in frame: mat. Muscles: thoracic spine."
+  },
+  {
+    "slug": "wu-spiderman",
+    "name": "Spiderman Stretch",
+    "start": "Start: Step into a lunge, both hands inside the front foot. Equipment in frame: bodyweight. Muscles: hips, hip flexors.",
+    "end": "End: Elbow toward the instep. Equipment in frame: bodyweight. Muscles: hips, hip flexors."
+  },
+  {
+    "slug": "wu-inchworm",
+    "name": "Inchworm Walkout",
+    "start": "Start: Fold and walk the hands out. Equipment in frame: bodyweight. Muscles: hamstrings, core.",
+    "end": "End: Walk back to standing. Equipment in frame: bodyweight. Muscles: hamstrings, core."
+  },
+  {
+    "slug": "wu-glute-stretch",
+    "name": "Figure-4 Glute Stretch",
+    "start": "Start: On your back, ankle over the opposite thigh. Equipment in frame: mat. Muscles: glutes.",
+    "end": "End: Keep the head down. Equipment in frame: mat. Muscles: glutes."
+  },
+  {
+    "slug": "wu-calf-stretch",
+    "name": "Standing Calf Stretch",
+    "start": "Start: Hands on a wall, one foot back. Equipment in frame: bodyweight. Muscles: calves.",
+    "end": "End: Back leg straight for the calf. Equipment in frame: bodyweight. Muscles: calves."
+  },
+  {
+    "slug": "st-pec",
+    "name": "Doorway Chest Stretch",
+    "start": "Start: Forearm on a door frame, elbow about shoulder height. Equipment in frame: bodyweight. Muscles: chest, front delts.",
+    "end": "End: Don't shrug. Equipment in frame: bodyweight. Muscles: chest, front delts."
+  },
+  {
+    "slug": "st-quad",
+    "name": "Standing Quad Stretch",
+    "start": "Start: Hold a wall, pull one heel toward the glute. Equipment in frame: bodyweight. Muscles: quads.",
+    "end": "End: Stand tall, don't arch. Equipment in frame: bodyweight. Muscles: quads."
+  },
+  {
+    "slug": "st-figure4",
+    "name": "Seated Figure-4 Stretch",
+    "start": "Start: Sit tall, ankle over the opposite knee. Equipment in frame: bodyweight. Muscles: glutes.",
+    "end": "End: Keep the back long. Equipment in frame: bodyweight. Muscles: glutes."
+  },
+  {
+    "slug": "st-calf",
+    "name": "Wall Calf Stretch",
+    "start": "Start: Toes on the wall or heel back. Equipment in frame: bodyweight. Muscles: calves.",
+    "end": "End: Switch sides halfway. Equipment in frame: bodyweight. Muscles: calves."
+  }
+]
