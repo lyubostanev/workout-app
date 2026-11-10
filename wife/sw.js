@@ -1,4 +1,4 @@
-const CACHE = 'gymcoach-her-v3';
+const CACHE = 'gymcoach-her-v4';
 const PARENT = new URL('../', self.location);
 const HERE = new URL('./', self.location);
 const here = p => new URL(p, HERE).href;
