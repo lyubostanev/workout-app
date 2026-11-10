@@ -337,7 +337,7 @@ function stationConflict(a, b) {
 function smithConflict(a, b) { return stationConflict(a, b); }
 // Full-body / hard-effort finishers. Burpee + thruster (and the other max efforts in that pool)
 // are too much in one superset; pair one of them with a lighter conditioner instead.
-const HIGH_ENERGY = new Set(['burpee', 'kb-thruster', 'row-sprint', 'mountain-climber', 'trx-jump-squat', 'med-ball-slam', 'plank-jack']);
+const HIGH_ENERGY = new Set(['burpee', 'kb-thruster', 'row-sprint', 'mountain-climber', 'trx-jump-squat', 'plank-jack']);
 function highEnergy(e) {
   if (!e) return false;
   if (e.highEnergy || HIGH_ENERGY.has(e.id)) return true;

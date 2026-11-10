@@ -5990,44 +5990,6 @@
   "unilateral": false,
   "cue": "",
   "formCues": [
-   "Ball overhead, ribs down",
-   "Slam the ball into the floor in front of you",
-   "Hinge the hips, don't round hard",
-   "Catch or pick it up with bent knees",
-   "Reset tall before the next slam",
-   "Use a ball that won't bounce into your face"
-  ],
-  "alternates": [
-   "burpee",
-   "kb-thruster",
-   "mountain-climber",
-   "plank-jack"
-  ],
-  "id": "med-ball-slam",
-  "name": "Medicine Ball Slam",
-  "equipment": [
-   "medicine ball"
-  ],
-  "category": "conditioning",
-  "muscles": [
-   "full body"
-  ],
-  "work": 30,
-  "rest": 30,
-  "group": "Conditioning",
-  "highEnergy": true,
-  "reps": [
-   8,
-   12
-  ],
-  "demoUrl": "https://www.youtube.com/results?search_query=Medicine%20Ball%20Slam%20proper%20form",
-  "demoTitle": "Medicine Ball Slam proper form",
-  "demoChannel": "YouTube"
- },
- {
-  "unilateral": false,
-  "cue": "",
-  "formCues": [
    "Knees hover an inch off the floor",
    "Step the opposite hand and foot",
    "Back stays flat",
