@@ -38,6 +38,10 @@ Serve the folder with any static server, e.g. `python3 -m http.server`, then ope
 - The workout length shown everywhere is the exact sum of all steps, and generated sessions fit 30/45/60 min within -3/+1 min.
 - Spoken prompts are queued (no more cut-off words on iPhone); beeps wait until speech ends.
 
+## v30
+- Medicine ball slams are removed from both apps. Nothing named a slam is programmed, offered as a swap, or listed in `exercises-manifest.json`.
+- SW cache gymcoach-v30. Her cache is gymcoach-her-v3.
+
 ## v29
 - Sessions vary more. Warm-ups and cool-downs are drawn from a larger pool and skip moves used in the last three sessions of that day. Main exercises used in the last one or two sessions of that day are less likely to be picked when another move fits the slot. Block order and the rep target shift a little from session to session. That recent list is stored per app (`gc_variety` / `her_variety`).
 - Every exercise has at least three swap choices that still respect station clashes and the no-two-max-effort rule. New core plank variations, bench dips, and the rest of the added library are included. Flat Bench Dumbbell Fly and Incline Dumbbell Fly stay in the chest pool and are swap options; incline and flat bench setups are not paired.
