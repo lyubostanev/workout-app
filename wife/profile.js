@@ -6,7 +6,7 @@ window.GYM_PROFILE = {
   days: 4,
   defaults: { daysPerWeek: 4, rower: true },
   // Smith bench and shoulder press (and the incline press, same awkward setup). Dumbbell presses take those slots.
-  banned: ['smith-bench', 'smith-incline-bench', 'smith-ohp'],
+  banned: ['smith-bench', 'smith-incline-bench', 'smith-ohp', 'dips', 'pullup'],
   preferDbPress: true,
   splits: [
     { name: 'Chest & Triceps', short: 'Chest', focus: 'Chest · Upper chest · Triceps · Core',

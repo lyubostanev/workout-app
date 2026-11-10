@@ -30,6 +30,13 @@ header{padding:18px 18px 6px}h1{font-size:26px;margin:0}h2{font-size:18px;margin
 .ex small{color:var(--mut)}
 .ex{align-items:center;gap:10px}
 .thumb{width:56px;height:56px;object-fit:cover;object-position:center 40%;border-radius:10px;background:#eaf2f8;flex:0 0 56px}
+.exart{width:56px;height:56px;object-fit:cover;border-radius:10px;background:#eaf2f8;display:block}
+.exart.gone,.exfade.gone{display:none}
+.exfade{position:relative;width:56px;height:56px;flex:0 0 56px;border-radius:10px;overflow:hidden;background:#eaf2f8}
+.exfade .exart{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .45s ease}
+.exfade .exart.on{opacity:1}
+.pimg .exfade,.bpimgs .exfade,.pvimgs .exfade,.libdet .exfade{width:min(100%,220px);height:min(19vh,190px);flex:1 1 auto}
+@media (prefers-reduced-motion: reduce){.exfade .exart{transition:none}}
 .pimg{background:#e9e9e9;border-radius:16px;overflow:hidden;margin:10px 0 0;height:min(19vh,190px);flex-shrink:0;display:flex;justify-content:center}
 .pimg img{height:100%;width:auto;max-width:100%;object-fit:contain}
 .pimg.dim img{opacity:.55}
