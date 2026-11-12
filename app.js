@@ -791,7 +791,16 @@ function beep(freq = 880, ms = 120, vol = 0.25, force = false, droppable = false
    not heard. resume() is only scheduled on a later turn, to release a hold or a line
    iOS queued while paused. Beeps play after the words. Utterances stay referenced so
    iOS does not collect them mid-sentence. */
-const SPQ = { q: [], cur: null, t0: 0, keep: [], heldBeep: null, beepUntil: 0, notBefore: 0, timer: null, log: [], cancels: 0, gestureUntil: 0, voice: null };
+const SPQ = { q: [], cur: null, t0: 0, keep: [], heldBeep: null, beepUntil: 0, notBefore: 0, timer: null, log: [], cancels: 0, gestureUntil: 0, voice: null, heard: null, dups: 0 };
+/* v35 doubled-line guard ("rest, rest" / "switch, switch"). The watchdog below re-speaks a line whose onstart
+   never came. On iOS onstart can arrive late, or not at all, for a line that is actually playing, and cancel()
+   does not always remove it from the engine. The old copy then plays and the retry plays after it.
+   - A line only counts as stuck after SPEECH_STUCK_MS with no onstart and no onboundary (was 700 ms).
+   - A line the watchdog gave up on (u.abandoned) that still plays to the end, ending well after our cancel(),
+     makes its queued retry a duplicate: the retry is removed from the queue, or cancels itself in its onstart.
+   - say() ignores a line identical to one that finished less than SPEECH_DUP_MS ago. */
+const SPEECH_STUCK_MS = 1200, SPEECH_DUP_MS = 2500;
+const recentlyHeard = text => !!(SPQ.heard && SPQ.heard.text === text && Date.now() - SPQ.heard.at < SPEECH_DUP_MS);
 const speaking = () => !!SPQ.cur;
 const audible = () => !!(SPQ.cur && !SPQ.cur.hold);
 const speechPending = () => audible() || SPQ.q.some(x => !x.low);
@@ -813,7 +822,9 @@ function quietMedia() {
 function say(text, opt = false) {
   const o = typeof opt === 'object' ? opt : { force: !!opt }, low = o.prio === 'low';
   if ((!settings.voice && !o.force) || !('speechSynthesis' in window) || !text) return false;
-  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && !SPQ.cur.hold && SPQ.cur.raw === text)) return false;
+  // Already queued, playing, or just heard: report it as said so callers (form cues) don't ask again later.
+  if (SPQ.q.some(x => x.text === text) || (SPQ.cur && !SPQ.cur.hold && SPQ.cur.raw === text)) return true;
+  if (!o.force && recentlyHeard(text)) { SPQ.dups++; return true; }
   SPQ.q.push({ text, low, step: P.i, at: Date.now(), tries: o.tries || 0 });
   if (SPQ.q.length > 6) { const drop = SPQ.q.findIndex(x => x.low); if (drop >= 0) SPQ.q.splice(drop, 1); else SPQ.q.shift(); }
   if (SPQ.cur && SPQ.cur.hold) releaseHold();
@@ -844,6 +855,7 @@ function pumpSpeech() {
   if (wait > 0 && Date.now() > (SPQ.gestureUntil || 0)) { SPQ.timer = setTimeout(pumpSpeech, wait + 5); return; }
   const it = SPQ.q.shift();
   if (it.low && it.step !== P.i) return pumpSpeech();
+  if (it.tries && recentlyHeard(it.text)) { SPQ.dups++; return pumpSpeech(); } // the first copy played after all
   speakNow(it.text, false, it.tries || 0);
 }
 function speakNow(text, hold, tries) {
@@ -854,15 +866,22 @@ function speakNow(text, hold, tries) {
     u = new SpeechSynthesisUtterance(hold ? ' ' : (SPEECH_LEAD.text + text));
     u.raw = hold ? '' : text; u.hold = !!hold; u.tries = tries || 0; u.rate = hold ? 1.5 : 1.02; u.volume = 1; u.lang = 'en-US';
     try { const v = pickVoice(); if (v) u.voice = v; } catch (e) {}
+    u.spokeAt = Date.now();
     u.onstart = () => {
-      u.started = true;
-      if (!u.hold) return;
+      u.started = true; u.startedAt = Date.now();
+      if (!u.hold) {
+        // A retry whose first copy turned out to play in full: stop it before it is heard twice.
+        if (u.dup && SPQ.cur === u) { SPQ.dups++; try { speechSynthesis.cancel(); SPQ.cancels++; } catch (e) {} }
+        return;
+      }
+      if (SPQ.cur !== u) return; // a hold the watchdog already gave up on: let it end, don't park the engine
       try { speechSynthesis.pause(); } catch (e) {}
       u.parked = true; u.parkedAt = Date.now();
       if (u.releaseAsked || SPQ.q.length) releaseHold();
     };
-    u.onend = () => finishUtterance(u);
-    u.onerror = () => finishUtterance(u);
+    u.onboundary = () => { if (!u.started) { u.started = true; u.startedAt = Date.now(); } }; // proof it is playing
+    u.onend = () => finishUtterance(u, 'end');
+    u.onerror = () => finishUtterance(u, 'error');
     SPQ.cur = u; SPQ.t0 = Date.now(); SPQ.keep.push(u); if (SPQ.keep.length > 8) SPQ.keep.shift();
     speechSynthesis.speak(u);
     // Later turn only. resume() before this function returns drops the utterance on iOS.
@@ -875,25 +894,40 @@ function armWatch(u) {
   const wd = () => {
     if (SPQ.cur !== u) return;
     if (u.hold && u.parked && !u.releaseAsked && !SPQ.q.length) return;
+    // An abandoned copy is still playing (it started after our cancel). The engine is busy with it, so this
+    // line has not had its turn yet: wait instead of cancelling, which would cut the playing copy mid-word.
+    const g = SPQ.ghost;
+    if (!u.started && g && g !== u && g.started && !g.ended && Date.now() - g.startedAt < speechCap(g.raw || '') + 600) { SPQ.t0 = Date.now(); setTimeout(wd, 250); return; }
     if (!u.started && speechSynthesis.paused) { try { speechSynthesis.resume(); } catch (e) {} }
-    if (!u.started && Date.now() - SPQ.t0 > 700) {
+    if (!u.started && Date.now() - SPQ.t0 > (u.hold ? 700 : SPEECH_STUCK_MS)) {
       const text = u.raw, tries = (u.tries || 0) + 1;
-      SPQ.cur = null;
+      SPQ.cur = null; u.abandoned = true; u.cancelAt = Date.now(); if (u.raw) SPQ.ghost = u;
       try { speechSynthesis.cancel(); SPQ.cancels++; } catch (e) {}
-      if (text && tries <= 2) SPQ.q.unshift({ text, low: false, step: P.i, at: Date.now(), tries });
+      if (text && tries <= 2 && !u.dup) SPQ.q.unshift({ text, low: false, step: P.i, at: Date.now(), tries });
       SPQ.notBefore = 0;
       setTimeout(() => { if (!SPQ.cur) pumpSpeech(); }, 0);
       return;
     }
-    if (!u.hold && u.started && Date.now() - SPQ.t0 > cap) { finishUtterance(u); return; }
+    if (!u.hold && u.started && Date.now() - SPQ.t0 > cap) { finishUtterance(u, 'cap'); return; }
     setTimeout(wd, 250);
   };
   setTimeout(wd, 280);
 }
-function finishUtterance(u) {
+function finishUtterance(u, how) {
+  if (u && u.abandoned && how) u.ended = true;
+  if (u && u.abandoned && !u.done && how === 'end' && u.raw && Date.now() - (u.cancelAt || 0) > 350) {
+    // The watchdog cancelled this line, but it kept playing and ended normally, so it was heard.
+    // Drop its retry so the same words are not spoken a second time.
+    u.done = true; SPQ.keep = SPQ.keep.filter(x => x !== u);
+    SPQ.heard = { text: u.raw, at: Date.now() }; SPQ.log.push({ text: u.raw, end: Date.now(), ghost: true });
+    SPQ.q = SPQ.q.filter(x => !(x.tries && x.text === u.raw));
+    const c = SPQ.cur; if (c && !c.hold && !c.started && c.raw === u.raw) c.dup = true;
+    return;
+  }
   if (!u || u.done || SPQ.cur !== u) return;
   u.done = true; SPQ.cur = null; SPQ.keep = SPQ.keep.filter(x => x !== u);
   if (!u.hold && u.raw) SPQ.log.push({ text: u.raw, end: Date.now() });
+  if (!u.hold && u.raw && how !== 'error' && !u.dup) SPQ.heard = { text: u.raw, at: Date.now() };
   drainSpeech();
 }
 function drainSpeech() {
