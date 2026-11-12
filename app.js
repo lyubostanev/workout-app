@@ -14,6 +14,14 @@ const LS = {
   set: (k, v) => localStorage.setItem(sk(k), JSON.stringify(v)),
   remove: k => localStorage.removeItem(sk(k)),
 };
+// Renamed exercise ids. Saved history, swaps, set logs, avoid lists and rest overrides still hold the old id,
+// so rewrite them once (per store) before anything reads them. bear-plank became the bulldog plank in v35.
+const ID_ALIAS = { 'bear-plank': 'bulldog-plank' };
+['gc_settings', 'gc_history', 'gc_daypick', 'gc_setlog', 'gc_timing', 'gc_variety', 'gc_swaps', 'gc_cueidx'].forEach(k => {
+  const raw = localStorage.getItem(sk(k)); if (!raw) return;
+  let out = raw; for (const [from, to] of Object.entries(ID_ALIAS)) out = out.split('"' + from + '"').join('"' + to + '"');
+  if (out !== raw) localStorage.setItem(sk(k), out);
+});
 // Default plan: 3-day rotating split Push -> Pull -> Legs & Core (whole body covered across the 3 days). TRX and rower are OFF by default (rower malfunctioning).
 // Kettlebells on hand: 2 x 25 lb + 1 x 35 lb (suggestions snap to these). No tempo counting (removed).
 const DEFAULTS = Object.assign({ daysPerWeek: 3, minutes: 45, level: 'intermediate', voice: true, beeps: true,
@@ -87,7 +95,7 @@ const switchedOff = e => (!settings.trx && e.equipment.includes('TRX')) || (!set
 function available() { return LIB.filter(e => !BANNED.has(e.id) && !switchedOff(e) && !settings.excluded.some(x => e.equipment.includes(x))); }
 // Generation pool: equipment you have, minus exercises you've marked "avoid" (injury).
 function genPool() { return available().filter(e => !settings.avoided.includes(e.id)); }
-const byId = id => LIB.find(e => e.id === id);
+const byId = id => LIB.find(e => e.id === (ID_ALIAS[id] || id));
 /* Which split day a history row is. Matches dayIndex, the full name, the short label ("Legs"),
    and older rows that said "Legs" for "Legs & Core". A named row that matches nothing is ignored
    so it cannot be counted as a different day and leave Legs "up next". */
