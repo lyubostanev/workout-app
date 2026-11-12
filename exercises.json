@@ -551,6 +551,7 @@
   ],
   "imageSource": "free-exercise-db:Dips_-_Chest_Version",
   "alternates": [
+   "bench-dip",
    "cable-tricep-pushdown",
    "db-bench",
    "cable-overhead-tricep"
@@ -2902,7 +2903,7 @@
    "bosu-plank",
    "pallof-press",
    "high-plank",
-   "bear-plank",
+   "bulldog-plank",
    "bear-shoulder-tap"
   ],
   "timed": true,
@@ -2942,7 +2943,7 @@
    "kb-suitcase-carry",
    "plank",
    "high-plank",
-   "bear-plank",
+   "bulldog-plank",
    "bear-shoulder-tap"
   ],
   "timed": true,
@@ -2985,7 +2986,7 @@
    "reverse-crunch",
    "pilates-ring-squeeze",
    "high-plank",
-   "bear-plank"
+   "bulldog-plank"
   ],
   "reps": [
    12,
@@ -3316,7 +3317,7 @@
    "plank",
    "dead-bug",
    "high-plank",
-   "bear-plank",
+   "bulldog-plank",
    "bear-shoulder-tap"
   ],
   "timed": true,
@@ -4824,6 +4825,7 @@
    "Stop if the front of the shoulder pinches"
   ],
   "alternates": [
+   "dips",
    "cable-tricep-pushdown",
    "db-kickback",
    "db-skull-crusher",
@@ -5567,7 +5569,7 @@
   ],
   "alternates": [
    "plank",
-   "bear-plank",
+   "bulldog-plank",
    "plank-updown",
    "plank-hip-dip"
   ],
@@ -5592,11 +5594,11 @@
   "unilateral": false,
   "cue": "Knees hover",
   "formCues": [
-   "Hands under shoulders, knees under hips",
-   "Lift the knees just off the floor",
-   "Back stays flat, ribs down",
-   "Push the floor away",
-   "Don't let the hips shoot up",
+   "Start on hands and knees, hands under shoulders, knees under hips",
+   "Tuck your toes under",
+   "Brace and lift the knees an inch or two off the mat",
+   "Shins stay parallel to the floor, back flat like a table",
+   "Push the floor away, don't let the hips rise",
    "Breathe while you hold"
   ],
   "alternates": [
@@ -5605,8 +5607,8 @@
    "plank",
    "bird-dog"
   ],
-  "id": "bear-plank",
-  "name": "Bear Plank",
+  "id": "bulldog-plank",
+  "name": "Bulldog Plank",
   "equipment": [
    "mat"
   ],
@@ -5618,8 +5620,8 @@
   "rest": 20,
   "group": "Core",
   "timed": true,
-  "demoUrl": "https://www.youtube.com/results?search_query=Bear%20Plank%20proper%20form",
-  "demoTitle": "Bear Plank proper form",
+  "demoUrl": "https://www.youtube.com/results?search_query=Bulldog%20Plank%20proper%20form",
+  "demoTitle": "Bulldog Plank proper form",
   "demoChannel": "YouTube"
  },
  {
@@ -5634,7 +5636,7 @@
    "Move slower if you start swaying"
   ],
   "alternates": [
-   "bear-plank",
+   "bulldog-plank",
    "plank-updown",
    "high-plank",
    "bird-dog"
@@ -5673,7 +5675,7 @@
   "alternates": [
    "high-plank",
    "plank",
-   "bear-plank",
+   "bulldog-plank",
    "plank-hip-dip"
   ],
   "id": "plank-updown",
@@ -5818,7 +5820,7 @@
   ],
   "alternates": [
    "dead-bug",
-   "bear-plank",
+   "bulldog-plank",
    "plank",
    "hollow-hold"
   ],
